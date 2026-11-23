@@ -59,6 +59,7 @@ export function adaptBoard(raw, { source, setData, items, ratings }) {
       id: `${config.id}-${row.id}`, name: row.title, units, items: gear, itemBuilds, stars, aimTraits, traits: Object.keys(aimTraits),
       core: [...new Set(main.length ? main : units.slice(0, 2))],
       carry: [...new Set(carry)], level: Math.min(10, units.length),
+      teamCode: source === 'datatft' && typeof row.tftCode === 'string' ? row.tftCode : '',
       strength: top4 == null ? 0.7 : Math.max(0.55, Math.min(0.85, 0.7 + (top4 - 55) * 0.012)),
       rank: {
         source: config.host, boardTitle: row.title, tier: stats.tier || null,

@@ -5,20 +5,21 @@ import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=ocr-hex';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=ocr-hex';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
+import { bindIconMatch } from './ui/icon-match.js';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js';
 import { rankOpening } from './engine/opening.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
 import { planItems } from './engine/items.js';
-import { buildCompGuide } from './engine/comp-guide.js';
+import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=planning-tools';
 import { validateComps } from './adapters/provider.js';
-import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=comp-guide';
+import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-hex';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let modelReference, screenReader, openingAdvice, matchSamples;
+let modelReference, screenReader, openingAdvice, matchSamples, iconMatch;
 let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
@@ -94,6 +95,7 @@ async function loadBoard() {
 
 async function loadSet(setNum) {
   screenReader?.reset();
+  iconMatch?.reset();
   const meta = findSet(setNum);
   const generation = ++setLoad;
   boardLoad++;
@@ -123,6 +125,10 @@ async function loadSet(setNum) {
   state.setData = setData;
   state.items = items;
   state.augs = augments;
+  el('planCap').value = '';
+  el('planTrait').replaceChildren(new Option('全部羁绊', ''),
+    ...(setData.traits || []).map(({ name, id }) => new Option(name, id)));
+  refreshPlanTiers();
   el('modelUnit').replaceChildren(new Option('选择棋子', ''), ...setData.units.map(({ id, name }) => {
     const option = new Option(name, name);
     option.dataset.unitId = id;
@@ -186,7 +192,7 @@ function renderSelected() {
 }
 
 function renderCompGuide(comp) {
-  const { board, units, rolls } = buildCompGuide(comp, state.setData);
+  const { board, units, rolls, transition } = buildCompGuide(comp, state.setData);
   const version = state.setData.source?.ddragonVersion;
   const items = new Map((state.items?.items || []).map(item => [item.id, item.name]));
   const rows = board.map((row, i) => `<div class="guide-rank" aria-label="第 ${i + 1} 排">
@@ -203,7 +209,14 @@ function renderCompGuide(comp) {
     `<li><strong>${level} 级</strong> · ${targets.map(unit => `${esc(unit.name)} ${unit.stars} 星`).join('、')}</li>`).join('');
   const riftbeastShop = comp.aimTraits?.DA_Riftbeast18 >= 5
     && rolls.some(({ targets }) => targets.some(unit => unit.traits?.includes('DA_Riftbeast18')));
+  const transitionUnits = transition.units.map(unit => esc(unit.name)).join('、');
+  const transitionTraits = transition.traits.map(trait => `${trait.tier} ${esc(trait.name)}`).join(' · ');
   return `<section class="comp-guide" aria-label="阵容攻略">
+    <section class="guide-transition">
+      <h3>前期过渡参考</h3>
+      <p>${transitionUnits || '这套阵容缺少低费棋子，可先用已成型的低费羁绊过渡。'}</p>
+      ${transitionTraits ? `<p class="fine">${transitionTraits}</p>` : ''}
+    </section>
     <div class="guide-layout">
       <div class="guide-position">
         <h3>参考站位</h3>
@@ -221,7 +234,16 @@ function renderCompGuide(comp) {
       <thead><tr><th scope="col">棋子</th><th scope="col">目标星级</th><th scope="col">推荐装备</th></tr></thead>
       <tbody>${targets}</tbody>
     </table>
+    ${comp.teamCode ? '<button type="button" class="ghost" data-copy-team>复制云顶阵容码</button><p class="fine copy-status" role="status"></p>' : ''}
   </section>`;
+}
+
+function refreshPlanTiers() {
+  const trait = state.setData?.traits.find(row => row.id === el('planTrait').value);
+  const tier = el('planTier');
+  tier.replaceChildren(new Option('任意已激活', ''),
+    ...(trait?.tiers || []).map(({ min }) => new Option(`${min} 人档及以上`, min)));
+  tier.disabled = !trait;
 }
 
 function openingContext() {
@@ -257,14 +279,19 @@ function renderResults() {
   }
   const ranked = rankOpening(openingContext());
   state.ranked = ranked;
-  const hot = ranked.filter((r) => r.viable).slice(0, 8);
+  const filters = { trait: el('planTrait').value, tier: Number(el('planTier').value), maxLevel: Number(el('planCap').value) };
+  const exploring = Boolean(filters.trait || filters.maxLevel);
+  const plans = exploring ? filterCompPlans(ranked, filters) : ranked.filter(r => r.viable);
+  const hot = plans.slice(0, 8);
   const cold = ranked.filter((r) => !r.viable);
   if (!hot.length) {
-    box.innerHTML = '<div class="empty">确认城邦、现有棋子或装备后查看阵容排序。</div>';
+    box.innerHTML = exploring
+      ? '<div class="empty">没有符合筛选条件的阵容。</div>'
+      : '<div class="empty">确认城邦、现有棋子或装备后查看阵容排序。</div>';
     renderSide();
     return;
   }
-  const coldNote = cold.length
+  const coldNote = exploring ? `<p class="fine">符合条件 ${plans.length} 套，显示前 ${hot.length} 套。</p>` : cold.length
     ? `<p class="fine" style="margin:10px 2px 0;color:#5f7284;font-size:12px">另有 ${cold.length} 套暂未匹配开局条件。</p>`
     : '';
   box.innerHTML =
@@ -290,7 +317,7 @@ function renderResults() {
         c.rank.avg != null && `均位 ${c.rank.avg}`, c.rank.samples != null && `样本 ${c.rank.samples}`,
       ].filter(Boolean).join(' · '))}</span></span></div>` : ''}
       ${c.notes ? `<div class="row"><span class="k">说明</span><span class="v"><span class="note">${esc(c.notes)}</span></span></div>` : ''}
-      ${!r.viable ? '<div class="row"><span class="k">判定</span><span class="v warnline">核心件一个都没有：这套只能当「之后爬到牌再转型」的参考</span></div>' : ''}
+      ${!r.viable ? '<div class="row"><span class="k">判定</span><span class="v warnline">当前开局条件未匹配，可作为赛前参考。</span></div>' : ''}
     </div>` : '';
     return `<article class="comp ${state.open.has(c.id) ? 'open' : ''} ${r.viable ? '' : 'cold'}" data-comp="${c.id}">
       <header class="comp-head"><span class="rank">${i + 1}</span><span class="nm">${esc(c.name)}${c.rank?.tier ? ` <small class="board-stat">${esc(c.rank.tier)} 级</small>` : ''}</span>
@@ -733,6 +760,24 @@ function bind() {
     clear: el('modelClear'), status: el('modelStatus'), preview: el('modelReferencePreview'),
     game: el('modelGame'), save: el('modelSave'), load: el('modelLoad'), remove: el('modelRemove'),
   });
+  iconMatch = bindIconMatch({
+    kind: el('iconKind'), input: el('iconFile'), status: el('iconStatus'), apply: el('iconApply'),
+    getContext: kind => loadingSet ? null : ({
+      version: state.setData?.source?.ddragonVersion,
+      entries: kind === 'unit' ? state.setData?.units || [] : [...(state.items?.components || []), ...(state.items?.items || [])],
+    }),
+    onApply(icon, kind) {
+      if (kind === 'unit') {
+        state.selected.add(icon.id);
+        renderUnits();
+      } else if (state.items.components.some(component => component.id === icon.id)) {
+        state.owned.set(icon.id, Math.min(4, (state.owned.get(icon.id) || 0) + 1));
+      } else {
+        state.ownedItems.add(icon.id);
+      }
+      renderResults();
+    },
+  });
   el('setSelect').innerHTML = SETS.map((s) => `<option value="${s.set}">${esc(s.label)}${s.status === 'preview' ? ' · 待上线' : ''}</option>`).join('');
   el('boardSource').replaceChildren(...BOARD_SOURCES.map(({ id, host, game }) => new Option(`${game} · ${host}`, id)));
   el('boardSource').value = state.sourceId;
@@ -743,6 +788,9 @@ function bind() {
     void loadBoard();
   };
   el('setSelect').onchange = (e) => loadSet(e.target.value);
+  el('planTrait').onchange = () => { refreshPlanTiers(); renderResults(); };
+  el('planTier').onchange = renderResults;
+  el('planCap').onchange = renderResults;
   el('search').oninput = (e) => { state.query = e.target.value.trim(); renderUnits(); };
   el('clearSel').onclick = () => { state.selected.clear(); renderUnits(); renderResults(); };
   el('costTabs').onclick = (e) => {
@@ -766,10 +814,23 @@ function bind() {
     renderUnits();
     renderResults();
   };
-  el('comps').onclick = (e) => {
+  el('comps').onclick = async (e) => {
     const a = e.target.closest('.comp');
-    if (!a || e.target.closest('.unit')) return;
+    if (!a) return;
     const id = a.dataset.comp;
+    if (e.target.closest('[data-copy-team]')) {
+      const code = state.comps.find(comp => comp.id === id)?.teamCode;
+      const feedback = a.querySelector('.copy-status');
+      if (!code || !feedback) return;
+      try {
+        await navigator.clipboard.writeText(code);
+        feedback.textContent = '阵容码已复制。';
+      } catch {
+        feedback.textContent = code;
+      }
+      return;
+    }
+    if (!e.target.closest('.comp-head')) return;
     state.open.has(id) ? state.open.delete(id) : state.open.add(id);
     renderResults();
   };

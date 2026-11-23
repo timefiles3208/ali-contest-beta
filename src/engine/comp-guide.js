@@ -1,3 +1,5 @@
+import { traitBreakdown } from './recommend.js';
+
 const FRONT_TRAITS = new Set([
   'DA_18_Brawler', 'DA_18_Defender', 'DA_18_Vanguard', 'DA_Juggernaut18', 'DA_18_Battlemage',
 ]);
@@ -11,6 +13,12 @@ const TANK_ITEMS = new Set([
 const OUTSIDE_IN = [0, 6, 1, 5, 2, 4, 3];
 const CENTER_OUT = [3, 2, 4, 1, 5, 0, 6];
 const ROLL_LEVEL = { 1: 5, 2: 6, 3: 7, 4: 8, 5: 9 };
+
+export function filterCompPlans(rows, { trait, tier, maxLevel }) {
+  return rows.filter(({ comp }) =>
+    (!trait || (comp.aimTraits?.[trait] || 0) >= (tier || 1)) &&
+    (!maxLevel || comp.level <= maxLevel));
+}
 
 export function buildCompGuide(comp, setData) {
   const byId = new Map(setData.units.map(unit => [unit.id, unit]));
@@ -53,5 +61,12 @@ export function buildCompGuide(comp, setData) {
     rollsByLevel.set(level, targets);
   }
   const rolls = [...rollsByLevel].map(([level, targets]) => ({ level, targets })).sort((a, b) => a.level - b.level);
-  return { board, units, rolls };
+  const transitionUnits = units.filter(unit => unit.cost <= 3)
+    .sort((a, b) => a.cost - b.cost || Number(b.tank || b.carry) - Number(a.tank || a.carry))
+    .slice(0, 4);
+  const transition = {
+    units: transitionUnits,
+    traits: traitBreakdown(setData, transitionUnits.map(unit => unit.id)).filter(trait => trait.tier > 0),
+  };
+  return { board, units, rolls, transition };
 }

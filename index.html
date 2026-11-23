@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=comp-guide" />
+<link rel="stylesheet" href="./styles.css?v=planning-tools" />
 </head>
 <body>
 <header class="bar">
@@ -89,6 +89,15 @@
         <p id="snapStatus" class="snap-status" role="status">正在准备截图工具…</p>
         <p class="fine">请用原始截图，或裁出商店、羁绊栏等含清晰名称的区域。识别出的棋子名需核对后应用到推荐。</p>
         <details class="snap-model">
+          <summary>识别单个棋子或装备图标</summary>
+          <div class="plan-controls">
+            <label>图标类型 <select id="iconKind"><option value="unit">棋子头像</option><option value="item">装备图标</option></select></label>
+            <label>上传裁好的图标 <input id="iconFile" type="file" accept="image/*" /></label>
+            <button id="iconApply" class="ghost" type="button" disabled>确认并登记</button>
+          </div>
+          <p id="iconStatus" class="snap-status" role="status"></p>
+        </details>
+        <details class="snap-model">
           <summary>棋子 3D 模型参考（可选）</summary>
           <p class="fine"><strong id="modelGame"></strong>。GLB 模型可保存到当前浏览器。金铲铲缺少已保存的模型时，可载入同赛季同棋子的云顶模型作为参考。</p>
           <div class="snap-model-fields">
@@ -153,6 +162,16 @@
       <div id="matchSampleOutput"></div>
     </details>
     <div id="traitsNow" class="traits-now"></div>
+    <div class="plan-controls" role="group" aria-label="筛选阵容">
+      <label>目标羁绊 <select id="planTrait"><option value="">全部羁绊</option></select></label>
+      <label>羁绊档位 <select id="planTier" disabled><option value="">任意已激活</option></select></label>
+      <label>成型人口上限
+        <select id="planCap">
+          <option value="">不限</option><option value="6">6</option><option value="7">7</option>
+          <option value="8">8</option><option value="9">9</option><option value="10">10</option>
+        </select>
+      </label>
+    </div>
     <div id="comps" class="comps"></div>
 
     <h2 class="mt">5 · 羁绊接下来往哪走</h2>
@@ -171,6 +190,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=comp-guide"></script>
+<script type="module" src="./src/main.js?v=planning-tools"></script>
 </body>
 </html>

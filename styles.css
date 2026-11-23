@@ -136,6 +136,12 @@ button.ghost { background: transparent; }
 .guide-targets thead, .guide-targets small { color: var(--dim); }
 .guide-targets small { display: block; font-size: 10px; }
 .guide-stars { white-space: nowrap; color: var(--accent); }
+.plan-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 12px; margin: 8px 0 12px; }
+.plan-controls label { display: grid; gap: 4px; min-width: 0; color: var(--dim); font-size: 12px; }
+.plan-controls select { max-width: 100%; }
+.guide-transition { margin-bottom: 12px; }
+.guide-transition p { margin: 0 0 4px; font-size: 12px; }
+.copy-status { overflow-wrap: anywhere; }
 @media (max-width: 620px) { .guide-layout { grid-template-columns: minmax(0, 1fr); } }
 .unit.mini { padding: 3px; border-radius: 8px; background: #101822; border-color: #263444; cursor: default; width: 58px; gap: 2px; }
 .unit.mini .ico { width: 34px; height: 34px; }
