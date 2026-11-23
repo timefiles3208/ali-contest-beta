@@ -1,5 +1,5 @@
-import { stageAfterOpening } from '../engine/screen-insights.js?v=opening-advice';
-import { recognizeBoardText } from '../adapters/local-ocr.js?v=opening-advice';
+import { stageAfterOpening } from '../engine/screen-insights.js?v=ocr-hex';
+import { recognizeBoardText } from '../adapters/local-ocr.js?v=ocr-hex';
 const FRAME_INTERVAL_MS = 3500;
 const CAPTURE_LIMIT_MS = 180_000;
 

@@ -3,6 +3,7 @@ import { rankOpeningAugments } from '../engine/opening.js';
 export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, ownedSummary, candidates, inputs, list, direction, picks, getContext, onChange, onPick }) {
   let detectedUnits = [];
   let catalogIdentity;
+  let picksKey;
 
   function options(select, entries, label) {
     const previous = select.value;
@@ -63,6 +64,9 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     direction.replaceChildren(title, evidence);
 
     const chosen = rankOpeningAugments({ setData, augments, ranked, selected, offered });
+    const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
+    if (nextKey === picksKey) return;
+    picksKey = nextKey;
     picks.replaceChildren(...chosen.map(({ aug, reasons }) => {
       const row = document.createElement('li');
       const button = document.createElement('button');
@@ -106,6 +110,6 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   city.onchange = () => onChange({ city: city.value });
   economy.onchange = () => onChange({ economy: economy.value });
   addItem.onclick = () => { if (item.value) onChange({ item: item.value }); };
-  inputs.forEach(input => { input.onchange = draw; });
+  inputs.forEach(input => { input.oninput = draw; });
   return { draw, show, receive, reset };
 }

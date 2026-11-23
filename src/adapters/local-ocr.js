@@ -1,4 +1,4 @@
-import { mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=opening-advice';
+import { mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=ocr-hex';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 let worker;
@@ -23,17 +23,18 @@ async function loadWorker() {
     langPath: new URL('lang', OCR_DIR).href,
     workerBlobURL: false,
   });
-  await worker.setParameters({ tessedit_pageseg_mode: '11' });
   return worker;
 }
 
-function readOcr(canvas, isCurrent, parameters) {
+function readOcr(canvas, isCurrent, mode = '11') {
   const job = queue.then(async () => {
     if (!isCurrent()) return null;
     worker ||= loadWorker().catch(error => { worker = null; throw error; });
     const engine = await worker;
     if (!isCurrent()) return null;
-    const { data } = await engine.recognize(canvas, parameters);
+    await engine.setParameters({ tessedit_pageseg_mode: mode });
+    if (!isCurrent()) return null;
+    const { data } = await engine.recognize(canvas);
     return data.text;
   });
   queue = job.catch(() => {});
@@ -62,27 +63,39 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   if (text === null || !isCurrent()) return null;
   const initial = screenEvidence(text, setData);
   const reads = [initial];
+  const fullText = [text];
   const landscape = canvas.width >= canvas.height;
 
-  if (!initial.stage) {
+  if (detailed) {
+    // Sparse text finds scattered labels. Block mode also finds short Chinese
+    // names in rows that sparse mode can fragment into unrelated glyphs.
+    const block = await readOcr(canvas, isCurrent, '6');
+    if (block === null || !isCurrent()) return null;
+    fullText.push(block);
+    reads.push(screenEvidence(block, setData));
+  }
+  let combined = mergeScreenEvidence(...reads);
+  if (!reads.some(read => read.stage)) {
     const area = cropForOcr(canvas, landscape ? [0.10, 0, 0.92, 0.20] : [0, 0, 1, 0.24]);
-    const hud = await readOcr(area, isCurrent, { tessedit_pageseg_mode: '7' });
+    const hud = await readOcr(area, isCurrent, '7');
     if (hud === null || !isCurrent()) return null;
     reads.push({ stage: screenEvidence(hud, setData, { hud: true }).stage, units: [], traits: [] });
   }
-  if (detailed && initial.traits.length === 0) {
+  if (detailed && combined.traits.length === 0) {
     const area = cropForOcr(canvas, [0, 0.09, 0.42, 0.78]);
-    const side = await readOcr(area, isCurrent, { tessedit_pageseg_mode: '6' });
+    const side = await readOcr(area, isCurrent, '6');
     if (side === null || !isCurrent()) return null;
-    reads.push({ stage: null, units: [], traits: screenEvidence(side, setData).traits });
+    const { units, traits } = screenEvidence(side, setData);
+    reads.push({ stage: null, units, traits });
+    combined = mergeScreenEvidence(...reads);
   }
-  if (detailed && initial.units.length < 2) {
+  if (detailed && combined.units.length < 2) {
     const area = cropForOcr(canvas, [0, 0.66, 1, 1]);
     const shop = await readOcr(area, isCurrent);
     if (shop === null || !isCurrent()) return null;
     reads.push({ stage: null, units: screenEvidence(shop, setData).units, traits: [] });
   }
   const evidence = mergeScreenEvidence(...reads);
-  if (opening) evidence.opening = openingNamesInText(text, opening);
+  if (opening) evidence.opening = openingNamesInText(fullText.join('\n'), opening);
   return evidence;
 }

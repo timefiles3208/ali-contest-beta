@@ -21,10 +21,11 @@ function visibleStage(lines, hud) {
   const stages = new Set();
   for (const line of lines) {
     const normalized = line.replace(/[‐‑–—−]/g, '-');
-    const explicit = normalized.match(/^(?:阶段\s*:?\s*)?([1-9])\s*-\s*([1-7])$/);
-    if (explicit) {
-      stages.add(`${explicit[1]}-${explicit[2]}`);
-    } else if (hud && !/\p{Script=Han}/u.test(normalized)) {
+    for (const segment of normalized.split('|')) {
+      const explicit = segment.trim().match(/^(?:阶段\s*:?\s*|stage(?:\s*:\s*|\s+))?([1-9])\s*-\s*([1-7])$/i);
+      if (explicit) stages.add(`${explicit[1]}-${explicit[2]}`);
+    }
+    if (hud && !/\p{Script=Han}/u.test(normalized)) {
       for (const match of normalized.matchAll(/(?<![\p{L}\p{N}._/-])([1-9])\s*-\s*([1-7])(?![\p{L}\p{N}._/-])/gu)) {
         stages.add(`${match[1]}-${match[2]}`);
       }

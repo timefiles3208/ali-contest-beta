@@ -1,4 +1,4 @@
-import { recognizeBoardText } from './local-ocr.js?v=opening-advice';
+import { recognizeBoardText } from './local-ocr.js?v=ocr-hex';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
