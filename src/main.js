@@ -1,5 +1,6 @@
 import { SETS, findSet } from './data/sets.js';
-import { loadJson, iconHtml } from './ui/helpers.js';
+import { iconHtml } from './ui/helpers.js';
+import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=screenshot-ocr';
 import { recommend, traitBreakdown } from './engine/recommend.js';
@@ -60,8 +61,8 @@ async function loadBoard() {
   try {
     if (state.setData.set !== 18) throw new Error('此赛季没有该数据源的快照');
     const [raw, ratings] = await Promise.all([
-      loadJson(source.file),
-      source.ratingsFile ? loadJson(source.ratingsFile).catch(() => null) : null,
+      loadCatalog(source.file),
+      source.ratingsFile ? loadCatalog(source.ratingsFile).catch(() => null) : null,
     ]);
     if (generation !== boardLoad) return;
     const board = adaptBoard(raw, { source: source.id, setData: state.setData, items: state.items, ratings });
@@ -102,9 +103,9 @@ async function loadSet(setNum) {
   el('search').value = '';
 
   const [setData, items, augments] = await Promise.all([
-    loadJson(meta.dataFile).catch((e) => ({ set: meta.set, costs: [], traits: [], units: [], source: {}, loadError: e.message })),
-    loadJson(meta.itemsFile).catch(() => null),
-    loadJson(meta.augFile).catch(() => null),
+    loadCatalog(meta.dataFile).catch((e) => ({ set: meta.set, costs: [], traits: [], units: [], source: {}, loadError: e.message })),
+    loadCatalog(meta.itemsFile).catch(() => null),
+    loadCatalog(meta.augFile).catch(() => null),
   ]);
   if (generation !== setLoad) return;
   loadingSet = false;
