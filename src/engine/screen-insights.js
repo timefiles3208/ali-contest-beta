@@ -1,23 +1,54 @@
 import { recommend } from './recommend.js';
 
+const labelText = text => text.normalize('NFKC').replace(/[^\p{L}\p{N}]/gu, '');
+
 function visibleMatches(lines, entries) {
-  return entries.filter(({ name }) => {
-    const label = name.replace(/\s+/g, '');
-    return lines.some(line => line === label || (label.length >= 2 && line.includes(label)));
-  }).map(({ id }) => id);
+  const labels = entries.map(({ id, name }) => ({ id, label: labelText(name) }))
+    .sort((a, b) => b.label.length - a.label.length);
+  const found = new Set();
+  for (const line of lines) {
+    let remaining = line;
+    for (const { id, label } of labels) {
+      if (!label || (label.length === 1 ? line !== label : !remaining.includes(label))) continue;
+      found.add(id);
+      remaining = remaining.split(label).join(' ');
+    }
+  }
+  return entries.filter(({ id }) => found.has(id)).map(({ id }) => id);
 }
 
-export function screenEvidence(text, setData) {
+function visibleStage(lines, hud) {
+  const stages = new Set();
+  for (const line of lines) {
+    const normalized = line.replace(/[‐‑–—−]/g, '-');
+    const explicit = normalized.match(/^(?:阶段\s*:?\s*)?([1-9])\s*-\s*([1-7])$/);
+    if (explicit) {
+      stages.add(`${explicit[1]}-${explicit[2]}`);
+    } else if (hud && !/\p{Script=Han}/u.test(normalized)) {
+      for (const match of normalized.matchAll(/(?<![\p{L}\p{N}._/-])([1-9])\s*-\s*([1-7])(?![\p{L}\p{N}._/-])/gu)) {
+        stages.add(`${match[1]}-${match[2]}`);
+      }
+    }
+  }
+  return stages.size === 1 ? [...stages][0] : null;
+}
+
+export function screenEvidence(text, setData, { hud = false } = {}) {
   const lines = text.normalize('NFKC').split(/\r?\n/).map(line => line.trim());
-  const stages = new Set(lines.map(line => {
-    const match = line.match(/^([1-9])\s*[-‐‑–—]\s*([1-7])$/);
-    return match && `${match[1]}-${match[2]}`;
-  }).filter(Boolean));
-  const labels = lines.map(line => line.replace(/\s+/g, ''));
+  const labels = lines.map(labelText);
   return {
-    stage: stages.size === 1 ? [...stages][0] : null,
+    stage: visibleStage(lines, hud),
     units: visibleMatches(labels, setData.units),
     traits: visibleMatches(labels, setData.traits || []),
+  };
+}
+
+export function mergeScreenEvidence(...reads) {
+  const stages = new Set(reads.map(read => read.stage).filter(Boolean));
+  return {
+    stage: stages.size === 1 ? [...stages][0] : null,
+    units: [...new Set(reads.flatMap(read => read.units))],
+    traits: [...new Set(reads.flatMap(read => read.traits))],
   };
 }
 

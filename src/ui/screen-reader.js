@@ -1,6 +1,5 @@
-import { screenEvidence, screenDirection, stageAfterOpening } from '../engine/screen-insights.js';
-
-import { readOcr } from '../adapters/local-ocr.js';
+import { screenDirection, stageAfterOpening } from '../engine/screen-insights.js?v=ocr-regions';
+import { recognizeBoardText } from '../adapters/local-ocr.js?v=ocr-regions';
 const FRAME_INTERVAL_MS = 3500;
 const CAPTURE_LIMIT_MS = 180_000;
 
@@ -45,11 +44,6 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       ? toCanvas(video, video.videoWidth, video.videoHeight) : null;
   }
 
-  async function read(canvas, setData, isCurrent) {
-    const text = await readOcr(canvas, isCurrent);
-    return text === null || !isCurrent() ? null : screenEvidence(text, setData);
-  }
-
   function showDirection(context, evidence) {
     const units = [...new Set([...context.selected, ...evidence.units])];
     const comp = screenDirection(context.setData, context.comps, { units, traits: evidence.traits }, context.level);
@@ -67,7 +61,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     const canvas = frame();
     if (canvas) {
       try {
-        const evidence = await read(canvas, session.context.setData, () => active === session);
+        const evidence = await recognizeBoardText(canvas, session.context.setData, () => active === session);
         if (!evidence || active !== session) return;
         if (stageAfterOpening(evidence.stage)) {
           release(session);
@@ -96,7 +90,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     render();
     say('正在读取最后一帧的文字…');
     try {
-      const evidence = await read(canvas, context.setData, () => finishedJob === job);
+      const evidence = await recognizeBoardText(canvas, context.setData, () => finishedJob === job, { detailed: true });
       if (!evidence || finishedJob !== job) return;
       const usable = stageAfterOpening(evidence.stage)
         ? earlier : evidence.units.length || evidence.traits.length ? evidence : earlier || evidence;

@@ -1,5 +1,4 @@
-import { readOcr } from './local-ocr.js';
-import { screenEvidence } from '../engine/screen-insights.js';
+import { recognizeBoardText } from './local-ocr.js?v=ocr-regions';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
@@ -115,7 +114,7 @@ export function snapshotFromEvidence(evidence, setData) {
 
 export async function recognizeSnapshot(file, rotation, setData, isCurrent) {
   const img = await loadImage(await readAsDataUrl(file));
-  const scale = Math.min(3.5, 2160 / Math.max(img.naturalWidth, img.naturalHeight));
+  const scale = Math.min(1, 2160 / Math.max(img.naturalWidth, img.naturalHeight));
   const width = Math.max(1, Math.round(img.naturalWidth * scale));
   const height = Math.max(1, Math.round(img.naturalHeight * scale));
   const sideways = rotation % 180 !== 0;
@@ -128,8 +127,8 @@ export async function recognizeSnapshot(file, rotation, setData, isCurrent) {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(rotation * Math.PI / 180);
   ctx.drawImage(img, -width / 2, -height / 2, width, height);
-  const text = await readOcr(canvas, isCurrent);
-  return text === null ? null : snapshotFromEvidence(screenEvidence(text, setData), setData);
+  const evidence = await recognizeBoardText(canvas, setData, isCurrent, { detailed: true });
+  return evidence === null ? null : snapshotFromEvidence(evidence, setData);
 }
 
 const norm = (s) => String(s ?? '').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');

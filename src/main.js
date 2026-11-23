@@ -2,14 +2,14 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=screenshot-ocr';
+import { bindScreenReader } from './ui/screen-reader.js?v=ocr-regions';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
 import { planItems } from './engine/items.js';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=screenshot-ocr';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-regions';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -469,7 +469,8 @@ function renderSnapshot() {
   } else if (snap.mapped) {
     status.className = 'snap-status ok';
     status.textContent = snap.applied ? '识别结果已应用。' : snap.mapped.candidates.length
-      ? '已读取截图文字，请勾选确认拥有的棋子。' : '读到了羁绊名。棋子名未读到，可在下方手选。';
+      ? '已读取截图文字，请勾选确认拥有的棋子。'
+      : '已读出部分画面信息。棋子名未读到，可在下方手选。';
   } else if (snap.file) {
     status.className = 'snap-status ok';
     status.textContent = '截图已就绪，点「开始识别」。';
@@ -594,7 +595,7 @@ async function runRecognize() {
   try {
     const result = await recognizeSnapshot(state.snap.file, state.snap.rotation, state.setData, current);
     if (!result || !current()) return;
-    if (!result.candidates.length && !result.traits.length) {
+    if (!result.stage && !result.candidates.length && !result.traits.length) {
       state.snap.error = { message: '没有读到当前赛季的棋子名或羁绊名。请核对游戏与赛季，并使用原始截图或裁出名称较清晰的区域。' };
       return;
     }
