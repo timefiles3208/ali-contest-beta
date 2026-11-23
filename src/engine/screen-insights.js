@@ -1,6 +1,21 @@
 import { recommend } from './recommend.js';
 
 const labelText = text => text.normalize('NFKC').replace(/[^\p{L}\p{N}]/gu, '');
+const regionLabel = text => text.normalize('NFKC').replace(/[^\p{L}\p{N}+]/gu, '');
+
+export function matchRegionLabel(text, entries) {
+  const label = regionLabel(text);
+  if (!label) return null;
+  const labels = entries.map(({ id, name }) => ({ id, name: regionLabel(name) }));
+  const exact = labels.filter(row => row.name === label);
+  if (exact.length) return exact.length === 1 ? exact[0].id : null;
+  if (!/^\p{Script=Han}{3,}[+]*$/u.test(label)) return null;
+  const suffix = label.match(/\+*$/)[0];
+  const near = labels.filter(({ name }) => name.length === label.length &&
+    name.match(/\+*$/)[0] === suffix &&
+    [...label].filter((char, i) => char !== name[i]).length === 1);
+  return near.length === 1 ? near[0].id : null;
+}
 
 function visibleMatches(lines, entries) {
   const labels = entries.map(({ id, name }) => ({ id, label: labelText(name) }))

@@ -1,11 +1,11 @@
-import { stageAfterOpening } from '../engine/screen-insights.js?v=ocr-hex';
-import { recognizeBoardText } from '../adapters/local-ocr.js?v=ocr-hex';
+import { stageAfterOpening } from '../engine/screen-insights.js?v=hud-regions';
+import { recognizeBoardText } from '../adapters/local-ocr.js?v=hud-regions';
 const FRAME_INTERVAL_MS = 3500;
 const CAPTURE_LIMIT_MS = 180_000;
 
-function toCanvas(image, width, height) {
+function toCanvas(image, width, height, maxSize = 1600) {
   const canvas = document.createElement('canvas');
-  const scale = Math.min(1, 1600 / Math.max(width, height));
+  const scale = Math.min(1, maxSize / Math.max(width, height));
   canvas.width = Math.max(1, Math.round(width * scale));
   canvas.height = Math.max(1, Math.round(height * scale));
   canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -60,7 +60,9 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     const canvas = frame();
     if (canvas) {
       try {
-        const evidence = await recognizeBoardText(canvas, session.context.setData, () => active === session, { opening: session.context.opening });
+        const evidence = await recognizeBoardText(canvas, session.context.setData, () => active === session, {
+          opening: session.context.opening, readCards: !session.atOpening,
+        });
         if (!evidence || active !== session) return;
         if (stageAfterOpening(evidence.stage)) {
           release(session);
@@ -177,7 +179,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       const bitmap = await createImageBitmap(file);
       try {
         if (finishedJob !== job) return;
-        await recognizeFinal(context, toCanvas(bitmap, bitmap.width, bitmap.height), true);
+        await recognizeFinal(context, toCanvas(bitmap, bitmap.width, bitmap.height, 2160), true);
       } finally { bitmap.close(); }
     } catch {
       if (finishedJob === job) say('无法读取图片，请选择清晰的 PNG 或 JPG 截图。');

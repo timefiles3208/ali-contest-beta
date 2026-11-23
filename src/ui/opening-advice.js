@@ -99,9 +99,17 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     if (units.length || dialog.open) detectedUnits = units;
     const cities = opening?.cities || [];
     if (!ctx.city && cities.length === 1) onChange({ city: cities[0] });
-    const offered = (opening?.offered || []).map(id => ctx.augments.find(row => row.id === id)?.name).filter(Boolean);
-    if (offered.length && offered.length <= 3 && inputs.every(input => !input.value)) {
-      offered.forEach((name, i) => { inputs[i].value = name; });
+    const slots = opening?.offeredSlots;
+    if (slots) {
+      slots.forEach((id, i) => {
+        const name = ctx.augments.find(row => row.id === id)?.name;
+        if (name && inputs[i] && !inputs[i].value && !inputs.some(input => input.value === name)) inputs[i].value = name;
+      });
+    } else {
+      const offered = (opening?.offered || []).map(id => ctx.augments.find(row => row.id === id)?.name).filter(Boolean);
+      if (offered.length && offered.length <= 3 && inputs.every(input => !input.value)) {
+        offered.forEach((name, i) => { inputs[i].value = name; });
+      }
     }
     draw();
   }

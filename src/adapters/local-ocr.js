@@ -1,6 +1,11 @@
-import { mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=ocr-hex';
+import { matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=hud-regions';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
+const DESKTOP_STAGE = [0.398, 0.0037, 0.423, 0.0278];
+const DESKTOP_TRAITS = [0.068, 0.242, 0.137, 0.63];
+const COMPACT_TRAITS = [0.095, 0.089, 0.22, 0.51];
+const CARD_TITLES = [0.26, 0.474, 0.688].map(left => [left, 0.487, left + 0.055, 0.516]);
+const SHOP_LABELS = [0.291, 0.396, 0.501, 0.606, 0.711].map(left => [left, 0.969, left + 0.038, 0.991]);
 let worker;
 let queue = Promise.resolve();
 
@@ -41,10 +46,10 @@ function readOcr(canvas, isCurrent, mode = '11') {
   return job;
 }
 
-function cropForOcr(image, [left, top, right, bottom]) {
+function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0, contrast = true } = {}) {
   const w = Math.max(1, Math.round(image.width * (right - left)));
   const h = Math.max(1, Math.round(image.height * (bottom - top)));
-  const scale = Math.min(3, 1800 / Math.max(w, h));
+  const scale = Math.min(zoom, 1800 / Math.max(w, h));
   const crop = document.createElement('canvas');
   const border = 12;
   crop.width = Math.round(w * scale) + border * 2;
@@ -52,19 +57,41 @@ function cropForOcr(image, [left, top, right, bottom]) {
   const ctx = crop.getContext('2d');
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, crop.width, crop.height);
-  ctx.filter = 'grayscale(1) contrast(1.35)';
+  if (contrast && !threshold) ctx.filter = 'grayscale(1) contrast(1.35)';
   ctx.drawImage(image, Math.round(image.width * left), Math.round(image.height * top), w, h,
     border, border, crop.width - border * 2, crop.height - border * 2);
+  if (threshold) {
+    const pixels = ctx.getImageData(border, border, crop.width - border * 2, crop.height - border * 2);
+    const { data } = pixels;
+    for (let i = 0; i < data.length; i += 4) {
+      const light = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      data[i] = data[i + 1] = data[i + 2] = light >= threshold ? 0 : 255;
+    }
+    ctx.putImageData(pixels, border, border);
+  }
   return crop;
 }
 
-export async function recognizeBoardText(canvas, setData, isCurrent = () => true, { detailed = false, opening } = {}) {
+async function readLabels(canvas, regions, entries, isCurrent, threshold) {
+  const ids = [];
+  for (const bounds of regions) {
+    const area = cropForOcr(canvas, bounds, { zoom: 5, threshold });
+    const text = await readOcr(area, isCurrent, '7');
+    if (text === null || !isCurrent()) return null;
+    ids.push(matchRegionLabel(text, entries));
+  }
+  return ids;
+}
+
+export async function recognizeBoardText(canvas, setData, isCurrent = () => true, { detailed = false, opening, readCards = true } = {}) {
   const text = await readOcr(canvas, isCurrent);
   if (text === null || !isCurrent()) return null;
   const initial = screenEvidence(text, setData);
   const reads = [initial];
   const fullText = [text];
   const landscape = canvas.width >= canvas.height;
+  const ratio = canvas.width / canvas.height;
+  const desktop = ratio >= 1.65 && ratio <= 1.95;
 
   if (detailed) {
     // Sparse text finds scattered labels. Block mode also finds short Chinese
@@ -75,6 +102,12 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     reads.push(screenEvidence(block, setData));
   }
   let combined = mergeScreenEvidence(...reads);
+  if (desktop && !reads.some(read => read.stage)) {
+    const area = cropForOcr(canvas, DESKTOP_STAGE, { zoom: 5, threshold: 145 });
+    const hud = await readOcr(area, isCurrent, '7');
+    if (hud === null || !isCurrent()) return null;
+    reads.push({ stage: screenEvidence(hud, setData).stage, units: [], traits: [] });
+  }
   if (!reads.some(read => read.stage)) {
     const area = cropForOcr(canvas, landscape ? [0.10, 0, 0.92, 0.20] : [0, 0, 1, 0.24]);
     const hud = await readOcr(area, isCurrent, '7');
@@ -95,7 +128,27 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     if (shop === null || !isCurrent()) return null;
     reads.push({ stage: null, units: screenEvidence(shop, setData).units, traits: [] });
   }
+  if (detailed && landscape) {
+    const area = cropForOcr(canvas, desktop ? DESKTOP_TRAITS : COMPACT_TRAITS, { contrast: false });
+    const side = await readOcr(area, isCurrent, '6');
+    if (side === null || !isCurrent()) return null;
+    reads.push({ stage: null, units: [], traits: screenEvidence(side, setData).traits });
+  }
+  const stage = mergeScreenEvidence(...reads).stage;
+  if (detailed && desktop && stage && stage !== '2-1' &&
+    (combined.units.length > 0 || /刷新|购买经验值/.test(fullText.join('')))) {
+    const shop = await readLabels(canvas, SHOP_LABELS, setData.units, isCurrent, 200);
+    if (shop === null) return null;
+    reads.push({ stage: null, units: shop.filter(Boolean), traits: [] });
+  }
   const evidence = mergeScreenEvidence(...reads);
-  if (opening) evidence.opening = openingNamesInText(fullText.join('\n'), opening);
+  if (opening) {
+    evidence.opening = openingNamesInText(fullText.join('\n'), opening);
+    if (desktop && readCards && evidence.stage === '2-1' && opening.augments.length) {
+      const offeredSlots = await readLabels(canvas, CARD_TITLES, opening.augments, isCurrent, 145);
+      if (offeredSlots === null) return null;
+      if (offeredSlots.some(Boolean)) evidence.opening.offeredSlots = offeredSlots;
+    }
+  }
   return evidence;
 }
