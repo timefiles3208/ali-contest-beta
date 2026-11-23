@@ -1,0 +1,5317 @@
+{
+  "source": "dataj.cc",
+  "season": 18,
+  "version": "18.7",
+  "extractedAt": "2026-11-23",
+  "pages": {
+    "comps": "https://www.dataj.cc/comp",
+    "items": "https://www.dataj.cc/equip",
+    "augments": "https://www.dataj.cc/hex"
+  },
+  "comps": [
+    {
+      "id": "104",
+      "title": "野怪小红",
+      "stats": {
+        "appear": 0.2,
+        "top4": 69.97,
+        "first": 21.03,
+        "avg": 3.43,
+        "samples": 1512,
+        "tier": "S"
+      },
+      "heroes": [
+        {
+          "name": "绯红树怪",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "朔极之矛",
+            "最后的轻语"
+          ]
+        },
+        {
+          "name": "远古巨龙",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "斯特拉克的挑战护手",
+            "正义之手"
+          ]
+        },
+        {
+          "name": "远古石甲虫",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "苍蓝哨戒",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "珠光护手",
+            "大天使之杖",
+            "大天使之杖"
+          ]
+        },
+        {
+          "name": "纳尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "峡谷迅捷蟹",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "112",
+      "title": "地狱火95",
+      "stats": {
+        "appear": 0.32,
+        "top4": 65.47,
+        "first": 26.04,
+        "avg": 3.61,
+        "samples": 2369,
+        "tier": "S"
+      },
+      "heroes": [
+        {
+          "name": "希维尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "红霸符",
+            "地狱火纹章",
+            "朔极之矛"
+          ]
+        },
+        {
+          "name": "艾希",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "最后的轻语",
+            "朔极之矛"
+          ]
+        },
+        {
+          "name": "凯南",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "正义之手",
+            "班克斯的魔法帽",
+            "夜之锋刃"
+          ]
+        },
+        {
+          "name": "阿木木",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "冕卫",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "蔚",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "慎",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "韦鲁斯",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "87",
+      "title": "赌狼人",
+      "stats": {
+        "appear": 0.41,
+        "top4": 64.94,
+        "first": 9.38,
+        "avg": 3.83,
+        "samples": 3072,
+        "tier": "S"
+      },
+      "heroes": [
+        {
+          "name": "沃里克",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "汲取剑",
+            "水银"
+          ]
+        },
+        {
+          "name": "绯红印记树怪",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "暗影狼",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿利斯塔",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "振奋盔甲"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "日炎斗篷",
+            "薄暮法袍"
+          ]
+        },
+        {
+          "name": "黛安娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "雷克塞",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "107",
+      "title": "野怪小蓝",
+      "stats": {
+        "appear": 0.53,
+        "top4": 61.63,
+        "first": 14.2,
+        "avg": 3.89,
+        "samples": 3922,
+        "tier": "S"
+      },
+      "heroes": [
+        {
+          "name": "苍蓝哨戒",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "珠光护手",
+            "大天使之杖",
+            "大天使之杖"
+          ]
+        },
+        {
+          "name": "远古巨龙",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "正义之手",
+            "斯特拉克的挑战护手",
+            "无尽之刃"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "圣盾使的誓约",
+            "日炎斗篷",
+            "离子火花"
+          ]
+        },
+        {
+          "name": "远古石甲虫",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "振奋盔甲"
+          ]
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "纳尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "绯红印记树怪",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "峡谷迅捷蟹",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "99",
+      "title": "7野怪鸡哥",
+      "stats": {
+        "appear": 0.3,
+        "top4": 61.28,
+        "first": 15.94,
+        "avg": 3.87,
+        "samples": 2221,
+        "tier": "S"
+      },
+      "heroes": [
+        {
+          "name": "深红锋喙鸟",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "锐利之刃",
+            "海妖之怒",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "绯红印记树怪",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "锐利之刃",
+            "水银",
+            "斯特拉克的挑战护手"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "远古石甲虫",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "振奋盔甲"
+          ]
+        },
+        {
+          "name": "魔沼蛙",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "峡谷迅捷蟹",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "暗影狼",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "绯红树怪",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝哨戒",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "110",
+      "title": "射箭韦鲁斯",
+      "stats": {
+        "appear": 0.63,
+        "top4": 59.08,
+        "first": 16.72,
+        "avg": 3.99,
+        "samples": 4694,
+        "tier": "S"
+      },
+      "heroes": [
+        {
+          "name": "韦鲁斯",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "朔极之矛",
+            "锐利之刃"
+          ]
+        },
+        {
+          "name": "凯尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "鬼索的狂暴之刃",
+            "珠光护手",
+            "巨人捕手"
+          ]
+        },
+        {
+          "name": "瑟庄妮",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "慎",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "蕾欧娜",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "厄斐琉斯",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "鬼索的狂暴之刃",
+            "最后的轻语"
+          ]
+        },
+        {
+          "name": "黛安娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "115",
+      "title": "卡丽蜜儿",
+      "stats": {
+        "appear": 0.18,
+        "top4": 54.52,
+        "first": 12.25,
+        "avg": 4.28,
+        "samples": 1339,
+        "tier": "A"
+      },
+      "heroes": [
+        {
+          "name": "阿卡丽",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "夜之锋刃",
+            "珠光护手",
+            "正义之手"
+          ]
+        },
+        {
+          "name": "卡蜜尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "斯特拉克的挑战护手",
+            "水银"
+          ]
+        },
+        {
+          "name": "奥恩",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "韦鲁斯",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "朔极之矛",
+            "最后的轻语"
+          ]
+        },
+        {
+          "name": "蕾欧娜",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿木木",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "瑟庄妮",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "凯尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "100",
+      "title": "重装女警",
+      "stats": {
+        "appear": 0.11,
+        "top4": 52.98,
+        "first": 8.16,
+        "avg": 4.49,
+        "samples": 821,
+        "tier": "B"
+      },
+      "heroes": [
+        {
+          "name": "凯特琳",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "锐利之刃",
+            "海妖之怒",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "希维尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "赫卡里姆",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "日炎斗篷",
+            "狂徒铠甲",
+            "薄暮法袍"
+          ]
+        },
+        {
+          "name": "伊莉丝",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "蔚",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "崔丝塔娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "116",
+      "title": "裁决螳螂",
+      "stats": {
+        "appear": 0.02,
+        "top4": 52.32,
+        "first": 9.93,
+        "avg": 4.3,
+        "samples": 151,
+        "tier": "A"
+      },
+      "heroes": [
+        {
+          "name": "卡兹克",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "夜之锋刃",
+            "班克斯的魔法帽",
+            "正义之手"
+          ]
+        },
+        {
+          "name": "索拉卡",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "朔极之矛",
+            "虚空之杖",
+            "莫雷洛秘典"
+          ]
+        },
+        {
+          "name": "费德提克",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "赫卡里姆",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "伊泽瑞尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "厄斐琉斯",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "黛安娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "奥恩",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "生命花",
+          "core": false,
+          "carry": false,
+          "summon": true,
+          "items": []
+        },
+        {
+          "name": "石皮树",
+          "core": false,
+          "carry": false,
+          "summon": true,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "89",
+      "title": "巨龙95",
+      "stats": {
+        "appear": 0.43,
+        "top4": 51.5,
+        "first": 21.66,
+        "avg": 4.33,
+        "samples": 3237,
+        "tier": "A"
+      },
+      "heroes": [
+        {
+          "name": "远古巨龙",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "强袭者的链枷",
+            "最后的轻语"
+          ]
+        },
+        {
+          "name": "德莱文",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "鬼索的狂暴之刃",
+            "海妖之怒",
+            "海妖之怒"
+          ]
+        },
+        {
+          "name": "茂凯",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "振奋盔甲"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "艾翁",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "凯南",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿木木",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "91",
+      "title": "永森95",
+      "stats": {
+        "appear": 0.01,
+        "top4": 50.67,
+        "first": 20,
+        "avg": 4.36,
+        "samples": 75,
+        "tier": "A"
+      },
+      "heroes": [
+        {
+          "name": "伊泽瑞尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "强袭者的链枷",
+            "锐利之刃",
+            "朔极之矛"
+          ]
+        },
+        {
+          "name": "德莱文",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "海妖之怒",
+            "海妖之怒",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "艾翁",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "凯南",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "纳尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "茂凯",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "石像鬼石板甲",
+            "狂徒铠甲",
+            "薄暮法袍"
+          ]
+        },
+        {
+          "name": "阿木木",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿利斯塔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "105",
+      "title": "森林月男",
+      "stats": {
+        "appear": 0.23,
+        "top4": 48.28,
+        "first": 10.12,
+        "avg": 4.61,
+        "samples": 1690,
+        "tier": "C"
+      },
+      "heroes": [
+        {
+          "name": "厄斐琉斯",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "海妖之怒",
+            "鬼索的狂暴之刃",
+            "无尽之刃"
+          ]
+        },
+        {
+          "name": "伊泽瑞尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "红霸符",
+            "最后的轻语",
+            "朔极之矛"
+          ]
+        },
+        {
+          "name": "莉莉娅",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "纳尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "泰坦的坚决",
+            "斯特拉克的挑战护手",
+            "汲取剑"
+          ]
+        },
+        {
+          "name": "拉露恩",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "索拉卡",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿利斯塔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "奥恩",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "霞",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "石皮树",
+          "core": false,
+          "carry": false,
+          "summon": true,
+          "items": []
+        },
+        {
+          "name": "石皮树",
+          "core": false,
+          "carry": false,
+          "summon": true,
+          "items": []
+        },
+        {
+          "name": "生命花",
+          "core": false,
+          "carry": false,
+          "summon": true,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "95",
+      "title": "月男Flex",
+      "stats": {
+        "appear": 1.22,
+        "top4": 48.17,
+        "first": 8.38,
+        "avg": 4.62,
+        "samples": 9076,
+        "tier": "C"
+      },
+      "heroes": [
+        {
+          "name": "厄斐琉斯",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "锐利之刃",
+            "鬼索的狂暴之刃",
+            "海妖之怒"
+          ]
+        },
+        {
+          "name": "婕拉",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "虚空之杖",
+            "朔极之矛",
+            "珠光护手"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "薄暮法袍",
+            "日炎斗篷",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "墨菲特",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "石像鬼石板甲"
+          ]
+        },
+        {
+          "name": "深红锋喙鸟",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "黛安娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "远古石甲虫",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "雷克塞",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "106",
+      "title": "主宰女警",
+      "stats": {
+        "appear": 0.09,
+        "top4": 48.09,
+        "first": 7.02,
+        "avg": 4.55,
+        "samples": 655,
+        "tier": "B"
+      },
+      "heroes": [
+        {
+          "name": "凯特琳",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "锐利之刃",
+            "海妖之怒",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "希维尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "最后的轻语",
+            "朔极之矛",
+            "无尽之刃"
+          ]
+        },
+        {
+          "name": "峡谷迅捷蟹",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "振奋盔甲"
+          ]
+        },
+        {
+          "name": "瑟庄妮",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "日炎斗篷",
+            "狂徒铠甲",
+            "石像鬼石板甲"
+          ]
+        },
+        {
+          "name": "阿木木",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "崔丝塔娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "蔚",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "108",
+      "title": "护卫豹轮",
+      "stats": {
+        "appear": 0.03,
+        "top4": 47.86,
+        "first": 12.84,
+        "avg": 4.53,
+        "samples": 257,
+        "tier": "B"
+      },
+      "heroes": [
+        {
+          "name": "希维尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "锐利之刃",
+            "朔极之矛",
+            "无尽之刃"
+          ]
+        },
+        {
+          "name": "奈德丽",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "强袭者的链枷",
+            "珠光护手",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "莉莉娅",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "艾希",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿木木",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "克格莫",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "慎",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "84",
+      "title": "莲华阿狸",
+      "stats": {
+        "appear": 1.01,
+        "top4": 47.61,
+        "first": 12.38,
+        "avg": 4.6,
+        "samples": 7526,
+        "tier": "B"
+      },
+      "heroes": [
+        {
+          "name": "阿狸",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "朔极之矛",
+            "纳什之牙",
+            "珠光护手"
+          ]
+        },
+        {
+          "name": "希维尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "朔极之矛",
+            "最后的轻语"
+          ]
+        },
+        {
+          "name": "艾希",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "朔极之矛",
+            "红霸符"
+          ]
+        },
+        {
+          "name": "瑟提",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "狂徒铠甲",
+            "石像鬼石板甲"
+          ]
+        },
+        {
+          "name": "纳尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "婕拉",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "虚空之杖"
+          ]
+        },
+        {
+          "name": "蔚",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "约里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "卡尔玛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "113",
+      "title": "古纳拉95",
+      "stats": {
+        "appear": 0.06,
+        "top4": 45.91,
+        "first": 15.14,
+        "avg": 4.66,
+        "samples": 416,
+        "tier": "C"
+      },
+      "heroes": [
+        {
+          "name": "拉露恩",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "珠光护手",
+            "纳什之牙",
+            "朔极之矛"
+          ]
+        },
+        {
+          "name": "远古巨龙",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "最后的轻语",
+            "斯特拉克的挑战护手",
+            "无尽之刃"
+          ]
+        },
+        {
+          "name": "纳尔",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "泰坦的坚决",
+            "斯特拉克的挑战护手",
+            "汲取剑"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "黛安娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "赫卡里姆",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿利斯塔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "石皮树",
+          "core": false,
+          "carry": false,
+          "summon": true,
+          "items": []
+        },
+        {
+          "name": "生命花",
+          "core": false,
+          "carry": false,
+          "summon": true,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "88",
+      "title": "森林妖姬天使",
+      "stats": {
+        "appear": 0.09,
+        "top4": 45.71,
+        "first": 9.17,
+        "avg": 4.73,
+        "samples": 676,
+        "tier": "C"
+      },
+      "heroes": [
+        {
+          "name": "凯尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "班克斯的魔法帽",
+            "珠光护手",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "乐芙兰",
+          "core": false,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "朔极之矛",
+            "珠光护手",
+            "纳什之牙"
+          ]
+        },
+        {
+          "name": "奥恩",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "振奋盔甲",
+            "石像鬼石板甲"
+          ]
+        },
+        {
+          "name": "蕾欧娜",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "振奋盔甲",
+            "石像鬼石板甲"
+          ]
+        },
+        {
+          "name": "霞",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "瑟庄妮",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "117",
+      "title": "6主宰Flex",
+      "stats": {
+        "appear": 0.12,
+        "top4": 40.96,
+        "first": 8.17,
+        "avg": 4.86,
+        "samples": 918,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "婕拉",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "海克斯科技枪刃",
+            "大天使之杖",
+            "大天使之杖"
+          ]
+        },
+        {
+          "name": "奈德丽",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "虚空之杖",
+            "鬼索的狂暴之刃",
+            "大天使之杖"
+          ]
+        },
+        {
+          "name": "阿木木",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "冕卫"
+          ]
+        },
+        {
+          "name": "茂凯",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "蔚",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "瑟庄妮",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "峡谷迅捷蟹",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "121",
+      "title": "赌沙皇",
+      "stats": {
+        "appear": 0.01,
+        "top4": 40.22,
+        "first": 8.7,
+        "avg": 5.03,
+        "samples": 92,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "阿兹尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "鬼索的狂暴之刃",
+            "海克斯科技枪刃",
+            "班克斯的魔法帽"
+          ]
+        },
+        {
+          "name": "婕拉",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "虚空之杖",
+            "莫雷洛秘典"
+          ]
+        },
+        {
+          "name": "拉莫斯",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "石像鬼石板甲",
+            "狂徒铠甲",
+            "振奋盔甲"
+          ]
+        },
+        {
+          "name": "索拉卡",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "费德提克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "提莫",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "维迦",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "102",
+      "title": "黑豹轮",
+      "stats": {
+        "appear": 0.07,
+        "top4": 39.71,
+        "first": 5.7,
+        "avg": 5.04,
+        "samples": 491,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "希维尔",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "锐利之刃",
+            "朔极之矛",
+            "无尽之刃"
+          ]
+        },
+        {
+          "name": "奈德丽",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "强袭者的链枷",
+            "珠光护手",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "墨菲特",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "狂徒铠甲",
+            "石像鬼石板甲",
+            "石像鬼石板甲"
+          ]
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "远古石甲虫",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "克格莫",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "雷克塞",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "绯红树怪",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "120",
+      "title": "黑暗仪式蜘蛛",
+      "stats": {
+        "appear": 0.02,
+        "top4": 39.62,
+        "first": 12.58,
+        "avg": 4.92,
+        "samples": 159,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "伊莉丝",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "石像鬼石板甲",
+            "泰坦的坚决",
+            "鬼索的狂暴之刃"
+          ]
+        },
+        {
+          "name": "莫甘娜",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "莫雷洛秘典",
+            "虚空之杖"
+          ]
+        },
+        {
+          "name": "卡西奥佩娅",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "海克斯科技枪刃",
+            "珠光护手",
+            "朔极之矛"
+          ]
+        },
+        {
+          "name": "黛安娜",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "赫卡里姆",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "拉露恩",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "111",
+      "title": "神谕狐狸",
+      "stats": {
+        "appear": 0.03,
+        "top4": 37.89,
+        "first": 5.86,
+        "avg": 4.98,
+        "samples": 256,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "阿狸",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "珠光护手",
+            "班克斯的魔法帽",
+            "神谕纹章"
+          ]
+        },
+        {
+          "name": "莫甘娜",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "珠光护手",
+            "莫雷洛秘典",
+            "虚空之杖"
+          ]
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "石像鬼石板甲",
+            "狂徒铠甲",
+            "圣盾使的誓约"
+          ]
+        },
+        {
+          "name": "瑟提",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "塔里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "小型石甲虫",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "克格莫",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝哨戒",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "卡尔玛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "90",
+      "title": "裁决奶妈",
+      "stats": {
+        "appear": 0.05,
+        "top4": 37.09,
+        "first": 7.97,
+        "avg": 5.2,
+        "samples": 364,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "索拉卡",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "班克斯的魔法帽",
+            "纳什之牙",
+            "朔极之矛"
+          ]
+        },
+        {
+          "name": "婕拉",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "裁决使纹章",
+            "朔极之矛",
+            "虚空之杖"
+          ]
+        },
+        {
+          "name": "墨菲特",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "狂徒铠甲",
+            "石像鬼石板甲"
+          ]
+        },
+        {
+          "name": "凯南",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "艾翁",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿木木",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "阿兹尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "费德提克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "约里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "98",
+      "title": "花仙小炮",
+      "stats": {
+        "appear": 0.01,
+        "top4": 31.51,
+        "first": 6.85,
+        "avg": 5.23,
+        "samples": 73,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "崔丝塔娜",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "海克斯科技枪刃",
+            "鬼索的狂暴之刃",
+            "海妖之怒"
+          ]
+        },
+        {
+          "name": "拉莫斯",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "希维尔",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "最后的轻语",
+            "红霸符"
+          ]
+        },
+        {
+          "name": "莉莉娅",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "蔚",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "霞",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "可酷伯",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "洛",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "96",
+      "title": "召唤鸡哥",
+      "stats": {
+        "appear": 0.01,
+        "top4": 30.95,
+        "first": 3.57,
+        "avg": 5.7,
+        "samples": 84,
+        "tier": "D"
+      },
+      "heroes": [
+        {
+          "name": "深红锋喙鸟",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "鬼索的狂暴之刃",
+            "海妖之怒",
+            "锐利之刃"
+          ]
+        },
+        {
+          "name": "厄斐琉斯",
+          "core": true,
+          "carry": true,
+          "summon": false,
+          "items": [
+            "无尽之刃",
+            "鬼索的狂暴之刃",
+            "锐利之刃"
+          ]
+        },
+        {
+          "name": "远古石甲虫",
+          "core": true,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "振奋盔甲",
+            "石像鬼石板甲",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "瑟提",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": [
+            "日炎斗篷",
+            "薄暮法袍",
+            "狂徒铠甲"
+          ]
+        },
+        {
+          "name": "婕拉",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "苍蓝雕纹魔像",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "黛安娜",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        },
+        {
+          "name": "约里克",
+          "core": false,
+          "carry": false,
+          "summon": false,
+          "items": []
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "name": "石像鬼石板甲",
+      "appear": 6.06,
+      "top4": 52.39,
+      "first": 13.01,
+      "avg": 4.38,
+      "samples": 56623
+    },
+    {
+      "name": "无尽之刃",
+      "appear": 5.56,
+      "top4": 52.14,
+      "first": 13.63,
+      "avg": 4.38,
+      "samples": 47579
+    },
+    {
+      "name": "鬼索的狂暴之刃",
+      "appear": 4.44,
+      "top4": 50.94,
+      "first": 12.28,
+      "avg": 4.45,
+      "samples": 36993
+    },
+    {
+      "name": "狂徒铠甲",
+      "appear": 4.04,
+      "top4": 55.75,
+      "first": 14.34,
+      "avg": 4.19,
+      "samples": 37464
+    },
+    {
+      "name": "朔极之矛",
+      "appear": 3.45,
+      "top4": 53.25,
+      "first": 14.59,
+      "avg": 4.32,
+      "samples": 29514
+    },
+    {
+      "name": "薄暮法袍",
+      "appear": 3.45,
+      "top4": 52.99,
+      "first": 13.53,
+      "avg": 4.34,
+      "samples": 26160
+    },
+    {
+      "name": "珠光护手",
+      "appear": 3.22,
+      "top4": 53.17,
+      "first": 13.93,
+      "avg": 4.31,
+      "samples": 26832
+    },
+    {
+      "name": "振奋盔甲",
+      "appear": 2.8,
+      "top4": 54.04,
+      "first": 13.5,
+      "avg": 4.29,
+      "samples": 23174
+    },
+    {
+      "name": "红霸符",
+      "appear": 2.41,
+      "top4": 54.82,
+      "first": 15.14,
+      "avg": 4.23,
+      "samples": 18339
+    },
+    {
+      "name": "冕卫",
+      "appear": 2.21,
+      "top4": 56.21,
+      "first": 14.33,
+      "avg": 4.19,
+      "samples": 17839
+    },
+    {
+      "name": "圣盾使的誓约",
+      "appear": 2.15,
+      "top4": 56.28,
+      "first": 14.98,
+      "avg": 4.18,
+      "samples": 17898
+    },
+    {
+      "name": "秘法手套",
+      "appear": 2.1,
+      "top4": 60.79,
+      "first": 17.68,
+      "avg": 3.92,
+      "samples": 18651
+    },
+    {
+      "name": "虚空之杖",
+      "appear": 2.1,
+      "top4": 56.39,
+      "first": 14.54,
+      "avg": 4.14,
+      "samples": 15825
+    },
+    {
+      "name": "锐利之刃",
+      "appear": 2.08,
+      "top4": 55.37,
+      "first": 14.45,
+      "avg": 4.22,
+      "samples": 17163
+    },
+    {
+      "name": "日炎斗篷",
+      "appear": 2.06,
+      "top4": 54.58,
+      "first": 12.82,
+      "avg": 4.26,
+      "samples": 15581
+    },
+    {
+      "name": "最后的轻语",
+      "appear": 2.03,
+      "top4": 53.37,
+      "first": 14.05,
+      "avg": 4.32,
+      "samples": 15301
+    },
+    {
+      "name": "蓝霸符",
+      "appear": 2,
+      "top4": 56,
+      "first": 15.89,
+      "avg": 4.17,
+      "samples": 15981
+    },
+    {
+      "name": "大天使之杖",
+      "appear": 1.68,
+      "top4": 56.97,
+      "first": 13.57,
+      "avg": 4.12,
+      "samples": 16268
+    },
+    {
+      "name": "巨人捕手",
+      "appear": 1.65,
+      "top4": 55.81,
+      "first": 13.96,
+      "avg": 4.18,
+      "samples": 13129
+    },
+    {
+      "name": "适应性头盔",
+      "appear": 1.62,
+      "top4": 56.84,
+      "first": 15.05,
+      "avg": 4.13,
+      "samples": 12988
+    },
+    {
+      "name": "班克斯的魔法帽",
+      "appear": 1.59,
+      "top4": 59.28,
+      "first": 16.59,
+      "avg": 4.02,
+      "samples": 13533
+    },
+    {
+      "name": "斯特拉克的挑战护手",
+      "appear": 1.43,
+      "top4": 60.95,
+      "first": 16.25,
+      "avg": 3.95,
+      "samples": 11277
+    },
+    {
+      "name": "莫雷洛秘典",
+      "appear": 1.26,
+      "top4": 54.47,
+      "first": 14.04,
+      "avg": 4.24,
+      "samples": 9535
+    },
+    {
+      "name": "棘刺背心",
+      "appear": 1.24,
+      "top4": 59.81,
+      "first": 16.18,
+      "avg": 4,
+      "samples": 9582
+    },
+    {
+      "name": "夜之锋刃",
+      "appear": 1.15,
+      "top4": 65.3,
+      "first": 18.57,
+      "avg": 3.71,
+      "samples": 8897
+    },
+    {
+      "name": "坚定之心",
+      "appear": 1.14,
+      "top4": 57.75,
+      "first": 13.77,
+      "avg": 4.1,
+      "samples": 9102
+    },
+    {
+      "name": "正义之手",
+      "appear": 1.09,
+      "top4": 60.7,
+      "first": 15.02,
+      "avg": 3.97,
+      "samples": 10357
+    },
+    {
+      "name": "离子火花",
+      "appear": 1.04,
+      "top4": 61.43,
+      "first": 17.88,
+      "avg": 3.91,
+      "samples": 7853
+    },
+    {
+      "name": "海妖之怒",
+      "appear": 1.02,
+      "top4": 53.94,
+      "first": 13.4,
+      "avg": 4.29,
+      "samples": 7901
+    },
+    {
+      "name": "纳什之牙",
+      "appear": 0.83,
+      "top4": 57,
+      "first": 15.83,
+      "avg": 4.12,
+      "samples": 6551
+    },
+    {
+      "name": "强袭者的链枷",
+      "appear": 0.78,
+      "top4": 58.12,
+      "first": 16.86,
+      "avg": 4.05,
+      "samples": 5979
+    },
+    {
+      "name": "水银",
+      "appear": 0.77,
+      "top4": 63.01,
+      "first": 14.58,
+      "avg": 3.86,
+      "samples": 6020
+    },
+    {
+      "name": "海克斯科技枪刃",
+      "appear": 0.76,
+      "top4": 58.16,
+      "first": 15.2,
+      "avg": 4.07,
+      "samples": 5817
+    },
+    {
+      "name": "巨龙之爪",
+      "appear": 0.65,
+      "top4": 60.05,
+      "first": 15.55,
+      "avg": 4.01,
+      "samples": 4914
+    },
+    {
+      "name": "月蚀骑士纹章",
+      "appear": 0.62,
+      "top4": 55.74,
+      "first": 16.27,
+      "avg": 4.17,
+      "samples": 5248
+    },
+    {
+      "name": "汲取剑",
+      "appear": 0.56,
+      "top4": 64.59,
+      "first": 17.58,
+      "avg": 3.75,
+      "samples": 4278
+    },
+    {
+      "name": "地狱火纹章",
+      "appear": 0.51,
+      "top4": 59.73,
+      "first": 21.28,
+      "avg": 3.92,
+      "samples": 4450
+    },
+    {
+      "name": "巨人腰带",
+      "appear": 0.48,
+      "top4": 46.32,
+      "first": 11.09,
+      "avg": 4.71,
+      "samples": 3571
+    },
+    {
+      "name": "灵魂莲华纹章",
+      "appear": 0.44,
+      "top4": 49.18,
+      "first": 16.01,
+      "avg": 4.45,
+      "samples": 3823
+    },
+    {
+      "name": "泰坦的坚决",
+      "appear": 0.43,
+      "top4": 61.57,
+      "first": 16.01,
+      "avg": 3.9,
+      "samples": 3305
+    },
+    {
+      "name": "斗士纹章",
+      "appear": 0.4,
+      "top4": 58.89,
+      "first": 14.94,
+      "avg": 4.04,
+      "samples": 3126
+    },
+    {
+      "name": "永恒之森纹章",
+      "appear": 0.38,
+      "top4": 49.01,
+      "first": 12.82,
+      "avg": 4.53,
+      "samples": 3246
+    },
+    {
+      "name": "反曲之弓",
+      "appear": 0.35,
+      "top4": 45.79,
+      "first": 10.43,
+      "avg": 4.76,
+      "samples": 2647
+    },
+    {
+      "name": "锁子甲",
+      "appear": 0.34,
+      "top4": 47.93,
+      "first": 10.57,
+      "avg": 4.62,
+      "samples": 2535
+    },
+    {
+      "name": "女神之泪",
+      "appear": 0.31,
+      "top4": 49.17,
+      "first": 11.91,
+      "avg": 4.52,
+      "samples": 2343
+    },
+    {
+      "name": "负极斗篷",
+      "appear": 0.31,
+      "top4": 48.27,
+      "first": 11.6,
+      "avg": 4.61,
+      "samples": 2337
+    },
+    {
+      "name": "重装战士纹章",
+      "appear": 0.3,
+      "top4": 53.94,
+      "first": 14.02,
+      "avg": 4.3,
+      "samples": 2410
+    },
+    {
+      "name": "主宰纹章",
+      "appear": 0.3,
+      "top4": 60.02,
+      "first": 18.9,
+      "avg": 3.88,
+      "samples": 2386
+    },
+    {
+      "name": "暴风之剑",
+      "appear": 0.3,
+      "top4": 45.18,
+      "first": 10.04,
+      "avg": 4.79,
+      "samples": 2251
+    },
+    {
+      "name": "无用大棒",
+      "appear": 0.3,
+      "top4": 44.43,
+      "first": 9.61,
+      "avg": 4.81,
+      "samples": 2237
+    },
+    {
+      "name": "猎人纹章",
+      "appear": 0.29,
+      "top4": 49.08,
+      "first": 14.35,
+      "avg": 4.54,
+      "samples": 2278
+    },
+    {
+      "name": "裁决使纹章",
+      "appear": 0.29,
+      "top4": 49.21,
+      "first": 12.84,
+      "avg": 4.55,
+      "samples": 2266
+    },
+    {
+      "name": "迅捷射手纹章",
+      "appear": 0.28,
+      "top4": 51.65,
+      "first": 11.99,
+      "avg": 4.42,
+      "samples": 2211
+    },
+    {
+      "name": "神谕纹章",
+      "appear": 0.28,
+      "top4": 48.22,
+      "first": 12.44,
+      "avg": 4.55,
+      "samples": 2194
+    },
+    {
+      "name": "金铲铲冠冕",
+      "appear": 0.28,
+      "top4": 58.61,
+      "first": 16.66,
+      "avg": 4.06,
+      "samples": 2143
+    },
+    {
+      "name": "黑荆棘纹章",
+      "appear": 0.25,
+      "top4": 53.2,
+      "first": 12.17,
+      "avg": 4.39,
+      "samples": 2079
+    },
+    {
+      "name": "野兽之灵纹章",
+      "appear": 0.25,
+      "top4": 49.19,
+      "first": 13.19,
+      "avg": 4.51,
+      "samples": 2025
+    },
+    {
+      "name": "绝命花妖纹章",
+      "appear": 0.23,
+      "top4": 51.69,
+      "first": 13.18,
+      "avg": 4.42,
+      "samples": 1776
+    },
+    {
+      "name": "花仙子纹章",
+      "appear": 0.22,
+      "top4": 47.62,
+      "first": 14.59,
+      "avg": 4.59,
+      "samples": 1789
+    },
+    {
+      "name": "拳套",
+      "appear": 0.22,
+      "top4": 44.52,
+      "first": 9.46,
+      "avg": 4.8,
+      "samples": 1680
+    },
+    {
+      "name": "护卫纹章",
+      "appear": 0.19,
+      "top4": 54.1,
+      "first": 15.14,
+      "avg": 4.24,
+      "samples": 1499
+    },
+    {
+      "name": "狂战士纹章",
+      "appear": 0.19,
+      "top4": 55.33,
+      "first": 11.41,
+      "avg": 4.22,
+      "samples": 1473
+    },
+    {
+      "name": "爆破药水",
+      "appear": 0.19,
+      "top4": 62.64,
+      "first": 9.25,
+      "avg": 3.98,
+      "samples": 1416
+    },
+    {
+      "name": "大亨之铠",
+      "appear": 0.18,
+      "top4": 54.23,
+      "first": 16.79,
+      "avg": 4.25,
+      "samples": 1346
+    },
+    {
+      "name": "法师纹章",
+      "appear": 0.16,
+      "top4": 43.46,
+      "first": 11.84,
+      "avg": 4.83,
+      "samples": 1208
+    },
+    {
+      "name": "金锅铲冠冕",
+      "appear": 0.15,
+      "top4": 51.45,
+      "first": 12.48,
+      "avg": 4.4,
+      "samples": 1106
+    },
+    {
+      "name": "魔蕴",
+      "appear": 0.14,
+      "top4": 52.32,
+      "first": 13.38,
+      "avg": 4.31,
+      "samples": 1076
+    },
+    {
+      "name": "暗行者之爪",
+      "appear": 0.13,
+      "top4": 79.92,
+      "first": 22.82,
+      "avg": 2.99,
+      "samples": 986
+    },
+    {
+      "name": "光盾徽章",
+      "appear": 0.12,
+      "top4": 58.79,
+      "first": 15.21,
+      "avg": 4.03,
+      "samples": 927
+    },
+    {
+      "name": "投机者之刃",
+      "appear": 0.12,
+      "top4": 54.05,
+      "first": 17.69,
+      "avg": 4.24,
+      "samples": 927
+    },
+    {
+      "name": "顽强不屈",
+      "appear": 0.12,
+      "top4": 54.96,
+      "first": 11.23,
+      "avg": 4.26,
+      "samples": 917
+    },
+    {
+      "name": "约德尔人和朋友纹章",
+      "appear": 0.12,
+      "top4": 43.26,
+      "first": 10.93,
+      "avg": 4.83,
+      "samples": 897
+    },
+    {
+      "name": "纳沃利烁刃",
+      "appear": 0.11,
+      "top4": 49.23,
+      "first": 10.72,
+      "avg": 4.55,
+      "samples": 849
+    },
+    {
+      "name": "疾射火炮",
+      "appear": 0.11,
+      "top4": 54.89,
+      "first": 11.25,
+      "avg": 4.26,
+      "samples": 818
+    },
+    {
+      "name": "光明版秘法手套",
+      "appear": 0.1,
+      "top4": 64.98,
+      "first": 28.14,
+      "avg": 3.59,
+      "samples": 988
+    },
+    {
+      "name": "魔女纹章",
+      "appear": 0.1,
+      "top4": 35.63,
+      "first": 8.34,
+      "avg": 5.34,
+      "samples": 755
+    },
+    {
+      "name": "金币收集者",
+      "appear": 0.1,
+      "top4": 54.46,
+      "first": 15.09,
+      "avg": 4.22,
+      "samples": 729
+    },
+    {
+      "name": "光明版鬼索的狂暴之刃",
+      "appear": 0.09,
+      "top4": 50.14,
+      "first": 11.44,
+      "avg": 4.54,
+      "samples": 708
+    },
+    {
+      "name": "黎明核心",
+      "appear": 0.09,
+      "top4": 50.07,
+      "first": 11.86,
+      "avg": 4.53,
+      "samples": 683
+    },
+    {
+      "name": "探索者的护臂",
+      "appear": 0.09,
+      "top4": 54.56,
+      "first": 14.37,
+      "avg": 4.3,
+      "samples": 647
+    },
+    {
+      "name": "黎明圣盾",
+      "appear": 0.09,
+      "top4": 53.45,
+      "first": 11.29,
+      "avg": 4.39,
+      "samples": 638
+    },
+    {
+      "name": "卢登的激荡",
+      "appear": 0.08,
+      "top4": 55.33,
+      "first": 12.01,
+      "avg": 4.26,
+      "samples": 591
+    },
+    {
+      "name": "连指手套",
+      "appear": 0.08,
+      "top4": 58.06,
+      "first": 12.73,
+      "avg": 4.14,
+      "samples": 589
+    },
+    {
+      "name": "光明版锐利之刃",
+      "appear": 0.08,
+      "top4": 57,
+      "first": 17.75,
+      "avg": 4.06,
+      "samples": 586
+    },
+    {
+      "name": "永恒契约",
+      "appear": 0.08,
+      "top4": 61.01,
+      "first": 16.64,
+      "avg": 3.98,
+      "samples": 577
+    },
+    {
+      "name": "光明版无尽之刃",
+      "appear": 0.07,
+      "top4": 55.2,
+      "first": 17,
+      "avg": 4.21,
+      "samples": 500
+    },
+    {
+      "name": "鱼骨头",
+      "appear": 0.07,
+      "top4": 54.31,
+      "first": 9.02,
+      "avg": 4.38,
+      "samples": 499
+    },
+    {
+      "name": "碎舰者",
+      "appear": 0.06,
+      "top4": 53.62,
+      "first": 9.32,
+      "avg": 4.38,
+      "samples": 483
+    },
+    {
+      "name": "光明版爆破药水",
+      "appear": 0.06,
+      "top4": 62.14,
+      "first": 12.47,
+      "avg": 3.9,
+      "samples": 457
+    },
+    {
+      "name": "密银黎明",
+      "appear": 0.06,
+      "top4": 56.88,
+      "first": 16.93,
+      "avg": 4.17,
+      "samples": 443
+    },
+    {
+      "name": "斯塔缇克电刃",
+      "appear": 0.05,
+      "top4": 57.04,
+      "first": 16.3,
+      "avg": 4.14,
+      "samples": 405
+    },
+    {
+      "name": "光明版蓝霸符",
+      "appear": 0.05,
+      "top4": 53.65,
+      "first": 18.49,
+      "avg": 4.26,
+      "samples": 384
+    },
+    {
+      "name": "光明版巨人捕手",
+      "appear": 0.05,
+      "top4": 60.61,
+      "first": 18.16,
+      "avg": 3.95,
+      "samples": 358
+    },
+    {
+      "name": "中娅悖论",
+      "appear": 0.05,
+      "top4": 60.8,
+      "first": 16.19,
+      "avg": 3.96,
+      "samples": 352
+    },
+    {
+      "name": "死亡之蔑",
+      "appear": 0.05,
+      "top4": 62.29,
+      "first": 12.86,
+      "avg": 3.95,
+      "samples": 350
+    },
+    {
+      "name": "绝命花妖纹章",
+      "appear": 0.05,
+      "top4": 48.12,
+      "first": 5.8,
+      "avg": 4.62,
+      "samples": 345
+    },
+    {
+      "name": "虚空护手",
+      "appear": 0.05,
+      "top4": 49.85,
+      "first": 14.96,
+      "avg": 4.4,
+      "samples": 341
+    },
+    {
+      "name": "光明版狂徒铠甲",
+      "appear": 0.05,
+      "top4": 56.38,
+      "first": 16.02,
+      "avg": 4.15,
+      "samples": 337
+    },
+    {
+      "name": "光明版石像鬼石板甲",
+      "appear": 0.04,
+      "top4": 49.68,
+      "first": 12.82,
+      "avg": 4.43,
+      "samples": 312
+    },
+    {
+      "name": "黄昏圣盾",
+      "appear": 0.04,
+      "top4": 49.03,
+      "first": 12.99,
+      "avg": 4.5,
+      "samples": 308
+    },
+    {
+      "name": "三相之力",
+      "appear": 0.04,
+      "top4": 53.92,
+      "first": 15.36,
+      "avg": 4.22,
+      "samples": 306
+    },
+    {
+      "name": "巨型九头蛇",
+      "appear": 0.04,
+      "top4": 51.75,
+      "first": 8.39,
+      "avg": 4.57,
+      "samples": 286
+    },
+    {
+      "name": "枯萎珠宝",
+      "appear": 0.04,
+      "top4": 41.75,
+      "first": 11.58,
+      "avg": 4.83,
+      "samples": 285
+    },
+    {
+      "name": "禁忌雕像",
+      "appear": 0.04,
+      "top4": 48.9,
+      "first": 9.19,
+      "avg": 4.67,
+      "samples": 272
+    },
+    {
+      "name": "光明版正义之手",
+      "appear": 0.04,
+      "top4": 65.3,
+      "first": 16.04,
+      "avg": 3.85,
+      "samples": 268
+    },
+    {
+      "name": "智慧末刃",
+      "appear": 0.04,
+      "top4": 55.22,
+      "first": 16.04,
+      "avg": 4.23,
+      "samples": 268
+    },
+    {
+      "name": "光明版朔极之矛",
+      "appear": 0.04,
+      "top4": 56.55,
+      "first": 14.61,
+      "avg": 4.15,
+      "samples": 267
+    },
+    {
+      "name": "恶火小斧",
+      "appear": 0.04,
+      "top4": 55.26,
+      "first": 11.28,
+      "avg": 4.24,
+      "samples": 266
+    },
+    {
+      "name": "光明版班克斯的魔法帽",
+      "appear": 0.03,
+      "top4": 54.62,
+      "first": 13.85,
+      "avg": 4.27,
+      "samples": 260
+    },
+    {
+      "name": "生命药水",
+      "appear": 0.03,
+      "top4": 94.42,
+      "first": 76.89,
+      "avg": 1.62,
+      "samples": 251
+    },
+    {
+      "name": "巫妖之祸",
+      "appear": 0.03,
+      "top4": 57.26,
+      "first": 12.1,
+      "avg": 4.06,
+      "samples": 248
+    },
+    {
+      "name": "飞升护符",
+      "appear": 0.03,
+      "top4": 47.39,
+      "first": 13.04,
+      "avg": 4.48,
+      "samples": 230
+    },
+    {
+      "name": "光明版珠光护手",
+      "appear": 0.03,
+      "top4": 55.66,
+      "first": 13.12,
+      "avg": 4.21,
+      "samples": 221
+    },
+    {
+      "name": "法力药水",
+      "appear": 0.03,
+      "top4": 72.22,
+      "first": 13.43,
+      "avg": 3.55,
+      "samples": 216
+    },
+    {
+      "name": "视界专注",
+      "appear": 0.03,
+      "top4": 49.24,
+      "first": 12.18,
+      "avg": 4.5,
+      "samples": 197
+    },
+    {
+      "name": "光明版海妖之怒",
+      "appear": 0.03,
+      "top4": 58.67,
+      "first": 14.29,
+      "avg": 4.25,
+      "samples": 196
+    },
+    {
+      "name": "光明版振奋盔甲",
+      "appear": 0.03,
+      "top4": 48.95,
+      "first": 15.26,
+      "avg": 4.52,
+      "samples": 190
+    },
+    {
+      "name": "光明版最后的轻语",
+      "appear": 0.02,
+      "top4": 48.84,
+      "first": 18.02,
+      "avg": 4.35,
+      "samples": 172
+    },
+    {
+      "name": "光明版强袭者的链枷",
+      "appear": 0.02,
+      "top4": 52.5,
+      "first": 16.88,
+      "avg": 4.3,
+      "samples": 160
+    },
+    {
+      "name": "光明版适应性头盔",
+      "appear": 0.02,
+      "top4": 55.94,
+      "first": 19.58,
+      "avg": 4.09,
+      "samples": 143
+    },
+    {
+      "name": "金锅锅冠冕",
+      "appear": 0.02,
+      "top4": 56.25,
+      "first": 28.13,
+      "avg": 3.9,
+      "samples": 128
+    },
+    {
+      "name": "光明版红霸符",
+      "appear": 0.02,
+      "top4": 58.54,
+      "first": 15.45,
+      "avg": 4.03,
+      "samples": 123
+    },
+    {
+      "name": "金铲铲",
+      "appear": 0.02,
+      "top4": 30.25,
+      "first": 6.72,
+      "avg": 5.89,
+      "samples": 119
+    },
+    {
+      "name": "光明版虚空之杖",
+      "appear": 0.01,
+      "top4": 49.55,
+      "first": 12.61,
+      "avg": 4.49,
+      "samples": 111
+    },
+    {
+      "name": "光明版水银",
+      "appear": 0.01,
+      "top4": 52.83,
+      "first": 13.21,
+      "avg": 4.38,
+      "samples": 106
+    },
+    {
+      "name": "光明版夜之锋刃",
+      "appear": 0.01,
+      "top4": 56.84,
+      "first": 23.16,
+      "avg": 3.85,
+      "samples": 95
+    },
+    {
+      "name": "光明版斯特拉克的挑战护手",
+      "appear": 0.01,
+      "top4": 59.57,
+      "first": 17.02,
+      "avg": 4.15,
+      "samples": 94
+    },
+    {
+      "name": "光明版棘刺背心",
+      "appear": 0.01,
+      "top4": 50.55,
+      "first": 12.09,
+      "avg": 4.55,
+      "samples": 91
+    },
+    {
+      "name": "光明版纳什之牙",
+      "appear": 0.01,
+      "top4": 47.78,
+      "first": 13.33,
+      "avg": 4.52,
+      "samples": 90
+    },
+    {
+      "name": "光明版大天使之杖",
+      "appear": 0.01,
+      "top4": 51.14,
+      "first": 10.23,
+      "avg": 4.52,
+      "samples": 88
+    },
+    {
+      "name": "光明版圣盾使的誓约",
+      "appear": 0.01,
+      "top4": 56.47,
+      "first": 18.82,
+      "avg": 4.31,
+      "samples": 85
+    },
+    {
+      "name": "光明版冕卫",
+      "appear": 0.01,
+      "top4": 57.83,
+      "first": 13.25,
+      "avg": 4.18,
+      "samples": 83
+    },
+    {
+      "name": "光明版坚定之心",
+      "appear": 0.01,
+      "top4": 41.77,
+      "first": 12.66,
+      "avg": 4.8,
+      "samples": 79
+    },
+    {
+      "name": "光明版生命药水",
+      "appear": 0.01,
+      "top4": 100,
+      "first": 93.06,
+      "avg": 1.13,
+      "samples": 72
+    },
+    {
+      "name": "光明版海克斯科技枪刃",
+      "appear": 0.01,
+      "top4": 57.14,
+      "first": 16.07,
+      "avg": 4.11,
+      "samples": 56
+    },
+    {
+      "name": "金锅锅",
+      "appear": 0.01,
+      "top4": 12.73,
+      "first": 5.45,
+      "avg": 6.56,
+      "samples": 55
+    },
+    {
+      "name": "光明版薄暮法袍",
+      "appear": 0.01,
+      "top4": 46.94,
+      "first": 6.12,
+      "avg": 4.55,
+      "samples": 49
+    },
+    {
+      "name": "光明版泰坦的坚决",
+      "appear": 0.01,
+      "top4": 54.35,
+      "first": 10.87,
+      "avg": 4.17,
+      "samples": 46
+    },
+    {
+      "name": "光明版莫雷洛秘典",
+      "appear": 0.01,
+      "top4": 54.55,
+      "first": 18.18,
+      "avg": 4.36,
+      "samples": 44
+    },
+    {
+      "name": "光明版日炎斗篷",
+      "appear": 0.01,
+      "top4": 48.84,
+      "first": 18.6,
+      "avg": 4.53,
+      "samples": 43
+    },
+    {
+      "name": "光明版法力药水",
+      "appear": 0.01,
+      "top4": 57.5,
+      "first": 22.5,
+      "avg": 3.75,
+      "samples": 40
+    }
+  ],
+  "augments": [
+    {
+      "name": "便携锻炉",
+      "appear": 0.62,
+      "top4": 53.48,
+      "first": 11.59,
+      "avg": 4.34,
+      "samples": 4624
+    },
+    {
+      "name": "飞升",
+      "appear": 0.61,
+      "top4": 52.82,
+      "first": 12.66,
+      "avg": 4.34,
+      "samples": 4534
+    },
+    {
+      "name": "厨神阿福",
+      "appear": 0.53,
+      "top4": 53.75,
+      "first": 17.1,
+      "avg": 4.28,
+      "samples": 3976
+    },
+    {
+      "name": "大百宝袋",
+      "appear": 0.52,
+      "top4": 51.11,
+      "first": 11.41,
+      "avg": 4.46,
+      "samples": 3884
+    },
+    {
+      "name": "双城赢家",
+      "appear": 0.45,
+      "top4": 48.41,
+      "first": 9.8,
+      "avg": 4.59,
+      "samples": 3328
+    },
+    {
+      "name": "嘀嘀街区",
+      "appear": 0.37,
+      "top4": 51.93,
+      "first": 13.22,
+      "avg": 4.37,
+      "samples": 2769
+    },
+    {
+      "name": "专属定制",
+      "appear": 0.36,
+      "top4": 48.75,
+      "first": 10.08,
+      "avg": 4.59,
+      "samples": 2718
+    },
+    {
+      "name": "扩展包++",
+      "appear": 0.36,
+      "top4": 45.63,
+      "first": 11.93,
+      "avg": 4.7,
+      "samples": 2698
+    },
+    {
+      "name": "蔓延之根",
+      "appear": 0.35,
+      "top4": 50.04,
+      "first": 14.95,
+      "avg": 4.52,
+      "samples": 2576
+    },
+    {
+      "name": "部分飞升",
+      "appear": 0.32,
+      "top4": 50.83,
+      "first": 10.72,
+      "avg": 4.49,
+      "samples": 2398
+    },
+    {
+      "name": "双排",
+      "appear": 0.32,
+      "top4": 50.08,
+      "first": 12.9,
+      "avg": 4.51,
+      "samples": 2388
+    },
+    {
+      "name": "欧米茄之怪",
+      "appear": 0.31,
+      "top4": 65.11,
+      "first": 16.63,
+      "avg": 3.73,
+      "samples": 2333
+    },
+    {
+      "name": "嘀个痛快！ I",
+      "appear": 0.28,
+      "top4": 48.75,
+      "first": 12.51,
+      "avg": 4.55,
+      "samples": 2078
+    },
+    {
+      "name": "光明圣物",
+      "appear": 0.28,
+      "top4": 52.11,
+      "first": 9.16,
+      "avg": 4.42,
+      "samples": 2063
+    },
+    {
+      "name": "杖之工匠",
+      "appear": 0.27,
+      "top4": 52.87,
+      "first": 12.75,
+      "avg": 4.35,
+      "samples": 1984
+    },
+    {
+      "name": "小小福袋",
+      "appear": 0.26,
+      "top4": 53.01,
+      "first": 10.51,
+      "avg": 4.39,
+      "samples": 1960
+    },
+    {
+      "name": "灵魂唤醒",
+      "appear": 0.26,
+      "top4": 50.55,
+      "first": 9.13,
+      "avg": 4.5,
+      "samples": 1917
+    },
+    {
+      "name": "男爵幻域",
+      "appear": 0.26,
+      "top4": 47.36,
+      "first": 9.42,
+      "avg": 4.62,
+      "samples": 1911
+    },
+    {
+      "name": "阿福的百宝袋",
+      "appear": 0.26,
+      "top4": 53.94,
+      "first": 15.81,
+      "avg": 4.22,
+      "samples": 1904
+    },
+    {
+      "name": "单身板甲",
+      "appear": 0.24,
+      "top4": 52.87,
+      "first": 12.12,
+      "avg": 4.38,
+      "samples": 1757
+    },
+    {
+      "name": "剑之工匠",
+      "appear": 0.23,
+      "top4": 48.94,
+      "first": 14.07,
+      "avg": 4.51,
+      "samples": 1692
+    },
+    {
+      "name": "英勇福袋++",
+      "appear": 0.22,
+      "top4": 51.11,
+      "first": 10.38,
+      "avg": 4.44,
+      "samples": 1667
+    },
+    {
+      "name": "混沌召唤",
+      "appear": 0.22,
+      "top4": 47.57,
+      "first": 13.09,
+      "avg": 4.59,
+      "samples": 1627
+    },
+    {
+      "name": "加冕礼",
+      "appear": 0.21,
+      "top4": 52.14,
+      "first": 12.84,
+      "avg": 4.38,
+      "samples": 1565
+    },
+    {
+      "name": "炽天使之拥",
+      "appear": 0.21,
+      "top4": 52.21,
+      "first": 10.63,
+      "avg": 4.34,
+      "samples": 1561
+    },
+    {
+      "name": "女巫使魔",
+      "appear": 0.21,
+      "top4": 42.01,
+      "first": 13.6,
+      "avg": 4.85,
+      "samples": 1559
+    },
+    {
+      "name": "纵深 II",
+      "appear": 0.2,
+      "top4": 63.99,
+      "first": 17.38,
+      "avg": 3.76,
+      "samples": 1519
+    },
+    {
+      "name": "顶尖构筑",
+      "appear": 0.2,
+      "top4": 46.12,
+      "first": 17.05,
+      "avg": 4.66,
+      "samples": 1507
+    },
+    {
+      "name": "玻璃大炮 II",
+      "appear": 0.2,
+      "top4": 52.18,
+      "first": 10.15,
+      "avg": 4.42,
+      "samples": 1468
+    },
+    {
+      "name": "反响",
+      "appear": 0.2,
+      "top4": 49.72,
+      "first": 10.25,
+      "avg": 4.5,
+      "samples": 1454
+    },
+    {
+      "name": "镀金钢铁",
+      "appear": 0.19,
+      "top4": 44.35,
+      "first": 13.5,
+      "avg": 4.75,
+      "samples": 1452
+    },
+    {
+      "name": "别再错过",
+      "appear": 0.19,
+      "top4": 56.56,
+      "first": 14.6,
+      "avg": 4.14,
+      "samples": 1425
+    },
+    {
+      "name": "黄金命运",
+      "appear": 0.19,
+      "top4": 50.25,
+      "first": 11.84,
+      "avg": 4.51,
+      "samples": 1419
+    },
+    {
+      "name": "嘀嘀街区加强版",
+      "appear": 0.19,
+      "top4": 50.5,
+      "first": 14.52,
+      "avg": 4.46,
+      "samples": 1412
+    },
+    {
+      "name": "强化之能量",
+      "appear": 0.18,
+      "top4": 43.95,
+      "first": 10.49,
+      "avg": 4.85,
+      "samples": 1363
+    },
+    {
+      "name": "节外生枝+",
+      "appear": 0.18,
+      "top4": 49.18,
+      "first": 12.59,
+      "avg": 4.54,
+      "samples": 1334
+    },
+    {
+      "name": "魔法投掷",
+      "appear": 0.18,
+      "top4": 52.09,
+      "first": 13.52,
+      "avg": 4.36,
+      "samples": 1317
+    },
+    {
+      "name": "棱彩命运+",
+      "appear": 0.17,
+      "top4": 52.68,
+      "first": 15.51,
+      "avg": 4.33,
+      "samples": 1251
+    },
+    {
+      "name": "腰带溢流",
+      "appear": 0.17,
+      "top4": 53.98,
+      "first": 10.22,
+      "avg": 4.33,
+      "samples": 1243
+    },
+    {
+      "name": "弑君突刺",
+      "appear": 0.16,
+      "top4": 46.06,
+      "first": 16.53,
+      "avg": 4.7,
+      "samples": 1192
+    },
+    {
+      "name": "珠光莲花 I",
+      "appear": 0.16,
+      "top4": 51.43,
+      "first": 14.14,
+      "avg": 4.4,
+      "samples": 1188
+    },
+    {
+      "name": "资本利得 II",
+      "appear": 0.16,
+      "top4": 50.26,
+      "first": 12.84,
+      "avg": 4.47,
+      "samples": 1176
+    },
+    {
+      "name": "纷乱头脑",
+      "appear": 0.16,
+      "top4": 48.24,
+      "first": 13.16,
+      "avg": 4.58,
+      "samples": 1163
+    },
+    {
+      "name": "蔓延之根+",
+      "appear": 0.15,
+      "top4": 47.88,
+      "first": 14.14,
+      "avg": 4.58,
+      "samples": 1153
+    },
+    {
+      "name": "纹章树+",
+      "appear": 0.15,
+      "top4": 48.22,
+      "first": 12.45,
+      "avg": 4.54,
+      "samples": 1149
+    },
+    {
+      "name": "金色炊具",
+      "appear": 0.15,
+      "top4": 54.76,
+      "first": 15.73,
+      "avg": 4.24,
+      "samples": 1125
+    },
+    {
+      "name": "终身黄铜 I",
+      "appear": 0.15,
+      "top4": 48.29,
+      "first": 8.09,
+      "avg": 4.68,
+      "samples": 1112
+    },
+    {
+      "name": "弈子配送+",
+      "appear": 0.15,
+      "top4": 50,
+      "first": 12.55,
+      "avg": 4.46,
+      "samples": 1108
+    },
+    {
+      "name": "纹章树",
+      "appear": 0.15,
+      "top4": 46.01,
+      "first": 9.89,
+      "avg": 4.74,
+      "samples": 1102
+    },
+    {
+      "name": "一波带走俩",
+      "appear": 0.15,
+      "top4": 50.36,
+      "first": 12.66,
+      "avg": 4.58,
+      "samples": 1098
+    },
+    {
+      "name": "宝宝学院",
+      "appear": 0.15,
+      "top4": 54.29,
+      "first": 14.51,
+      "avg": 4.28,
+      "samples": 1096
+    },
+    {
+      "name": "正义报复",
+      "appear": 0.14,
+      "top4": 56.4,
+      "first": 12.89,
+      "avg": 4.24,
+      "samples": 1078
+    },
+    {
+      "name": "轻量魔法投掷",
+      "appear": 0.14,
+      "top4": 49.54,
+      "first": 12.06,
+      "avg": 4.54,
+      "samples": 1078
+    },
+    {
+      "name": "贸易中心",
+      "appear": 0.14,
+      "top4": 46.42,
+      "first": 16.62,
+      "avg": 4.61,
+      "samples": 1047
+    },
+    {
+      "name": "黄金赌约++",
+      "appear": 0.14,
+      "top4": 51.72,
+      "first": 9.96,
+      "avg": 4.47,
+      "samples": 1044
+    },
+    {
+      "name": "金鳞精粹",
+      "appear": 0.14,
+      "top4": 61.12,
+      "first": 19.25,
+      "avg": 3.91,
+      "samples": 1039
+    },
+    {
+      "name": "白银命运+",
+      "appear": 0.14,
+      "top4": 52.78,
+      "first": 15.77,
+      "avg": 4.33,
+      "samples": 1027
+    },
+    {
+      "name": "装备百宝袋 I",
+      "appear": 0.14,
+      "top4": 51.36,
+      "first": 12.57,
+      "avg": 4.39,
+      "samples": 1026
+    },
+    {
+      "name": "8级嘀干的传说",
+      "appear": 0.14,
+      "top4": 49.51,
+      "first": 13.35,
+      "avg": 4.59,
+      "samples": 1026
+    },
+    {
+      "name": "1个霸符，2个霸符",
+      "appear": 0.14,
+      "top4": 46.71,
+      "first": 14.95,
+      "avg": 4.55,
+      "samples": 1017
+    },
+    {
+      "name": "打捞桶+",
+      "appear": 0.13,
+      "top4": 51.57,
+      "first": 10.62,
+      "avg": 4.53,
+      "samples": 989
+    },
+    {
+      "name": "挑战者的优雅",
+      "appear": 0.13,
+      "top4": 50.47,
+      "first": 9.35,
+      "avg": 4.52,
+      "samples": 963
+    },
+    {
+      "name": "手气不错",
+      "appear": 0.13,
+      "top4": 46.46,
+      "first": 10.79,
+      "avg": 4.71,
+      "samples": 945
+    },
+    {
+      "name": "投资+",
+      "appear": 0.13,
+      "top4": 42.86,
+      "first": 15.67,
+      "avg": 4.84,
+      "samples": 938
+    },
+    {
+      "name": "砍价高手",
+      "appear": 0.13,
+      "top4": 47.8,
+      "first": 15.43,
+      "avg": 4.56,
+      "samples": 933
+    },
+    {
+      "name": "生日聚会",
+      "appear": 0.12,
+      "top4": 39.46,
+      "first": 14.73,
+      "avg": 5.03,
+      "samples": 930
+    },
+    {
+      "name": "耐心学习",
+      "appear": 0.12,
+      "top4": 44.13,
+      "first": 12.61,
+      "avg": 4.72,
+      "samples": 920
+    },
+    {
+      "name": "源计划上行链路",
+      "appear": 0.12,
+      "top4": 55.99,
+      "first": 13.83,
+      "avg": 4.22,
+      "samples": 918
+    },
+    {
+      "name": "黄金命运+",
+      "appear": 0.12,
+      "top4": 51.05,
+      "first": 13.78,
+      "avg": 4.46,
+      "samples": 907
+    },
+    {
+      "name": "爆炸式增长+",
+      "appear": 0.12,
+      "top4": 48.21,
+      "first": 15.21,
+      "avg": 4.61,
+      "samples": 894
+    },
+    {
+      "name": "团队建设",
+      "appear": 0.12,
+      "top4": 50.34,
+      "first": 8.97,
+      "avg": 4.51,
+      "samples": 892
+    },
+    {
+      "name": "前线地基",
+      "appear": 0.12,
+      "top4": 48.65,
+      "first": 8.74,
+      "avg": 4.58,
+      "samples": 892
+    },
+    {
+      "name": "兽性本能",
+      "appear": 0.12,
+      "top4": 46.74,
+      "first": 11.91,
+      "avg": 4.68,
+      "samples": 890
+    },
+    {
+      "name": "黄金赌约+",
+      "appear": 0.12,
+      "top4": 51.47,
+      "first": 10.07,
+      "avg": 4.43,
+      "samples": 884
+    },
+    {
+      "name": "节外生枝",
+      "appear": 0.12,
+      "top4": 45.24,
+      "first": 10.44,
+      "avg": 4.72,
+      "samples": 862
+    },
+    {
+      "name": "终身黄铜 II",
+      "appear": 0.11,
+      "top4": 42.11,
+      "first": 7.18,
+      "avg": 4.91,
+      "samples": 836
+    },
+    {
+      "name": "救赎盔甲",
+      "appear": 0.11,
+      "top4": 48.5,
+      "first": 9.36,
+      "avg": 4.55,
+      "samples": 833
+    },
+    {
+      "name": "纵深 III",
+      "appear": 0.11,
+      "top4": 65.22,
+      "first": 20.34,
+      "avg": 3.66,
+      "samples": 831
+    },
+    {
+      "name": "扩展包+",
+      "appear": 0.11,
+      "top4": 46.25,
+      "first": 13.32,
+      "avg": 4.6,
+      "samples": 826
+    },
+    {
+      "name": "潘朵拉的装备 III",
+      "appear": 0.11,
+      "top4": 50.74,
+      "first": 10.57,
+      "avg": 4.47,
+      "samples": 814
+    },
+    {
+      "name": "爆炸式增长",
+      "appear": 0.11,
+      "top4": 45.59,
+      "first": 13.15,
+      "avg": 4.65,
+      "samples": 783
+    },
+    {
+      "name": "大而有力",
+      "appear": 0.1,
+      "top4": 52.08,
+      "first": 12.08,
+      "avg": 4.4,
+      "samples": 770
+    },
+    {
+      "name": "后期收益",
+      "appear": 0.1,
+      "top4": 40.92,
+      "first": 18.03,
+      "avg": 4.99,
+      "samples": 760
+    },
+    {
+      "name": "锅铲厨房",
+      "appear": 0.1,
+      "top4": 48.67,
+      "first": 9.31,
+      "avg": 4.55,
+      "samples": 752
+    },
+    {
+      "name": "成吨的属性！",
+      "appear": 0.1,
+      "top4": 50.27,
+      "first": 11.33,
+      "avg": 4.45,
+      "samples": 750
+    },
+    {
+      "name": "仙灵报恩",
+      "appear": 0.1,
+      "top4": 51.76,
+      "first": 17.03,
+      "avg": 4.38,
+      "samples": 740
+    },
+    {
+      "name": "摇钱树",
+      "appear": 0.1,
+      "top4": 43.54,
+      "first": 14.97,
+      "avg": 4.87,
+      "samples": 735
+    },
+    {
+      "name": "奢侈品订购",
+      "appear": 0.1,
+      "top4": 40.65,
+      "first": 12.96,
+      "avg": 5.05,
+      "samples": 733
+    },
+    {
+      "name": "潘朵拉的装备 I",
+      "appear": 0.1,
+      "top4": 50.96,
+      "first": 12.43,
+      "avg": 4.42,
+      "samples": 732
+    },
+    {
+      "name": "物尽其用",
+      "appear": 0.1,
+      "top4": 44.02,
+      "first": 10.18,
+      "avg": 4.75,
+      "samples": 727
+    },
+    {
+      "name": "纵深 I",
+      "appear": 0.1,
+      "top4": 60.25,
+      "first": 16.6,
+      "avg": 3.92,
+      "samples": 717
+    },
+    {
+      "name": "征战之路",
+      "appear": 0.1,
+      "top4": 52.1,
+      "first": 19.75,
+      "avg": 4.26,
+      "samples": 714
+    },
+    {
+      "name": "发条增速器",
+      "appear": 0.1,
+      "top4": 53.23,
+      "first": 11.52,
+      "avg": 4.33,
+      "samples": 712
+    },
+    {
+      "name": "时间跳跃",
+      "appear": 0.09,
+      "top4": 49.57,
+      "first": 8.95,
+      "avg": 4.58,
+      "samples": 704
+    },
+    {
+      "name": "投资++",
+      "appear": 0.09,
+      "top4": 42.28,
+      "first": 13.56,
+      "avg": 4.85,
+      "samples": 693
+    },
+    {
+      "name": "资本利得 I",
+      "appear": 0.09,
+      "top4": 55.36,
+      "first": 16.23,
+      "avg": 4.21,
+      "samples": 690
+    },
+    {
+      "name": "后排蓝图",
+      "appear": 0.09,
+      "top4": 40.14,
+      "first": 5.65,
+      "avg": 5.04,
+      "samples": 690
+    },
+    {
+      "name": "大买特买",
+      "appear": 0.09,
+      "top4": 55.25,
+      "first": 19.39,
+      "avg": 4.15,
+      "samples": 686
+    },
+    {
+      "name": "棱彩命运",
+      "appear": 0.09,
+      "top4": 48.1,
+      "first": 10.09,
+      "avg": 4.61,
+      "samples": 684
+    },
+    {
+      "name": "玻璃大炮 I",
+      "appear": 0.09,
+      "top4": 47.57,
+      "first": 8.84,
+      "avg": 4.72,
+      "samples": 679
+    },
+    {
+      "name": "珠光莲花 II",
+      "appear": 0.09,
+      "top4": 55.24,
+      "first": 11.98,
+      "avg": 4.41,
+      "samples": 668
+    },
+    {
+      "name": "锻造器套娃",
+      "appear": 0.09,
+      "top4": 50.91,
+      "first": 10.12,
+      "avg": 4.53,
+      "samples": 662
+    },
+    {
+      "name": "灵活摇摆",
+      "appear": 0.09,
+      "top4": 40.71,
+      "first": 12.9,
+      "avg": 4.92,
+      "samples": 651
+    },
+    {
+      "name": "更要命的帽子",
+      "appear": 0.09,
+      "top4": 64.51,
+      "first": 25.31,
+      "avg": 3.66,
+      "samples": 648
+    },
+    {
+      "name": "锻造器套娃+",
+      "appear": 0.09,
+      "top4": 42.95,
+      "first": 8.22,
+      "avg": 4.87,
+      "samples": 645
+    },
+    {
+      "name": "扩展包",
+      "appear": 0.09,
+      "top4": 40.19,
+      "first": 7.94,
+      "avg": 4.92,
+      "samples": 642
+    },
+    {
+      "name": "白银命运",
+      "appear": 0.09,
+      "top4": 51.01,
+      "first": 13.57,
+      "avg": 4.44,
+      "samples": 641
+    },
+    {
+      "name": "获得21金币",
+      "appear": 0.09,
+      "top4": 42.41,
+      "first": 10.02,
+      "avg": 4.89,
+      "samples": 639
+    },
+    {
+      "name": "源计划植入",
+      "appear": 0.09,
+      "top4": 51.1,
+      "first": 10.69,
+      "avg": 4.39,
+      "samples": 636
+    },
+    {
+      "name": "棱彩门票",
+      "appear": 0.08,
+      "top4": 46.43,
+      "first": 12.84,
+      "avg": 4.62,
+      "samples": 631
+    },
+    {
+      "name": "双子守护神",
+      "appear": 0.08,
+      "top4": 53.17,
+      "first": 13.17,
+      "avg": 4.38,
+      "samples": 630
+    },
+    {
+      "name": "升级咯！",
+      "appear": 0.08,
+      "top4": 38.86,
+      "first": 10.24,
+      "avg": 5.19,
+      "samples": 615
+    },
+    {
+      "name": "物尽其用+",
+      "appear": 0.08,
+      "top4": 42.83,
+      "first": 13.17,
+      "avg": 4.82,
+      "samples": 600
+    },
+    {
+      "name": "大剑溢流",
+      "appear": 0.08,
+      "top4": 52.61,
+      "first": 9.95,
+      "avg": 4.44,
+      "samples": 593
+    },
+    {
+      "name": "星界赐福 II",
+      "appear": 0.08,
+      "top4": 49.83,
+      "first": 15.93,
+      "avg": 4.45,
+      "samples": 590
+    },
+    {
+      "name": "创世神",
+      "appear": 0.08,
+      "top4": 52.46,
+      "first": 18.68,
+      "avg": 4.35,
+      "samples": 589
+    },
+    {
+      "name": "英勇福袋+",
+      "appear": 0.08,
+      "top4": 48.88,
+      "first": 9.15,
+      "avg": 4.52,
+      "samples": 579
+    },
+    {
+      "name": "是我，宝贝！",
+      "appear": 0.08,
+      "top4": 49.82,
+      "first": 9.04,
+      "avg": 4.6,
+      "samples": 564
+    },
+    {
+      "name": "治疗法球 II",
+      "appear": 0.08,
+      "top4": 49.38,
+      "first": 9.06,
+      "avg": 4.57,
+      "samples": 563
+    },
+    {
+      "name": "不侦察，不变阵",
+      "appear": 0.07,
+      "top4": 52.42,
+      "first": 16.46,
+      "avg": 4.4,
+      "samples": 559
+    },
+    {
+      "name": "三幻神",
+      "appear": 0.07,
+      "top4": 47.67,
+      "first": 11.47,
+      "avg": 4.62,
+      "samples": 558
+    },
+    {
+      "name": "潘朵拉的备战席",
+      "appear": 0.07,
+      "top4": 39.61,
+      "first": 11.29,
+      "avg": 4.92,
+      "samples": 558
+    },
+    {
+      "name": "弈子配送",
+      "appear": 0.07,
+      "top4": 52.61,
+      "first": 12.25,
+      "avg": 4.38,
+      "samples": 555
+    },
+    {
+      "name": "兽性本能+",
+      "appear": 0.07,
+      "top4": 57.22,
+      "first": 17.87,
+      "avg": 4.12,
+      "samples": 554
+    },
+    {
+      "name": "休眠锻炉",
+      "appear": 0.07,
+      "top4": 54.45,
+      "first": 13.97,
+      "avg": 4.28,
+      "samples": 551
+    },
+    {
+      "name": "活体锻炉",
+      "appear": 0.07,
+      "top4": 49.63,
+      "first": 8.21,
+      "avg": 4.51,
+      "samples": 536
+    },
+    {
+      "name": "贪财+",
+      "appear": 0.07,
+      "top4": 43.5,
+      "first": 12.05,
+      "avg": 4.85,
+      "samples": 531
+    },
+    {
+      "name": "认知税+",
+      "appear": 0.07,
+      "top4": 46.08,
+      "first": 12.24,
+      "avg": 4.69,
+      "samples": 523
+    },
+    {
+      "name": "黄金赌约",
+      "appear": 0.07,
+      "top4": 50.48,
+      "first": 4.99,
+      "avg": 4.54,
+      "samples": 521
+    },
+    {
+      "name": "可大可小",
+      "appear": 0.07,
+      "top4": 47.95,
+      "first": 9.94,
+      "avg": 4.64,
+      "samples": 513
+    },
+    {
+      "name": "法杖溢流",
+      "appear": 0.07,
+      "top4": 52.65,
+      "first": 12.18,
+      "avg": 4.34,
+      "samples": 509
+    },
+    {
+      "name": "上进心",
+      "appear": 0.07,
+      "top4": 38.93,
+      "first": 14.82,
+      "avg": 5.02,
+      "samples": 506
+    },
+    {
+      "name": "四之力",
+      "appear": 0.07,
+      "top4": 42.18,
+      "first": 10.5,
+      "avg": 4.83,
+      "samples": 505
+    },
+    {
+      "name": "甜点",
+      "appear": 0.07,
+      "top4": 49.39,
+      "first": 9.15,
+      "avg": 4.61,
+      "samples": 492
+    },
+    {
+      "name": "高级贷款+",
+      "appear": 0.07,
+      "top4": 48.47,
+      "first": 12.68,
+      "avg": 4.53,
+      "samples": 489
+    },
+    {
+      "name": "远征",
+      "appear": 0.07,
+      "top4": 46.91,
+      "first": 9.88,
+      "avg": 4.78,
+      "samples": 486
+    },
+    {
+      "name": "更要命的战刃",
+      "appear": 0.06,
+      "top4": 54.55,
+      "first": 11.16,
+      "avg": 4.27,
+      "samples": 484
+    },
+    {
+      "name": "应急护盾",
+      "appear": 0.06,
+      "top4": 47.52,
+      "first": 10.12,
+      "avg": 4.54,
+      "samples": 484
+    },
+    {
+      "name": "贪财",
+      "appear": 0.06,
+      "top4": 43.62,
+      "first": 9.57,
+      "avg": 4.82,
+      "samples": 470
+    },
+    {
+      "name": "战时补给：巨人腰带",
+      "appear": 0.06,
+      "top4": 57.7,
+      "first": 13.67,
+      "avg": 4.16,
+      "samples": 461
+    },
+    {
+      "name": "核心位的觉悟",
+      "appear": 0.06,
+      "top4": 53.01,
+      "first": 10.69,
+      "avg": 4.43,
+      "samples": 449
+    },
+    {
+      "name": "花到上头",
+      "appear": 0.06,
+      "top4": 58.47,
+      "first": 11.06,
+      "avg": 4.12,
+      "samples": 443
+    },
+    {
+      "name": "游神的眷顾",
+      "appear": 0.06,
+      "top4": 52.04,
+      "first": 10.41,
+      "avg": 4.39,
+      "samples": 442
+    },
+    {
+      "name": "泪流成河",
+      "appear": 0.06,
+      "top4": 54.88,
+      "first": 10.88,
+      "avg": 4.39,
+      "samples": 441
+    },
+    {
+      "name": "弈子配送++",
+      "appear": 0.06,
+      "top4": 46.58,
+      "first": 12.56,
+      "avg": 4.64,
+      "samples": 438
+    },
+    {
+      "name": "太阳的抉择",
+      "appear": 0.06,
+      "top4": 62.44,
+      "first": 23,
+      "avg": 3.69,
+      "samples": 426
+    },
+    {
+      "name": "恶意货币化",
+      "appear": 0.06,
+      "top4": 49.64,
+      "first": 14.08,
+      "avg": 4.52,
+      "samples": 419
+    },
+    {
+      "name": "值得等待",
+      "appear": 0.06,
+      "top4": 44.6,
+      "first": 7.19,
+      "avg": 4.9,
+      "samples": 417
+    },
+    {
+      "name": "连败连胜才能连鸡",
+      "appear": 0.06,
+      "top4": 48.32,
+      "first": 14.42,
+      "avg": 4.57,
+      "samples": 416
+    },
+    {
+      "name": "纺织魔法",
+      "appear": 0.06,
+      "top4": 50.36,
+      "first": 9.4,
+      "avg": 4.48,
+      "samples": 415
+    },
+    {
+      "name": "承诺之护",
+      "appear": 0.05,
+      "top4": 49.88,
+      "first": 10.22,
+      "avg": 4.54,
+      "samples": 401
+    },
+    {
+      "name": "诅咒冠冕",
+      "appear": 0.05,
+      "top4": 58.59,
+      "first": 19.19,
+      "avg": 4.04,
+      "samples": 396
+    },
+    {
+      "name": "英勇福袋",
+      "appear": 0.05,
+      "top4": 45.69,
+      "first": 6.79,
+      "avg": 4.68,
+      "samples": 383
+    },
+    {
+      "name": "后期专家",
+      "appear": 0.05,
+      "top4": 40.31,
+      "first": 14.14,
+      "avg": 5.09,
+      "samples": 382
+    },
+    {
+      "name": "秘法帮派",
+      "appear": 0.05,
+      "top4": 56.58,
+      "first": 16.84,
+      "avg": 4.13,
+      "samples": 380
+    },
+    {
+      "name": "装备提炼",
+      "appear": 0.05,
+      "top4": 53.91,
+      "first": 5.39,
+      "avg": 4.42,
+      "samples": 371
+    },
+    {
+      "name": "星界赐福 III",
+      "appear": 0.05,
+      "top4": 51.62,
+      "first": 23.51,
+      "avg": 4.34,
+      "samples": 370
+    },
+    {
+      "name": "耐心是一种美德",
+      "appear": 0.05,
+      "top4": 52.85,
+      "first": 11.38,
+      "avg": 4.41,
+      "samples": 369
+    },
+    {
+      "name": "一，二，三",
+      "appear": 0.05,
+      "top4": 44.17,
+      "first": 9.21,
+      "avg": 4.78,
+      "samples": 369
+    },
+    {
+      "name": "新纪元+",
+      "appear": 0.05,
+      "top4": 41.48,
+      "first": 11.81,
+      "avg": 4.95,
+      "samples": 364
+    },
+    {
+      "name": "绽灵花的约定",
+      "appear": 0.05,
+      "top4": 42.25,
+      "first": 22.82,
+      "avg": 4.67,
+      "samples": 355
+    },
+    {
+      "name": "白银命运++",
+      "appear": 0.05,
+      "top4": 55.71,
+      "first": 13.43,
+      "avg": 4.24,
+      "samples": 350
+    },
+    {
+      "name": "致命丽花",
+      "appear": 0.05,
+      "top4": 48.42,
+      "first": 5.73,
+      "avg": 4.61,
+      "samples": 349
+    },
+    {
+      "name": "神力天铸",
+      "appear": 0.05,
+      "top4": 46.65,
+      "first": 11.08,
+      "avg": 4.68,
+      "samples": 343
+    },
+    {
+      "name": "潘朵拉的装备 II",
+      "appear": 0.05,
+      "top4": 55.46,
+      "first": 10.03,
+      "avg": 4.35,
+      "samples": 339
+    },
+    {
+      "name": "打捞桶",
+      "appear": 0.05,
+      "top4": 54.3,
+      "first": 10.98,
+      "avg": 4.34,
+      "samples": 337
+    },
+    {
+      "name": "幸运手套+",
+      "appear": 0.04,
+      "top4": 50.15,
+      "first": 8.36,
+      "avg": 4.56,
+      "samples": 335
+    },
+    {
+      "name": "并肩作战 I",
+      "appear": 0.04,
+      "top4": 42.39,
+      "first": 8.06,
+      "avg": 4.78,
+      "samples": 335
+    },
+    {
+      "name": "博弈开启",
+      "appear": 0.04,
+      "top4": 44.31,
+      "first": 8.38,
+      "avg": 4.76,
+      "samples": 334
+    },
+    {
+      "name": "银汤匙",
+      "appear": 0.04,
+      "top4": 46.69,
+      "first": 10.84,
+      "avg": 4.59,
+      "samples": 332
+    },
+    {
+      "name": "残留魔力+",
+      "appear": 0.04,
+      "top4": 51.39,
+      "first": 14.24,
+      "avg": 4.32,
+      "samples": 323
+    },
+    {
+      "name": "利落保镖",
+      "appear": 0.04,
+      "top4": 52.37,
+      "first": 14.83,
+      "avg": 4.43,
+      "samples": 317
+    },
+    {
+      "name": "独自升级",
+      "appear": 0.04,
+      "top4": 50.49,
+      "first": 8.52,
+      "avg": 4.61,
+      "samples": 305
+    },
+    {
+      "name": "变形重组器",
+      "appear": 0.04,
+      "top4": 46.18,
+      "first": 13.29,
+      "avg": 4.78,
+      "samples": 301
+    },
+    {
+      "name": "不拘一格",
+      "appear": 0.04,
+      "top4": 42.19,
+      "first": 10.96,
+      "avg": 4.74,
+      "samples": 301
+    },
+    {
+      "name": "日月同辉+",
+      "appear": 0.04,
+      "top4": 66.67,
+      "first": 27.61,
+      "avg": 3.48,
+      "samples": 297
+    },
+    {
+      "name": "治疗法球 I",
+      "appear": 0.04,
+      "top4": 51.18,
+      "first": 14.48,
+      "avg": 4.29,
+      "samples": 297
+    },
+    {
+      "name": "高塔",
+      "appear": 0.04,
+      "top4": 62.41,
+      "first": 17.59,
+      "avg": 3.86,
+      "samples": 290
+    },
+    {
+      "name": "人生切片",
+      "appear": 0.04,
+      "top4": 52.84,
+      "first": 17.02,
+      "avg": 4.29,
+      "samples": 282
+    },
+    {
+      "name": "一，二，五！",
+      "appear": 0.04,
+      "top4": 44.68,
+      "first": 13.48,
+      "avg": 4.8,
+      "samples": 282
+    },
+    {
+      "name": "战时补给：暴风大剑",
+      "appear": 0.04,
+      "top4": 48.93,
+      "first": 11.79,
+      "avg": 4.58,
+      "samples": 280
+    },
+    {
+      "name": "坚守防线",
+      "appear": 0.04,
+      "top4": 42.65,
+      "first": 8.82,
+      "avg": 4.92,
+      "samples": 272
+    },
+    {
+      "name": "高级贷款",
+      "appear": 0.03,
+      "top4": 44.14,
+      "first": 7.81,
+      "avg": 4.96,
+      "samples": 256
+    },
+    {
+      "name": "高瞻远瞩",
+      "appear": 0.03,
+      "top4": 47.24,
+      "first": 9.84,
+      "avg": 4.71,
+      "samples": 254
+    },
+    {
+      "name": "交给运气",
+      "appear": 0.03,
+      "top4": 55.42,
+      "first": 14.06,
+      "avg": 4.22,
+      "samples": 249
+    },
+    {
+      "name": "珍藏财宝III",
+      "appear": 0.03,
+      "top4": 60.73,
+      "first": 7.29,
+      "avg": 4.05,
+      "samples": 247
+    },
+    {
+      "name": "心之钢",
+      "appear": 0.03,
+      "top4": 46.25,
+      "first": 7.5,
+      "avg": 4.68,
+      "samples": 240
+    },
+    {
+      "name": "挖角",
+      "appear": 0.03,
+      "top4": 43.93,
+      "first": 15.06,
+      "avg": 4.81,
+      "samples": 239
+    },
+    {
+      "name": "清晰头脑",
+      "appear": 0.03,
+      "top4": 44.07,
+      "first": 8.9,
+      "avg": 4.9,
+      "samples": 236
+    },
+    {
+      "name": "认知过载",
+      "appear": 0.03,
+      "top4": 45.89,
+      "first": 10.82,
+      "avg": 4.81,
+      "samples": 231
+    },
+    {
+      "name": "投资策略 II",
+      "appear": 0.03,
+      "top4": 35.65,
+      "first": 7.39,
+      "avg": 5.24,
+      "samples": 230
+    },
+    {
+      "name": "投资策略 I",
+      "appear": 0.03,
+      "top4": 48.25,
+      "first": 6.58,
+      "avg": 4.81,
+      "samples": 228
+    },
+    {
+      "name": "战时补给：反曲之弓",
+      "appear": 0.03,
+      "top4": 46.05,
+      "first": 10.53,
+      "avg": 4.68,
+      "samples": 228
+    },
+    {
+      "name": "仙灵报恩+",
+      "appear": 0.03,
+      "top4": 49.54,
+      "first": 16.51,
+      "avg": 4.34,
+      "samples": 218
+    },
+    {
+      "name": "战时补给：女神之泪",
+      "appear": 0.03,
+      "top4": 55.14,
+      "first": 13.55,
+      "avg": 4.25,
+      "samples": 214
+    },
+    {
+      "name": "金霖龙",
+      "appear": 0.03,
+      "top4": 52.58,
+      "first": 15.02,
+      "avg": 4.4,
+      "samples": 213
+    },
+    {
+      "name": "基础装备自助餐",
+      "appear": 0.03,
+      "top4": 53.59,
+      "first": 9.57,
+      "avg": 4.33,
+      "samples": 209
+    },
+    {
+      "name": "基础装备大冒险",
+      "appear": 0.03,
+      "top4": 64.22,
+      "first": 14.71,
+      "avg": 4.02,
+      "samples": 204
+    },
+    {
+      "name": "拥抱 II",
+      "appear": 0.03,
+      "top4": 42.08,
+      "first": 6.44,
+      "avg": 4.99,
+      "samples": 202
+    },
+    {
+      "name": "拼盘天梯",
+      "appear": 0.03,
+      "top4": 39.8,
+      "first": 18.37,
+      "avg": 5.02,
+      "samples": 196
+    },
+    {
+      "name": "游神的盟友",
+      "appear": 0.03,
+      "top4": 56.84,
+      "first": 13.68,
+      "avg": 4.31,
+      "samples": 190
+    },
+    {
+      "name": "拳击课程",
+      "appear": 0.03,
+      "top4": 49.47,
+      "first": 12.11,
+      "avg": 4.58,
+      "samples": 190
+    },
+    {
+      "name": "黑暗仪式",
+      "appear": 0.02,
+      "top4": 36.07,
+      "first": 11.48,
+      "avg": 5.17,
+      "samples": 183
+    },
+    {
+      "name": "拥抱 I",
+      "appear": 0.02,
+      "top4": 44.97,
+      "first": 9.47,
+      "avg": 4.68,
+      "samples": 169
+    },
+    {
+      "name": "黑铁资产",
+      "appear": 0.02,
+      "top4": 59.04,
+      "first": 12.05,
+      "avg": 4.13,
+      "samples": 166
+    },
+    {
+      "name": "自然庇护所",
+      "appear": 0.02,
+      "top4": 50.64,
+      "first": 10.9,
+      "avg": 4.48,
+      "samples": 156
+    },
+    {
+      "name": "锻造挚友",
+      "appear": 0.02,
+      "top4": 54.79,
+      "first": 14.38,
+      "avg": 4.25,
+      "samples": 146
+    },
+    {
+      "name": "对冲基金",
+      "appear": 0.02,
+      "top4": 47.95,
+      "first": 18.49,
+      "avg": 4.61,
+      "samples": 146
+    },
+    {
+      "name": "灌铅骰子",
+      "appear": 0.02,
+      "top4": 43.75,
+      "first": 7.64,
+      "avg": 4.97,
+      "samples": 144
+    },
+    {
+      "name": "来个好伙计！",
+      "appear": 0.02,
+      "top4": 46.76,
+      "first": 7.19,
+      "avg": 4.67,
+      "samples": 139
+    },
+    {
+      "name": "绝境反击",
+      "appear": 0.02,
+      "top4": 39.42,
+      "first": 5.84,
+      "avg": 5.15,
+      "samples": 137
+    },
+    {
+      "name": "腐蚀",
+      "appear": 0.02,
+      "top4": 51.85,
+      "first": 11.11,
+      "avg": 4.47,
+      "samples": 135
+    },
+    {
+      "name": "电火花 II",
+      "appear": 0.02,
+      "top4": 43.44,
+      "first": 10.66,
+      "avg": 4.83,
+      "samples": 122
+    },
+    {
+      "name": "硬性承诺",
+      "appear": 0.02,
+      "top4": 41.38,
+      "first": 11.21,
+      "avg": 4.85,
+      "samples": 116
+    },
+    {
+      "name": "有用之材 I",
+      "appear": 0.01,
+      "top4": 49.54,
+      "first": 14.68,
+      "avg": 4.61,
+      "samples": 109
+    },
+    {
+      "name": "金蛋",
+      "appear": 0.01,
+      "top4": 70.09,
+      "first": 34.58,
+      "avg": 3.29,
+      "samples": 107
+    },
+    {
+      "name": "应急护甲 I",
+      "appear": 0.01,
+      "top4": 49,
+      "first": 9,
+      "avg": 4.68,
+      "samples": 100
+    },
+    {
+      "name": "遥遥领先",
+      "appear": 0.01,
+      "top4": 42.27,
+      "first": 6.19,
+      "avg": 4.68,
+      "samples": 97
+    },
+    {
+      "name": "值得等待 II",
+      "appear": 0.01,
+      "top4": 40,
+      "first": 4.21,
+      "avg": 4.84,
+      "samples": 95
+    },
+    {
+      "name": "残留魔力++",
+      "appear": 0.01,
+      "top4": 57.3,
+      "first": 21.35,
+      "avg": 3.98,
+      "samples": 89
+    },
+    {
+      "name": "等待得值",
+      "appear": 0.01,
+      "top4": 45.45,
+      "first": 13.64,
+      "avg": 4.65,
+      "samples": 88
+    },
+    {
+      "name": "电火花 I",
+      "appear": 0.01,
+      "top4": 44.19,
+      "first": 10.47,
+      "avg": 4.67,
+      "samples": 86
+    },
+    {
+      "name": "巨化术",
+      "appear": 0.01,
+      "top4": 28.05,
+      "first": 9.76,
+      "avg": 5.5,
+      "samples": 82
+    },
+    {
+      "name": "世纪和解",
+      "appear": 0.01,
+      "top4": 30.38,
+      "first": 3.8,
+      "avg": 5.62,
+      "samples": 79
+    },
+    {
+      "name": "认知税",
+      "appear": 0.01,
+      "top4": 33.33,
+      "first": 7.69,
+      "avg": 5.09,
+      "samples": 78
+    },
+    {
+      "name": "精心打造",
+      "appear": 0.01,
+      "top4": 54.05,
+      "first": 18.92,
+      "avg": 4.31,
+      "samples": 74
+    },
+    {
+      "name": "残留魔力",
+      "appear": 0.01,
+      "top4": 54.05,
+      "first": 16.22,
+      "avg": 4.41,
+      "samples": 74
+    },
+    {
+      "name": "应急护甲 II",
+      "appear": 0.01,
+      "top4": 39.39,
+      "first": 12.12,
+      "avg": 4.91,
+      "samples": 66
+    },
+    {
+      "name": "秘法帮派 II++",
+      "appear": 0.01,
+      "top4": 50,
+      "first": 16.67,
+      "avg": 4.28,
+      "samples": 54
+    },
+    {
+      "name": "秘法帮派 II+",
+      "appear": 0.01,
+      "top4": 45.1,
+      "first": 13.73,
+      "avg": 4.82,
+      "samples": 51
+    },
+    {
+      "name": "毛茸茸小朋友",
+      "appear": 0.01,
+      "top4": 25.49,
+      "first": 0,
+      "avg": 5.9,
+      "samples": 51
+    },
+    {
+      "name": "进攻宣告",
+      "appear": 0.01,
+      "top4": 56,
+      "first": 10,
+      "avg": 4.3,
+      "samples": 50
+    },
+    {
+      "name": "幸运手套",
+      "appear": 0.01,
+      "top4": 44.44,
+      "first": 4.44,
+      "avg": 4.78,
+      "samples": 45
+    },
+    {
+      "name": "弈子套娃",
+      "appear": 0.01,
+      "top4": 53.85,
+      "first": 12.82,
+      "avg": 4.13,
+      "samples": 39
+    }
+  ]
+}

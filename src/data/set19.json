@@ -1,0 +1,15 @@
+{
+  "set": 19,
+  "setLabel": "S19 棱彩音乐盛典",
+  "status": "preview",
+  "source": { "kind": "none", "ddragonVersion": null, "fetchedAt": null, "traitMapFrom": null },
+  "costs": [],
+  "traits": [],
+  "units": [],
+  "preview": {
+    "schedule": "美测服 2026-11-17 开放；国际服 2026-12-01、国服 2026-12-03 上线",
+    "expectedCostBands": [1, 2, 3, 4, 5, 6, 7],
+    "note": "本赛季爆料中出现 6/7 费弈子，费用层级不再止于 5 费——引擎与界面必须从 setX.json 的 costs 字段读层级，不能硬编码 1-5。具体名单以正式服数据为准，上线后运行 node scripts/build-set-data.mjs --set 19 覆盖本文件。",
+    "themeTraitsFromPreviews": ["K/DA", "真实伤害", "心之钢", "离子火花", "国风", "古典乐", "迪斯科"]
+  }
+}

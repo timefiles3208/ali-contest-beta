@@ -1,0 +1,17 @@
+{
+  "source": "datatft.com",
+  "season": 18,
+  "version": "18.7",
+  "extractedAt": "2026-11-23",
+  "counts": {
+    "items": 137,
+    "characters": 65,
+    "augments": 256,
+    "comps": 36
+  },
+  "pages": {
+    "items": "https://www.datatft.com/item/tier",
+    "augments": "https://www.datatft.com/augment/tier",
+    "comps": "https://www.datatft.com/comps"
+  }
+}

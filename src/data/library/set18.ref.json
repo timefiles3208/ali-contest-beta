@@ -1,0 +1,798 @@
+{
+  "set": 18,
+  "source": {
+    "source": "datatft.com S18 热门阵容榜单（36 套）",
+    "page": "https://www.datatft.com/comps",
+    "patch": "18.7",
+    "window": "最近五天 / 钻石及以上",
+    "curatedAt": "2026-11-22",
+    "method": "人工整理：读公开页面渲染出的阵容名/棋子/图标编号/羁绊层数与榜单指标，再对到 Riot 官方 id；未调用其加密数据接口",
+    "limits": "装备与羁绊层数按榜单口径；蓝霸符/红霸符在榜单里是召唤物占位，不在官方卡池，已丢弃；rank 只代表榜单样本，不等于实时对局胜率",
+    "matchedExisting": 2,
+    "addedFromBoard": 10
+  },
+  "traits": [
+    {
+      "id": "DA_18_Caustic",
+      "name": "帝王斑蝶",
+      "boards": 3,
+      "avgTop4": 61.2,
+      "bestTop4": 68.3,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Adaptor",
+      "name": "魔战士",
+      "boards": 3,
+      "avgTop4": 61.2,
+      "bestTop4": 68.3,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Maokai_UniqueTrait",
+      "name": "远古树精",
+      "boards": 4,
+      "avgTop4": 59.2,
+      "bestTop4": 63.9,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Greenfather",
+      "name": "翠神",
+      "boards": 4,
+      "avgTop4": 59.2,
+      "bestTop4": 63.9,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_Primal18",
+      "name": "野兽之灵",
+      "boards": 7,
+      "avgTop4": 58.4,
+      "bestTop4": 68.3,
+      "maxLevel": 2
+    },
+    {
+      "id": "DA_18_Solar",
+      "name": "日蚀骑士",
+      "boards": 6,
+      "avgTop4": 58.4,
+      "bestTop4": 65.5,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Summoner",
+      "name": "召唤师",
+      "boards": 6,
+      "avgTop4": 58.4,
+      "bestTop4": 65.5,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Sprykin",
+      "name": "约德尔人和朋友",
+      "boards": 2,
+      "avgTop4": 58.3,
+      "bestTop4": 68.2,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Hunter",
+      "name": "猎人",
+      "boards": 6,
+      "avgTop4": 58.2,
+      "bestTop4": 68.3,
+      "maxLevel": 4
+    },
+    {
+      "id": "DA_18_Blackthorn",
+      "name": "黑荆棘",
+      "boards": 6,
+      "avgTop4": 58.1,
+      "bestTop4": 68.3,
+      "maxLevel": 4
+    },
+    {
+      "id": "DA_18_Brawler",
+      "name": "斗士",
+      "boards": 13,
+      "avgTop4": 57.8,
+      "bestTop4": 68.3,
+      "maxLevel": 2
+    },
+    {
+      "id": "DA_Juggernaut18",
+      "name": "主宰",
+      "boards": 19,
+      "avgTop4": 57.7,
+      "bestTop4": 65.5,
+      "maxLevel": 6
+    },
+    {
+      "id": "DA_18_Blossom",
+      "name": "灵魂莲华",
+      "boards": 6,
+      "avgTop4": 57.4,
+      "bestTop4": 65.5,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_LuxUniqueTrait",
+      "name": "自然之力！大元素使",
+      "boards": 3,
+      "avgTop4": 57.4,
+      "bestTop4": 60.7,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Spellweaver",
+      "name": "法师",
+      "boards": 11,
+      "avgTop4": 57.2,
+      "bestTop4": 68.2,
+      "maxLevel": 4
+    },
+    {
+      "id": "DA_18_ApexPredator",
+      "name": "顶级掠食者",
+      "boards": 4,
+      "avgTop4": 57.2,
+      "bestTop4": 59.7,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_Riftbeast18",
+      "name": "峡谷野怪",
+      "boards": 10,
+      "avgTop4": 57,
+      "bestTop4": 68.3,
+      "maxLevel": 7
+    },
+    {
+      "id": "DA_18_Invoker",
+      "name": "神谕",
+      "boards": 8,
+      "avgTop4": 56.9,
+      "bestTop4": 68.3,
+      "maxLevel": 2
+    },
+    {
+      "id": "DA_18_ZyraUniqueTrait",
+      "name": "荆棘之兴",
+      "boards": 5,
+      "avgTop4": 56.9,
+      "bestTop4": 63.9,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Inferno",
+      "name": "地狱火",
+      "boards": 10,
+      "avgTop4": 56.7,
+      "bestTop4": 60.7,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Battlemage",
+      "name": "魔岩巨兽",
+      "boards": 5,
+      "avgTop4": 56.6,
+      "bestTop4": 68.3,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Rapidfire",
+      "name": "迅捷射手",
+      "boards": 8,
+      "avgTop4": 56.5,
+      "bestTop4": 60.5,
+      "maxLevel": 4
+    },
+    {
+      "id": "DA_Emerald18",
+      "name": "宝石骑士",
+      "boards": 9,
+      "avgTop4": 56.1,
+      "bestTop4": 60.7,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Defender",
+      "name": "护卫",
+      "boards": 13,
+      "avgTop4": 56,
+      "bestTop4": 65.7,
+      "maxLevel": 6
+    },
+    {
+      "id": "DA_18_Fae",
+      "name": "花仙子",
+      "boards": 7,
+      "avgTop4": 55.8,
+      "bestTop4": 60.5,
+      "maxLevel": 4
+    },
+    {
+      "id": "DA_FloraFatalis18",
+      "name": "绝命花妖",
+      "boards": 11,
+      "avgTop4": 55.1,
+      "bestTop4": 65.7,
+      "maxLevel": 2
+    },
+    {
+      "id": "DA_18_Vanguard",
+      "name": "重装战士",
+      "boards": 20,
+      "avgTop4": 54.9,
+      "bestTop4": 68.2,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Slayer",
+      "name": "狂战士",
+      "boards": 6,
+      "avgTop4": 54.7,
+      "bestTop4": 58.3,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Elderwood",
+      "name": "永恒之森",
+      "boards": 10,
+      "avgTop4": 54.2,
+      "bestTop4": 68.2,
+      "maxLevel": 5
+    },
+    {
+      "id": "DA_DravenUniqueTrait18",
+      "name": "赏金猎人",
+      "boards": 1,
+      "avgTop4": 54.1,
+      "bestTop4": 54.1,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Executioner",
+      "name": "裁决使",
+      "boards": 8,
+      "avgTop4": 53.9,
+      "bestTop4": 65.5,
+      "maxLevel": 4
+    },
+    {
+      "id": "DA_18_Lunar",
+      "name": "月蚀骑士",
+      "boards": 8,
+      "avgTop4": 52.3,
+      "bestTop4": 60.5,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_AluneUniqueTrait18",
+      "name": "月华神女",
+      "boards": 4,
+      "avgTop4": 51.6,
+      "bestTop4": 59,
+      "maxLevel": 1
+    },
+    {
+      "id": "DA_18_Coven",
+      "name": "魔女",
+      "boards": 2,
+      "avgTop4": 47.1,
+      "bestTop4": 55.6,
+      "maxLevel": 3
+    },
+    {
+      "id": "DA_18_Rival",
+      "name": "宿敌",
+      "boards": 3,
+      "avgTop4": 44.7,
+      "bestTop4": 50.6,
+      "maxLevel": 2
+    }
+  ],
+  "bis": [
+    {
+      "unitId": "DA_18_Ezreal",
+      "unit": "伊泽瑞尔",
+      "boards": 4,
+      "items": [
+        "DA_Deathblade",
+        "DA_LastWhisper",
+        "DA_SpearOfShojin"
+      ]
+    },
+    {
+      "unitId": "DA_18_Soraka",
+      "unit": "索拉卡",
+      "boards": 2,
+      "items": [
+        "DA_18_EmblemElderwood",
+        "DA_RabadonsDeathcap",
+        "DA_SpearOfShojin"
+      ]
+    },
+    {
+      "unitId": "DA_18_Rakan",
+      "unit": "洛",
+      "boards": 1,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_Xayah",
+      "unit": "霞",
+      "boards": 2,
+      "items": [
+        "DA_KrakensFury",
+        "DA_Deathblade",
+        "DA_GiantSlayer"
+      ]
+    },
+    {
+      "unitId": "DA_18_Kayle",
+      "unit": "凯尔",
+      "boards": 2,
+      "items": [
+        "DA_GuinsoosRageblade",
+        "DA_JeweledGauntlet",
+        "DA_18_EmblemFae"
+      ]
+    },
+    {
+      "unitId": "DA_18_Sett",
+      "unit": "瑟提",
+      "boards": 2,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_Amumu18",
+      "unit": "阿木木",
+      "boards": 6,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_Zyra",
+      "unit": "婕拉",
+      "boards": 3,
+      "items": [
+        "DA_VoidStaff",
+        "DA_Morellonomicon",
+        "DA_SpearOfShojin"
+      ]
+    },
+    {
+      "unitId": "DA_18_Ahri",
+      "unit": "阿狸",
+      "boards": 3,
+      "items": [
+        "DA_JeweledGauntlet",
+        "DA_SpearOfShojin",
+        "DA_StrikersFlail"
+      ]
+    },
+    {
+      "unitId": "DA_Krug18",
+      "unit": "远古石甲虫",
+      "boards": 2,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_ElderDragon",
+      "unit": "远古巨龙",
+      "boards": 3,
+      "items": [
+        "DA_InfinityEdge",
+        "DA_StrikersFlail",
+        "DA_LastWhisper"
+      ]
+    },
+    {
+      "unitId": "DA_18_Morgana",
+      "unit": "莫甘娜",
+      "boards": 2,
+      "items": [
+        "DA_HextechGunblade",
+        "DA_Morellonomicon",
+        "DA_VoidStaff"
+      ]
+    },
+    {
+      "unitId": "DA_Vi18",
+      "unit": "蔚",
+      "boards": 2,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_MasterYi_AD",
+      "unit": "易",
+      "boards": 1,
+      "items": [
+        "DA_18_EmblemBrawler",
+        "DA_EdgeOfNight",
+        "DA_GuinsoosRageblade"
+      ]
+    },
+    {
+      "unitId": "DA_KogMaw18_AD",
+      "unit": "克格莫",
+      "boards": 1,
+      "items": [
+        "DA_GiantSlayer",
+        "DA_RedBuff",
+        "DA_SpearOfShojin"
+      ]
+    },
+    {
+      "unitId": "DA_18_Maokai",
+      "unit": "茂凯",
+      "boards": 2,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_Draven18",
+      "unit": "德莱文",
+      "boards": 1,
+      "items": [
+        "DA_Deathblade",
+        "DA_GuinsoosRageblade",
+        "DA_KrakensFury"
+      ]
+    },
+    {
+      "unitId": "DA_18_Ornn",
+      "unit": "奥恩",
+      "boards": 3,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_WarmogsArmor",
+        "DA_SpiritVisage"
+      ]
+    },
+    {
+      "unitId": "DA_18_Akali_AD",
+      "unit": "阿卡丽",
+      "boards": 1,
+      "items": [
+        "DA_EdgeOfNight",
+        "DA_HandOfJustice",
+        "DA_JeweledGauntlet"
+      ]
+    },
+    {
+      "unitId": "DA_18_Camille",
+      "unit": "卡蜜尔",
+      "boards": 1,
+      "items": [
+        "DA_EdgeOfNight",
+        "DA_InfinityEdge",
+        "DA_SteraksGage"
+      ]
+    },
+    {
+      "unitId": "DA_18_Varus",
+      "unit": "韦鲁斯",
+      "boards": 1,
+      "items": [
+        "DA_InfinityEdge",
+        "DA_LastWhisper",
+        "DA_SpearOfShojin"
+      ]
+    },
+    {
+      "unitId": "DA_Karma18",
+      "unit": "卡尔玛",
+      "boards": 1,
+      "items": [
+        "DA_BlueBuff",
+        "DA_JeweledGauntlet",
+        "DA_RabadonsDeathcap"
+      ]
+    },
+    {
+      "unitId": "DA_18_Yunara",
+      "unit": "芸阿娜",
+      "boards": 2,
+      "items": [
+        "DA_LastWhisper",
+        "DA_SpearOfShojin",
+        "DA_18_EmblemBlackthorn"
+      ]
+    },
+    {
+      "unitId": "DA_Nidalee18_AP",
+      "unit": "奈德丽",
+      "boards": 2,
+      "items": [
+        "DA_SteraksGage",
+        "DA_Bloodthirster",
+        "DA_EdgeOfNight"
+      ]
+    },
+    {
+      "unitId": "DA_18_Aphelios",
+      "unit": "厄斐琉斯",
+      "boards": 4,
+      "items": [
+        "DA_InfinityEdge",
+        "DA_KrakensFury",
+        "DA_GuinsoosRageblade"
+      ]
+    },
+    {
+      "unitId": "DA_18_Veigar",
+      "unit": "维迦",
+      "boards": 1,
+      "items": [
+        "DA_BlueBuff",
+        "DA_HextechGunblade",
+        "DA_JeweledGauntlet"
+      ]
+    },
+    {
+      "unitId": "DA_18_Alistar",
+      "unit": "阿利斯塔",
+      "boards": 2,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_LeBlanc",
+      "unit": "乐芙兰",
+      "boards": 2,
+      "items": [
+        "DA_Morellonomicon",
+        "DA_SpearOfShojin",
+        "DA_VoidStaff"
+      ]
+    },
+    {
+      "unitId": "DA_Taric18",
+      "unit": "塔里克",
+      "boards": 1,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_Alune",
+      "unit": "拉露恩",
+      "boards": 2,
+      "items": [
+        "DA_JeweledGauntlet",
+        "DA_NashorsTooth",
+        "DA_SpearOfShojin"
+      ]
+    },
+    {
+      "unitId": "DA_18_KhaZix",
+      "unit": "卡兹克",
+      "boards": 3,
+      "items": [
+        "DA_EdgeOfNight",
+        "DA_HandOfJustice",
+        "DA_RabadonsDeathcap"
+      ]
+    },
+    {
+      "unitId": "DA_18_Azir",
+      "unit": "阿兹尔",
+      "boards": 3,
+      "items": [
+        "DA_GuinsoosRageblade",
+        "DA_HextechGunblade",
+        "DA_RabadonsDeathcap"
+      ]
+    },
+    {
+      "unitId": "DA_18_Hecarim",
+      "unit": "赫卡里姆",
+      "boards": 3,
+      "items": [
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor",
+        "DA_GargoyleStoneplate"
+      ]
+    },
+    {
+      "unitId": "DA_CrimsonRaptor18",
+      "unit": "深红锋喙鸟",
+      "boards": 2,
+      "items": [
+        "DA_GuinsoosRageblade",
+        "DA_TitansResolve",
+        "DA_18_EmblemFae"
+      ]
+    },
+    {
+      "unitId": "DA_18_Ashe",
+      "unit": "艾希",
+      "boards": 2,
+      "items": [
+        "DA_RedBuff",
+        "DA_SpearOfShojin",
+        "DA_18_EmblemInferno"
+      ]
+    },
+    {
+      "unitId": "DA_18_Malphite",
+      "unit": "墨菲特",
+      "boards": 4,
+      "items": [
+        "DA_Crownguard",
+        "DA_GargoyleStoneplate",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_Sivir",
+      "unit": "希维尔",
+      "boards": 4,
+      "items": [
+        "DA_InfinityEdge",
+        "DA_LastWhisper",
+        "DA_RedBuff"
+      ]
+    },
+    {
+      "unitId": "DA_Fiddlesticks18",
+      "unit": "费德提克",
+      "boards": 1,
+      "items": [
+        "DA_AdaptiveHelm",
+        "DA_Crownguard",
+        "DA_TitansResolve"
+      ]
+    },
+    {
+      "unitId": "DA_18_Rammus",
+      "unit": "拉莫斯",
+      "boards": 2,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_Cassiopeia",
+      "unit": "卡西奥佩娅",
+      "boards": 1,
+      "items": [
+        "DA_ArchangelsStaff",
+        "DA_HextechGunblade",
+        "DA_SpearOfShojin"
+      ]
+    },
+    {
+      "unitId": "DA_Murkwolf18",
+      "unit": "暗影狼",
+      "boards": 1,
+      "items": [
+        "DA_EdgeOfNight",
+        "DA_HandOfJustice",
+        "DA_Quicksilver"
+      ]
+    },
+    {
+      "unitId": "DA_18_Warwick",
+      "unit": "沃里克",
+      "boards": 1,
+      "items": [
+        "DA_SpearOfShojin",
+        "DA_SteraksGage",
+        "DA_TitansResolve"
+      ]
+    },
+    {
+      "unitId": "DA_18_Sejuani",
+      "unit": "瑟庄妮",
+      "boards": 3,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_Scuttlecrab18",
+      "unit": "峡谷迅捷蟹",
+      "boards": 1,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_SpiritVisage",
+        "DA_WarmogsArmor"
+      ]
+    },
+    {
+      "unitId": "DA_18_Caitlyn",
+      "unit": "凯特琳",
+      "boards": 2,
+      "items": [
+        "DA_GuinsoosRageblade",
+        "DA_HextechGunblade",
+        "DA_KrakensFury"
+      ]
+    },
+    {
+      "unitId": "DA_18_Teemo",
+      "unit": "提莫",
+      "boards": 1,
+      "items": [
+        "DA_JeweledGauntlet",
+        "DA_SpearOfShojin",
+        "DA_StrikersFlail"
+      ]
+    },
+    {
+      "unitId": "DA_18_Tristana",
+      "unit": "崔丝塔娜",
+      "boards": 1,
+      "items": [
+        "DA_GiantSlayer",
+        "DA_GuinsoosRageblade",
+        "DA_HextechGunblade"
+      ]
+    },
+    {
+      "unitId": "DA_18_Rengar",
+      "unit": "雷恩加尔",
+      "boards": 1,
+      "items": [
+        "DA_EdgeOfNight",
+        "DA_GuinsoosRageblade",
+        "DA_TitansResolve"
+      ]
+    },
+    {
+      "unitId": "DA_18_Elise",
+      "unit": "伊莉丝",
+      "boards": 1,
+      "items": [
+        "DA_GargoyleStoneplate",
+        "DA_GuinsoosRageblade",
+        "DA_TitansResolve"
+      ]
+    },
+    {
+      "unitId": "DA_18_Sentry",
+      "unit": "苍蓝哨戒",
+      "boards": 1,
+      "items": [
+        "DA_BlueBuff",
+        "DA_JeweledGauntlet",
+        "DA_RabadonsDeathcap"
+      ]
+    }
+  ]
+}

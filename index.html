@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>云顶阵容参谋 · 公网测试版</title>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="bar">
+  <div class="brand">
+    <span class="logo">棋</span>
+    <div>
+      <h1>云顶阵容参谋</h1>
+      <p class="sub">导入对局截图或手选棋子 → 本地阵容库匹配 → 给出成型羁绊、所需棋子与成装缺口</p>
+    </div>
+  </div>
+  <div class="controls">
+    <label for="boardSource">大数据来源 <select id="boardSource"></select></label>
+    <label for="setSelect">赛季 <select id="setSelect" aria-label="赛季"></select></label>
+    <span id="sourceBadge" class="badge" role="status">数据源载入中…</span>
+  </div>
+</header>
+
+<main><aside class="panel" aria-label="公网测试版"><strong>公网测试版</strong><p class="fine">下方「屏幕识别」读取实际画面文字。「导入对局截图」保留固定结果演示，可用示例文件验证导入和模型复用。</p><p><a href="./samples/demo-model.glb" download>下载示例 GLB</a>　<a href="./samples/demo-board.png" download>下载示例截图</a></p></aside>
+  <section class="panel snapshot" aria-labelledby="screenTitle">
+    <h2 id="screenTitle">屏幕识别 · 2-1 阵容方向</h2>
+    <p class="fine">共享游戏窗口后，画面文字在浏览器内识别。2-1 选完海克斯后点击生成方向，同时结束共享。手机可导入该阶段的截图。</p>
+    <div class="snap-actions">
+      <button id="screenStart" class="primary" type="button">共享游戏窗口</button>
+      <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
+      <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
+    </div>
+    <label for="screenPhoto">导入截图识别</label>
+    <input id="screenPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" />
+    <p id="screenStatus" class="snap-status" role="status">正在检查屏幕共享支持…</p>
+    <p id="screenDirection" class="snap-status ok" role="status" hidden></p>
+    <video id="screenVideo" class="screen-video" muted playsinline hidden aria-label="共享画面预览"></video>
+  </section>
+  <section class="panel snapshot">
+    <h2>1 · 导入对局截图（可选，模拟识别）</h2>
+    <div class="snap-grid">
+      <div class="drop" id="snapDrop">
+        <label class="dt" for="snapFile">选择截图</label>
+        <input id="snapFile" type="file" accept=".jpg,.jpeg,.jfif,.png,.webp,.gif,.bmp,.avif" />
+        <span class="dd">也可拖入或 Ctrl+V 粘贴。支持 JPG、PNG、WebP、GIF、BMP、AVIF，最大 20 MB。</span>
+        <div class="snap-preview" id="snapPreview" hidden>
+          <img id="snapThumb" class="thumb" alt="待识别截图" />
+        </div>
+      </div>
+      <div class="snap-side">
+        <div class="snap-actions">
+          <button id="snapPaste" class="ghost" type="button">从剪贴板导入</button>
+          <button id="snapRotate" class="ghost" type="button" disabled>顺时针旋转 90°</button>
+          <button id="snapRun" class="primary" disabled>开始识别</button>
+          <button id="snapClear" class="ghost" disabled>清空截图</button>
+        </div>
+        <form class="snap-actions snap-url" id="snapUrlForm">
+          <label for="snapUrl">图片直链</label>
+          <input id="snapUrl" type="url" inputmode="url" placeholder="https://…" required />
+          <button id="snapUrlLoad" class="ghost" type="submit">导入链接</button>
+        </form>
+        <p id="snapStatus" class="snap-status" role="status">正在准备截图工具…</p>
+        <p class="fine">支持完整棋盘和局部截图。点「开始识别」可查看固定示例，结果可先核对再应用。</p>
+        <details class="snap-model">
+          <summary>棋子 3D 模型参考（可选）</summary>
+          <p class="fine"><strong id="modelGame"></strong>。GLB 模型可保存到当前浏览器。金铲铲缺少已保存的模型时，可载入同赛季同棋子的云顶模型作为参考。</p>
+          <div class="snap-model-fields">
+            <label>GLB 模型 <input id="modelFile" type="file" accept=".glb" /></label>
+            <label>模型对应棋子 <select id="modelUnit"></select></label>
+            <label>模型视角 <select id="modelAngle" disabled></select></label>
+          </div>
+          <div id="modelDisplay" class="snap-model-display" hidden></div>
+          <div class="snap-actions">
+            <button id="modelUse" class="ghost" type="button" disabled>用当前角度生成参考图</button>
+            <button id="modelUseAll" class="ghost" type="button" disabled>生成六视角参考图</button>
+            <button id="modelClear" class="ghost" type="button" disabled>关闭预览</button>
+          </div>
+          <div class="snap-actions snap-load-actions">
+            <button id="modelSave" class="ghost" type="button" disabled>保存到本机</button>
+            <button id="modelLoad" class="ghost" type="button" disabled>载入本机模型</button>
+            <button id="modelRemove" class="ghost" type="button" disabled>删除本机模型</button>
+          </div>
+          <p id="modelStatus" class="snap-status" role="status"></p>
+          <div id="modelReferencePreview" class="snap-model-reference" hidden></div>
+          <a href="https://github.com/Xiaochr/LOLCodexPet" target="_blank" rel="noopener noreferrer">TFT 模型处理参考</a>
+          <a href="https://github.com/Crauzer/lol2gltf" target="_blank" rel="noopener noreferrer">GLB 转换工具</a>
+        </details>
+      </div>
+    </div>
+    <div id="snapResult" class="snap-result"></div>
+  </section>
+
+  <section class="panel pool">
+    <h2>2 · 这一局你拥有的棋子</h2>
+    <div class="pool-tools">
+      <input id="search" type="search" placeholder="搜棋子或羁绊，例如 奥恩 / 永恒之森" />
+      <div class="costs" id="costTabs"></div>
+    </div>
+    <div class="selected-strip">
+      <div id="selectedList" class="selected-list"><span class="hint">还没选</span></div>
+      <div class="strip-actions">
+        <span id="selCount" class="count">0 选</span>
+        <button id="clearSel" class="ghost">清空</button>
+      </div>
+    </div>
+    <div id="unitGrid" class="unit-grid"></div>
+
+    <h2 class="mt">3 · 你手上的散件（可选，点一下 +1）</h2>
+    <div id="compGrid" class="item-grid"></div>
+    <div class="strip-actions">
+      <span id="compCount" class="count">0 件散件</span>
+      <button id="clearComps" class="ghost">清空散件</button>
+    </div>
+  </section>
+
+  <section class="panel result">
+    <h2>4 · 成型路线</h2>
+    <div id="traitsNow" class="traits-now"></div>
+    <div id="comps" class="comps"></div>
+
+    <h2 class="mt">5 · 羁绊接下来往哪走</h2>
+    <div id="paths" class="paths"></div>
+
+    <h2 class="mt">6 · 海克斯（点一下算已拿，会从推荐里剔除）</h2>
+    <div id="hexes" class="hexes"></div>
+
+    <h2 class="mt">7 · 成装规划</h2>
+    <div id="gear" class="gear"></div>
+  </section>
+</main>
+
+<footer class="bar foot">
+  <p id="footNote"></p>
+  <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
+</footer>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,1136 @@
+{
+  "set": 18,
+  "source": {
+    "kind": "cdragon+ddragon",
+    "bucket": "latest",
+    "ddragonVersion": "16.23.1",
+    "poolSize": 594,
+    "fetchedAt": "2026-11-21T16:24:46.279Z"
+  },
+  "components": [
+    {
+      "id": "DA_Component_BFSword",
+      "name": "暴风大剑",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 336,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_ChainVest",
+      "name": "锁子甲",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 384,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_FryingPan",
+      "name": "金锅锅",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 432,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_GiantsBelt",
+      "name": "巨人腰带",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 0,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_NeedlesslyLargeRod",
+      "name": "无用大棒",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 48,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_NegatronCloak",
+      "name": "负极斗篷",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 96,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_RecurveBow",
+      "name": "反曲之弓",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 144,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_SparringGloves",
+      "name": "拳套",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 192,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_Spatula",
+      "name": "金铲铲",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 240,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "DA_Component_TearOfTheGoddess",
+      "name": "女神之泪",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 288,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "id": "TFT_Item_BFSword",
+      "name": "暴风之剑",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item0.png",
+        "x": 192,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "DA_AdaptiveHelm",
+      "name": "适应性头盔",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item35.png",
+        "x": 192,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_TearOfTheGoddess",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_ArchangelsStaff",
+      "name": "大天使之杖",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item35.png",
+        "x": 288,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_NeedlesslyLargeRod",
+        "DA_Component_TearOfTheGoddess"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_Bloodthirster",
+      "name": "饮血剑",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 48,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_BFSword",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_BlueBuff",
+      "name": "蓝霸符",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 144,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_TearOfTheGoddess",
+        "DA_Component_TearOfTheGoddess"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_BrambleVest",
+      "name": "棘刺背心",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item36.png",
+        "x": 240,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_ChainVest",
+        "DA_Component_ChainVest"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_Crownguard",
+      "name": "冕卫",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 48,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_NeedlesslyLargeRod",
+        "DA_Component_ChainVest"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_Deathblade",
+      "name": "死亡之刃",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 144,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_BFSword",
+        "DA_Component_BFSword"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_DragonsClaw",
+      "name": "巨龙之爪",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 240,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_NegatronCloak",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_EdgeOfNight",
+      "name": "夜之锋刃",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 336,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_BFSword",
+        "DA_Component_ChainVest"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_Evenshroud",
+      "name": "薄暮法袍",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 432,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_NegatronCloak",
+        "DA_Component_GiantsBelt"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_GargoyleStoneplate",
+      "name": "石像鬼石板甲",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 48,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_ChainVest",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_GiantSlayer",
+      "name": "巨人杀手",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 144,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_BFSword"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_GuinsoosRageblade",
+      "name": "鬼索的狂暴之刃",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 240,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_NeedlesslyLargeRod"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_HandOfJustice",
+      "name": "正义之手",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 336,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_TearOfTheGoddess",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_HextechGunblade",
+      "name": "海克斯科技枪刃",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 96,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_BFSword",
+        "DA_Component_NeedlesslyLargeRod"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_InfinityEdge",
+      "name": "无尽之刃",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 192,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_BFSword",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_IonicSpark",
+      "name": "离子火花",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 288,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_NeedlesslyLargeRod",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_JeweledGauntlet",
+      "name": "珠光护手",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item37.png",
+        "x": 432,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_SparringGloves",
+        "DA_Component_NeedlesslyLargeRod"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_KrakensFury",
+      "name": "海妖之怒",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 48,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_LastWhisper",
+      "name": "最后的轻语",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 144,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_Morellonomicon",
+      "name": "莫雷洛秘典",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 0,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_GiantsBelt",
+        "DA_Component_NeedlesslyLargeRod"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_NashorsTooth",
+      "name": "纳什之牙",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 96,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_GiantsBelt"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_ProtectorsVow",
+      "name": "圣盾使的誓约",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 192,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_ChainVest",
+        "DA_Component_TearOfTheGoddess"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_Quicksilver",
+      "name": "水银",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 288,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_NegatronCloak",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_RabadonsDeathcap",
+      "name": "灭世者的死亡之帽",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 384,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_NeedlesslyLargeRod",
+        "DA_Component_NeedlesslyLargeRod"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_RedBuff",
+      "name": "红霸符",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 48,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_RecurveBow"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_SpearOfShojin",
+      "name": "朔极之矛",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 192,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_TearOfTheGoddess",
+        "DA_Component_BFSword"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_SpiritVisage",
+      "name": "振奋盔甲",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 336,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_GiantsBelt",
+        "DA_Component_TearOfTheGoddess"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_SteadfastHeart",
+      "name": "坚定之心",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item38.png",
+        "x": 432,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_ChainVest",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_SteraksGage",
+      "name": "斯特拉克的挑战护手",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 48,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_BFSword",
+        "DA_Component_GiantsBelt"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_StrikersFlail",
+      "name": "强袭者的链枷",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 144,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_GiantsBelt",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_SunfireCape",
+      "name": "日炎斗篷",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 240,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_ChainVest",
+        "DA_Component_GiantsBelt"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_TacticiansCape",
+      "name": "金锅铲冠冕",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 336,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_FryingPan"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_TacticiansCrown",
+      "name": "金铲铲冠冕",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 384,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_Spatula"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_TacticiansShield",
+      "name": "金锅锅冠冕",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 432,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_FryingPan"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_ThiefsGloves",
+      "name": "窃贼手套",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 0,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_SparringGloves",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_TitansResolve",
+      "name": "泰坦的坚决",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 96,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_ChainVest"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_VoidStaff",
+      "name": "虚空之杖",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 192,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_RecurveBow",
+        "DA_Component_TearOfTheGoddess"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_WarmogsArmor",
+      "name": "狂徒铠甲",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item39.png",
+        "x": 288,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_GiantsBelt",
+        "DA_Component_GiantsBelt"
+      ],
+      "kind": "completed",
+      "trait": null
+    },
+    {
+      "id": "DA_18_EmblemBlackthorn",
+      "name": "黑荆棘纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 96,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_GiantsBelt"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Blackthorn"
+    },
+    {
+      "id": "DA_18_EmblemBlossom",
+      "name": "灵魂莲华纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 144,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_NeedlesslyLargeRod"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Blossom"
+    },
+    {
+      "id": "DA_18_EmblemBrawler",
+      "name": "斗士纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 192,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_GiantsBelt"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Brawler"
+    },
+    {
+      "id": "DA_18_EmblemElderwood",
+      "name": "永恒之森纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 336,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_ChainVest"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Elderwood"
+    },
+    {
+      "id": "DA_18_EmblemExecutioner",
+      "name": "裁决使纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 384,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Executioner"
+    },
+    {
+      "id": "DA_18_EmblemFae",
+      "name": "花仙子纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 432,
+        "y": 48,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_BFSword"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Fae"
+    },
+    {
+      "id": "DA_18_EmblemHunter",
+      "name": "猎人纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 96,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_BFSword"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Hunter"
+    },
+    {
+      "id": "DA_18_EmblemInferno",
+      "name": "地狱火纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 144,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_RecurveBow"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Inferno"
+    },
+    {
+      "id": "DA_18_EmblemInvoker",
+      "name": "神谕纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 192,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_TearOfTheGoddess"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Invoker"
+    },
+    {
+      "id": "DA_18_EmblemLunar",
+      "name": "月蚀骑士纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 288,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_TearOfTheGoddess"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Lunar"
+    },
+    {
+      "id": "DA_18_EmblemPrimal",
+      "name": "野兽之灵纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 336,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_SparringGloves"
+      ],
+      "kind": "emblem",
+      "trait": "DA_Primal18"
+    },
+    {
+      "id": "DA_18_EmblemRapidfire",
+      "name": "迅捷射手纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 384,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_RecurveBow"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Rapidfire"
+    },
+    {
+      "id": "DA_18_EmblemSlayer",
+      "name": "狂战士纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item34.png",
+        "x": 432,
+        "y": 96,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Slayer"
+    },
+    {
+      "id": "DA_18_EmblemSpellweaver",
+      "name": "法师纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item35.png",
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_NeedlesslyLargeRod"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Spellweaver"
+    },
+    {
+      "id": "DA_18_EmblemSprykin",
+      "name": "约德尔人和朋友纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item35.png",
+        "x": 48,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_Spatula",
+        "DA_Component_NegatronCloak"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Sprykin"
+    },
+    {
+      "id": "DA_18_EmblemVanguard",
+      "name": "重装战士纹章",
+      "sprite": {
+        "group": "tft-item",
+        "file": "tft-item35.png",
+        "x": 96,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "from": [
+        "DA_Component_FryingPan",
+        "DA_Component_ChainVest"
+      ],
+      "kind": "emblem",
+      "trait": "DA_18_Vanguard"
+    }
+  ]
+}

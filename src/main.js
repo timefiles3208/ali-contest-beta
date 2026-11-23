@@ -1,0 +1,776 @@
+import { SETS, findSet } from './data/sets.js';
+import { loadJson, iconHtml } from './ui/helpers.js';
+import { bindModelReference } from './ui/model-reference.js';
+import { bindScreenReader } from './ui/screen-reader.js';
+import { recommend, traitBreakdown } from './engine/recommend.js';
+import { traitPaths } from './engine/paths.js';
+import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
+import { planItems } from './engine/items.js';
+import { validateComps } from './adapters/provider.js';
+import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js';
+import { compressSnapshot, recognizeSnapshot, matchSnapshot, autoSelect, pingSnapshot, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js';
+
+const el = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let modelReference, screenReader;
+let boardLoad = 0;
+let setLoad = 0;
+let loadingSet = false;
+const SOURCE_KEY = 'tft-board-source';
+function savedSource() {
+  try { return sourceFor(localStorage.getItem(SOURCE_KEY)).id; } catch { return BOARD_SOURCES[0].id; }
+}
+
+const state = {
+  meta: null,
+  setData: null,
+  comps: [],
+  issues: [],
+  sourceId: savedSource(),
+  board: null,
+  selected: new Set(),
+  level: 7,
+  cost: null,
+  query: '',
+  open: new Set(),
+  items: null,
+  augs: null,
+  ref: null,
+  owned: new Map(),
+  ownedItems: new Set(),
+  chosen: new Set(),
+  snap: { ping: undefined, file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, meta: null, sent: null, applied: false },
+};
+
+async function loadBoard() {
+  screenReader?.reset();
+  const generation = ++boardLoad;
+  const source = sourceFor(state.sourceId);
+  const badge = el('sourceBadge');
+  state.comps = [];
+  state.open.clear();
+  state.board = null;
+  state.ref = null;
+  state.issues = [];
+  badge.className = 'badge';
+  badge.textContent = `${source.host} · 读取中…`;
+  if (loadingSet || !state.setData) return;
+  state.issues = ['正在读取所选榜单…'];
+  renderResults();
+  try {
+    if (state.setData.set !== 18) throw new Error('此赛季没有该数据源的快照');
+    const [raw, ratings] = await Promise.all([
+      loadJson(source.file),
+      source.ratingsFile ? loadJson(source.ratingsFile).catch(() => null) : null,
+    ]);
+    if (generation !== boardLoad) return;
+    const board = adaptBoard(raw, { source: source.id, setData: state.setData, items: state.items, ratings });
+    const valid = validateComps(board.comps, state.setData);
+    state.board = board;
+    state.comps = valid.comps;
+    state.ref = summarizeBoard(valid.comps);
+    state.issues = valid.issues;
+    badge.textContent = `${source.host} · ${board.version} · ${state.comps.length} 套`;
+    badge.className = `badge ${state.comps.length ? 'ok' : 'warn'}`;
+  } catch (error) {
+    if (generation !== boardLoad) return;
+    state.issues = [`${source.host}：${error.message}`];
+    badge.textContent = `${source.host} · 数据不可用`;
+    badge.className = 'badge warn';
+  }
+  renderResults();
+}
+
+async function loadSet(setNum) {
+  screenReader?.reset();
+  const meta = findSet(setNum);
+  const generation = ++setLoad;
+  boardLoad++;
+  loadingSet = true;
+  state.meta = meta;
+  modelReference?.setScope(state.sourceId, null, sourceFor(state.sourceId).game);
+  state.selected.clear();
+  state.open.clear();
+  state.cost = null;
+  state.query = '';
+  state.owned.clear();
+  state.ownedItems.clear();
+  state.chosen.clear();
+  state.snap.mapped = null;
+  state.snap.meta = null;
+  state.snap.sent = null;
+  state.snap.applied = false;
+  state.snap.error = null;
+  el('search').value = '';
+
+  const [setData, items, augments] = await Promise.all([
+    loadJson(meta.dataFile).catch((e) => ({ set: meta.set, costs: [], traits: [], units: [], source: {}, loadError: e.message })),
+    loadJson(meta.itemsFile).catch(() => null),
+    loadJson(meta.augFile).catch(() => null),
+  ]);
+  if (generation !== setLoad) return;
+  loadingSet = false;
+  state.setData = setData;
+  state.items = items;
+  state.augs = augments;
+  el('modelUnit').replaceChildren(new Option('选择棋子', ''), ...setData.units.map(({ id, name }) => {
+    const option = new Option(name, name);
+    option.dataset.unitId = id;
+    return option;
+  }));
+  modelReference?.setScope(state.sourceId, setData.units.length ? setData.set : null, sourceFor(state.sourceId).game);
+
+  renderCostTabs();
+  renderUnits();
+  void loadBoard();
+  renderSnapshot();
+}
+
+function renderCostTabs() {
+  const costs = state.setData.costs || [];
+  el('costTabs').innerHTML = `<button class="${state.cost === null ? 'on' : ''}" data-cost="">全部<em class="n">${state.setData.units.length}</em></button>` +
+    costs.map((c) => `<button class="${state.cost === c ? 'on' : ''}" data-cost="${c}">${c} 费<em class="n">${state.setData.units.filter((u) => u.cost === c).length}</em></button>`).join('');
+}
+
+function matches(unit) {
+  if (state.cost !== null && unit.cost !== state.cost) return false;
+  if (!state.query) return true;
+  const q = state.query.toLowerCase();
+  return unit.name.toLowerCase().includes(q) || (unit.traits || []).some((t) => traitName(t).toLowerCase().includes(q)) || unit.id.toLowerCase().includes(q);
+}
+
+function traitName(id) {
+  const t = (state.setData.traits || []).find((x) => x.id === id);
+  return t ? t.name : id;
+}
+
+function renderUnits() {
+  const version = state.setData.source?.ddragonVersion;
+  if (!state.setData.units.length) {
+    el('unitGrid').innerHTML = `<div class="empty">${esc(state.meta.label)}：卡池数据尚未落地<br />
+      ${esc(state.setData.preview?.schedule || state.meta.window || '')}<br />
+      上线后跑 <code>node scripts/build-set-data.mjs --set ${state.meta.set}</code> 生成卡池再刷新。</div>`;
+    renderSelected();
+    return;
+  }
+  el('unitGrid').innerHTML = state.setData.units.filter(matches).map((u) => {
+    const on = state.selected.has(u.id);
+    const tr = (u.traits || []).map(traitName).slice(0, 3).join(' ');
+    return `<button class="unit ${on ? 'on' : ''}" data-id="${u.id}" title="${esc(u.id)}">
+      <span class="cost c${u.cost}">${u.cost}</span>
+      ${iconHtml(u, version, 48)}
+      <span class="nm">${esc(u.name)}</span>
+      <span class="tr">${esc(tr)}</span>
+    </button>`;
+  }).join('');
+  renderSelected();
+}
+
+function renderSelected() {
+  const version = state.setData.source?.ddragonVersion;
+  const list = [...state.selected].map((id) => state.setData.units.find((u) => u.id === id)).filter(Boolean);
+  el('selectedList').innerHTML = list.length
+    ? list.map((u) => `<button class="unit on mini" data-id="${u.id}" title="点击移除">${iconHtml(u, version, 34)}<span class="nm">${esc(u.name)}</span></button>`).join('')
+    : '<span class="hint">还没选</span>';
+  el('selCount').textContent = `${list.length} 选 / 人口 ${state.level}`;
+}
+
+function miniUnit(unit, lack) {
+  const version = state.setData.source?.ddragonVersion;
+  return `<span class="unit mini ${lack ? 'lack' : ''}" title="${esc(unit.id)}">${iconHtml(unit, version, 34)}<span class="nm">${esc(unit.name)}${lack ? ' 缺' : ''}</span></span>`;
+}
+
+function renderResults() {
+  const sel = state.selected;
+  const box = el('comps');
+  const bd = traitBreakdown(state.setData, sel);
+  el('traitsNow').innerHTML = sel.size
+    ? bd.filter((t) => t.tier > 0).map((t) => `<span class="tchip ${t.tier >= 5 ? 'hi' : ''}">${esc(t.name)} <b>${t.tier}</b><em style="opacity:.55;font-style:normal">${t.num}人</em></span>`).join('') ||
+      '<span class="tchip">所选棋子还没有凑出可激活羁绊</span>'
+    : '';
+  renderFoot();
+  state.ranked = null;
+  renderSide();
+
+  if (!state.setData.units.length) {
+    box.innerHTML = `<div class="empty">${esc(state.meta.label)} 的卡池尚未生成，推荐不可用。<br />${esc(state.setData.preview?.note || '')}</div>`;
+    return;
+  }
+  if (!state.comps.length) {
+    box.innerHTML = `<div class="empty">${esc(state.issues.join('；') || '阵容库为空')}</div>`;
+    return;
+  }
+  if (!sel.size) {
+    box.innerHTML = '<div class="empty">先勾出你场上 + 备战席的棋子（3–8 个最有意义），右侧按成型可能性排序。</div>';
+    return;
+  }
+
+  const ranked = recommend({ setData: state.setData, comps: state.comps, selected: sel, level: state.level });
+  state.ranked = ranked;
+  const hot = ranked.filter((r) => r.score > 0).slice(0, 8);
+  const cold = ranked.filter((r) => r.score === 0);
+  if (!hot.length) {
+    box.innerHTML = `<div class="empty">所选棋子撑不起库里任何一套的核心件。<br />
+      当前羁绊：${bd.filter((t) => t.tier > 0).map((t) => esc(t.name) + ' ' + t.tier + '档').join(' / ') || '无'}<br />
+      库里的 ${cold.length} 套全部判定为「之后再转型」。</div>`;
+    renderSide();
+    return;
+  }
+  const coldNote = cold.length
+    ? `<p class="fine" style="margin:10px 2px 0;color:#5f7284;font-size:12px">另有 ${cold.length} 套核心件未命中：${cold.map((r) => esc(r.comp.name)).join('、')}（等爬到关键牌再考虑转型）</p>`
+    : '';
+  box.innerHTML =
+    hot.map((r, i) => {
+    const c = r.comp;
+    const unitOf = (id) => state.setData.units.find((u) => u.id === id);
+    const coreMissing = r.detail.coreMissing;
+    const tags = [c.level ? `${c.level} 人口成型` : null, c.diff ? `难度 ${c.diff}` : null, c.carry?.length ? `主C ${c.carry.map((id) => unitOf(id)?.name).filter(Boolean).join('/')}` : null]
+      .filter(Boolean).map(esc).join('<span>·</span>');
+    const body = `<div class="rows">
+      ${r.detail.coreHit.length ? `<div class="row"><span class="k">已命中核心</span><span class="v">${r.detail.coreHit.map((n) => `<span class="tchip">${esc(n)}</span>`).join('')}</span></div>` : ''}
+      ${coreMissing.length ? `<div class="row"><span class="k">核心缺口</span><span class="v warnline">${coreMissing.map(esc).join('、')}</span></div>` : ''}
+      <div class="row"><span class="k">成型阵容</span><span class="v">${c.units.map((id) => { const u = unitOf(id); return u ? miniUnit(u, !sel.has(id)) : ''; }).join('')}</span></div>
+      ${(() => { const act = r.simulatedTraits.filter((t) => t.tier > 0); return act.length ? `<div class="row"><span class="k">当前羁绊</span><span class="v">${act.map((t) => `<span class="tchip ${t.aim && t.tier >= t.aim ? 'hi' : ''}">${esc(t.name)} <b>${t.tier}</b>${t.aim ? `<em style="opacity:.55;font-style:normal">/目标 ${t.aim}</em>` : ''}<em style="opacity:.55;font-style:normal">${t.num}人</em></span>`).join('')}</span></div>` : ''; })()}
+      ${r.detail.missing.filter(Boolean).length ? `<div class="row"><span class="k">还需要</span><span class="v">${r.detail.missing.map((u) => `<span class="tchip">${esc(u.name)} <b>${u.cost}费</b></span>`).join('')}</span></div>` : ''}
+      ${r.detail.ownedOutside.length ? `<div class="row"><span class="k">你还有</span><span class="v"><span class="note">${esc(r.detail.ownedOutside.join('、'))} 不在这套里，可作为转型筹码</span></span></div>` : ''}
+      ${r.detail.levelGap ? `<div class="row"><span class="k">人口</span><span class="v warnline">还差 ${r.detail.levelGap} 级才到成型人口，先按低配版打</span></div>` : ''}
+      ${c.econ ? `<div class="row"><span class="k">运营</span><span class="v"><span class="note">${esc(c.econ)}</span></span></div>` : ''}
+      ${c.rank ? `<div class="row"><span class="k">榜单</span><span class="v"><span class="note">${esc([
+        c.rank.source, c.rank.tier && `评级 ${c.rank.tier}`, c.rank.appear != null && `出场 ${c.rank.appear}`,
+        c.rank.top4 != null && `前四 ${c.rank.top4}%`, c.rank.first != null && `登顶 ${c.rank.first}%`,
+        c.rank.avg != null && `均位 ${c.rank.avg}`, c.rank.samples != null && `样本 ${c.rank.samples}`,
+      ].filter(Boolean).join(' · '))}</span></span></div>` : ''}
+      ${c.notes ? `<div class="row"><span class="k">说明</span><span class="v"><span class="note">${esc(c.notes)}</span></span></div>` : ''}
+      ${!r.viable ? '<div class="row"><span class="k">判定</span><span class="v warnline">核心件一个都没有：这套只能当「之后爬到牌再转型」的参考</span></div>' : ''}
+    </div>`;
+    return `<article class="comp ${state.open.has(c.id) ? 'open' : ''} ${r.viable ? '' : 'cold'}" data-comp="${c.id}">
+      <header class="comp-head"><span class="rank">${i + 1}</span><span class="nm">${esc(c.name)}${c.rank?.tier ? ` <small class="board-stat">${esc(c.rank.tier)} 级</small>` : ''}</span>
+        <span class="tags">${tags}</span>
+        <span class="score"><span class="meter"><i style="width:${Math.min(100, r.score)}%"></i></span><span class="num c${r.score >= 70 ? 2 : r.score >= 40 ? 4 : 1}">${r.score}</span></span>
+      </header>${state.open.has(c.id) ? body : ''}
+    </article>`;
+  }).join('') + coldNote;
+  renderSide();
+}
+
+// 三个附加面板都跟着「当前最成型的那套」走，所以统一从这里出口。
+function renderSide() {
+  renderCompStrip();
+  const top = (state.ranked || []).find((r) => r.viable) || null;
+  renderPaths(top);
+  renderHexes(top);
+  renderGear(top);
+}
+
+function renderCompStrip() {
+  const box = el('compGrid');
+  if (!state.items) {
+    box.innerHTML = `<div class="empty">本赛季装备数据未生成${state.meta.status === 'preview' ? '（等正式服数据落地）' : ''}。</div>`;
+    el('compCount').textContent = '';
+    return;
+  }
+  const version = state.setData.source?.ddragonVersion;
+  box.innerHTML = state.items.components
+    .map((c) => {
+      const n = state.owned.get(c.id) || 0;
+      return `<button class="ic ${n ? 'on' : ''}" data-comp="${c.id}" title="${esc(c.name)}">
+        ${iconHtml(c, version, 40)}<span class="nm">${esc(c.name)}</span><em class="cnt">${n}</em></button>`;
+    })
+    .join('');
+  const total = [...state.owned.values()].reduce((a, b) => a + b, 0);
+  el('compCount').textContent = `${total} 件散件${state.ownedItems.size ? ` / ${state.ownedItems.size} 件已做` : ''}`;
+}
+
+function renderPaths(top) {
+  const box = el('paths');
+  if (!state.setData.units.length || !state.selected.size) {
+    box.innerHTML = '<div class="empty">先勾棋子，这里才给得出「下一步抓谁」。</div>';
+    return;
+  }
+  const version = state.setData.source?.ddragonVersion;
+  const rows = traitPaths({
+    setData: state.setData,
+    selected: state.selected,
+    aimTraits: top?.comp.aimTraits || {},
+    compUnits: top?.comp.units || [],
+    traitRanks: state.ref?.traits || [],
+  });
+  box.innerHTML = rows
+    .map((r) => {
+      const to = r.capped ? (r.tier ? '已满层，补质量就好' : '卡池里没可抓的人了') : `再 ${r.peopleNeeded} 人 → ${r.nextMin} 人档`;
+      return `<div class="path ${r.aim ? 'aim' : ''}">
+        <span class="pn">${esc(r.name)}</span><b class="ptier">${r.tier}</b><span class="pnow">${r.num} 人</span>
+        <span class="pto">${esc(to)}${r.aim && r.num < r.aim ? ` · 目标 ${r.aim}` : ''}${r.board ? ` · 榜单 ${r.board.boards} 套 / ${r.board.avgTop4}% 前四` : ''}</span>
+        <span class="pcand">${r.candidates
+          .map((u) => `<button class="unit mini cand" data-id="${u.id}" title="点一下加入选择">${iconHtml(u, version, 30)}<span class="nm">${esc(u.name)}</span><i class="c${u.cost}">${u.cost}费</i></button>`)
+          .join('') || '<em class="hint">无可补</em>'}</span>
+      </div>`;
+    })
+    .join('');
+}
+
+function renderHexes(top) {
+  const box = el('hexes');
+  if (!state.augs) {
+    box.innerHTML = '<div class="empty">本赛季海克斯数据未生成，跑 <code>node scripts/build-set-data.mjs</code> 后会出现在这里。</div>';
+    return;
+  }
+  const byId = new Map(state.augs.augments.map((a) => [a.id, a]));
+  const curatedAll = top?.comp.hexes || [];
+  const curatedSet = new Set(curatedAll);
+  const curated = curatedAll.filter((id) => !state.chosen.has(id));
+  const list = rankAugments({
+    setData: state.setData,
+    augments: state.augs.augments,
+    ranked: state.ranked || [],
+    selected: state.selected,
+    chosen: state.chosen,
+    limit: 10,
+  }).filter((x) => !curatedSet.has(x.aug.id));
+
+  const chip = (a, kind) => {
+    const stat = boardStat(state.board?.augments, a.name);
+    return `<button class="hex ${kind || ''}" data-hex="${a.id}" title="${esc(a.desc)}"><b>${esc(a.name)}</b>${stat ? `<small class="board-stat">${esc(stat)}</small>` : ''}${kind === 'lib' ? '<em class="tag">库里推荐</em>' : ''}</button>`;
+  };
+
+  const chosenRow = [...state.chosen].map((id) => byId.get(id)).filter(Boolean);
+  const head = chosenRow.length
+    ? `<div class="hex-row"><span class="hk">已拿</span><span class="hv">${chosenRow.map((a) => chip(a, 'taken')).join('')}</span></div>`
+    : '';
+  const libRow = curated.length
+    ? `<div class="hex-row"><span class="hk">这套推荐</span><span class="hv">${curated.map((id) => byId.get(id)).filter(Boolean).map((a) => chip(a, 'lib')).join('')}</span></div>`
+    : '';
+  const body = list.length
+    ? list
+        .map(
+          (x) => `<div class="hex-row">
+            <span class="hk"><i class="hbar" style="width:${Math.round(x.score * 100)}%"></i></span>
+            <span class="hv">${chip(x.aug)}<span class="why">${x.reasons.map(esc).join(' · ')}（${esc(CATEGORY_LABEL[x.category] || '通用')}）</span></span>
+          </div>`
+        )
+        .join('')
+    : '<div class="empty">没有可选的海克斯了（都拿过了？）</div>';
+  box.innerHTML = head + libRow + body;
+}
+
+function renderGear(top) {
+  const box = el('gear');
+  if (!state.items) {
+    box.innerHTML = '<div class="empty">装备数据未生成。</div>';
+    return;
+  }
+  if (!top) {
+    box.innerHTML = '<div class="empty">核心件还没摸到，先按手上的散件打过渡，等成型再规划成装。</div>';
+    return;
+  }
+  const version = state.setData.source?.ddragonVersion;
+  const plan = planItems({ setData: state.setData, itemsData: state.items, comp: top.comp, owned: state.owned, ownedItems: state.ownedItems });
+  if (!plan.rows.length) {
+    box.innerHTML = `<div class="empty">库里没给「${esc(top.comp.name)}」标注成装推荐。</div>`;
+    return;
+  }
+  const label = { done: '已做', ready: '可合成', lack: '缺' };
+  // 从当前榜单统计该棋子的常见成装。
+  const bisOf = new Map((state.ref?.bis || []).map((b) => [b.unitId, new Set(b.items)]));
+  box.innerHTML =
+    `<p class="fine">目标阵容：${esc(top.comp.name)}（成型分 ${top.score}）· 点成装可标记为已做${state.ref?.bis?.length ? ' · 「榜单」为来源站的常见成装' : ''}</p>` +
+    plan.rows
+      .map(
+        (row) => `<div class="gear-row">
+          <span class="gunit">${iconHtml(row.unit, version, 34)}<b>${esc(row.unit.name)}</b><em>${esc(row.role)}</em></span>
+          <span class="gitems">${row.recs
+            .map((r) => {
+              const need = r.need.map((n) => esc(n.name)).join('/');
+              const onBoard = bisOf.get(row.unitId)?.has(r.item.id);
+              const stat = boardStat(state.board?.items, r.item.name);
+              return `<button class="gi ${r.state}" data-item="${r.item.id}" title="${esc(r.item.name)}：${esc(r.from.map((f) => f.name).join(' + '))}${onBoard ? ' · 榜单常见件' : ''}">
+                ${iconHtml(r.item, version, 34)}<span class="nm">${esc(r.item.name)}</span><em>${r.state === 'lack' ? `缺 ${need}` : label[r.state]}${stat ? ` · ${esc(stat)}` : onBoard ? ' · 榜单' : ''}</em></button>`;
+            })
+            .join('')}</span>
+        </div>`
+      )
+      .join('') +
+    (plan.spare.length ? `<p class="fine">散件还够顺手做：${plan.spare.map((s) => esc(s.item.name)).join('、')}</p>` : '');
+}
+
+function renderFoot() {
+  const d = state.setData;
+  if (!d.units.length) {
+    el('footNote').textContent = `S${d.set} 卡池尚未生成（${d.preview?.schedule || '等待正式服数据落地'}）`;
+    return;
+  }
+  el('footNote').textContent =
+    `S${d.set} 卡池 ${d.units.length} 个单位 / 羁绊 ${d.traits.length} 个（来源 Riot DDragon ${d.source?.ddragonVersion}）` +
+    (state.board
+      ? `；${sourceFor(state.sourceId).host} ${state.board.version} 快照（${state.board.extractedAt} 抓取），已映射 ${state.comps.length} 套${state.board.skipped.length ? `，${state.board.skipped.length} 套含未对应的棋子` : ''}`
+      : '') +
+    (d.units.some((u) => !u.traits.length) ? '；注意：部分棋子缺少羁绊映射' : '');
+}
+
+
+function unitById(id) {
+  return (state.setData?.units || []).find((u) => u.id === id) || null;
+}
+
+function snapRow(key) {
+  const [kind, i] = String(key).split(':');
+  return state.snap.mapped?.[kind]?.[Number(i)] || null;
+}
+
+function snapChip(u, key) {
+  const version = state.setData.source?.ddragonVersion;
+  const unit = u.id ? unitById(u.id) : null;
+  if (unit) {
+    const reviewing = !state.snap.applied && !key.startsWith('shop:');
+    const on = reviewing ? !u.excluded : state.selected.has(unit.id);
+    return `<button class="unit mini ${on ? 'on' : ''}" data-id="${unit.id}" data-snap="${key}" aria-pressed="${on}" title="点一下${on ? '移出' : '加入'}选择">
+      ${iconHtml(unit, version, 34)}<span class="nm">${esc(unit.name)}</span>${u.star > 1 ? `<span class="snap-star">${u.star}★</span>` : ''}</button>`;
+  }
+  if (u.variants?.length) {
+    return u.variants.map((v) => `<button class="unit mini cand" data-id="${v.id}" data-var="${key}" title="${esc(u.name)} 有多个形态，点选这一个">
+      ${iconHtml(unitById(v.id), version, 30)}<span class="nm">${esc(v.label || u.name)}</span><i class="c${v.cost}">${v.cost}费</i></button>`).join('');
+  }
+  return u.name
+    ? `<button class="tchip snap-miss" data-miss="${key}" title="卡池里没有这个名字，点一下填进搜索框">${esc(u.name)} ?</button>`
+    : '<span class="tchip snap-miss">未确认棋子</span>';
+}
+
+function snapshotUnitDetails(unit, isBoard) {
+  const pos = isBoard && unit.row && unit.col ? `第 ${unit.row} 排 · 第 ${unit.col} 列` : '';
+  return [pos, unit.appearance, unit.items.join('、')].filter(Boolean)
+    .map((label) => `<small class="snap-unit-items">${esc(label)}</small>`).join('');
+}
+
+function renderSnapshot() {
+  const snap = state.snap;
+  const thumb = el('snapThumb');
+  el('snapPreview').hidden = !snap.thumb;
+  if (snap.thumb) thumb.src = snap.thumb;
+  else thumb.removeAttribute('src');
+  thumb.style.transform = `rotate(${snap.rotation}deg)`;
+  thumb.classList.toggle('sideways', snap.rotation % 180 !== 0);
+  const locked = snap.busy || snap.importing;
+  el('snapRun').disabled = !snap.file || !state.setData?.units.length || locked || snap.ping?.login === false || snap.ping?.cloud === false;
+  el('snapClear').disabled = !snap.file || locked;
+  el('snapRotate').disabled = !snap.file || locked;
+  el('snapPaste').disabled = locked;
+  el('snapUrlLoad').disabled = locked;
+  el('snapFile').disabled = locked;
+
+  const status = el('snapStatus');
+  if (snap.importing) {
+    status.className = 'snap-status wait';
+    status.textContent = '正在读取图片…';
+  } else if (snap.busy) {
+    status.className = 'snap-status wait';
+    status.textContent = '正在准备模拟识别结果…';
+  } else if (snap.error) {
+    status.className = 'snap-status bad';
+    status.textContent = snap.error.message;
+  } else if (snap.mapped) {
+    status.className = 'snap-status ok';
+    status.textContent = snap.applied ? '识别结果已应用。' : '识别完成，请核对结果后应用。';
+  } else if (snap.file) {
+    status.className = 'snap-status ok';
+    status.textContent = '截图已就绪，点「开始识别」。';
+  } else {
+    status.className = 'snap-status';
+    status.textContent = snap.mapped ? '已导入一张截图。' : '未导入截图 — 直接手选棋子也能出完整推荐。';
+  }
+
+  const box = el('snapResult');
+  const m = snap.mapped;
+  if (!m) { box.innerHTML = ''; return; }
+  const head = [
+    snap.meta?.model ? `模型 ${esc(snap.meta.model)}` : null,
+    snap.meta?.elapsedMs ? `用时 ${(snap.meta.elapsedMs / 1000).toFixed(1)}s` : null,
+    m.level ? `人口 ${m.level}` : null,
+    m.gold != null ? `金币 ${m.gold}` : null,
+    m.hp != null ? `血量 ${m.hp}` : null,
+    m.stage ? `阶段 ${esc(m.stage)}` : null,
+  ].filter(Boolean);
+  const row = (label, list, key) =>
+    list.length ? `<div class="snap-row"><span class="snap-k">${label} ${list.length}</span><span class="snap-v">${list.map((u, i) => `<span class="snap-unit-result"><span>${snapChip(u, `${key}:${i}`)}</span>${snapshotUnitDetails(u, key === 'board')}</span>`).join('')}</span></div>` : '';
+  const traitRow = (label, values, empty) =>
+    `<div class="snap-row"><span class="snap-k">${label}</span><span class="snap-v">${values.map((trait) => {
+      const stats = [trait.count != null ? `${trait.count} 人` : '', trait.tier ? `${trait.tier} 档` : ''].filter(Boolean);
+      return `<span class="tchip ${trait.id ? '' : 'snap-miss'}">${esc(trait.name)}${stats.length ? ` <b>${esc(stats.join(' · '))}</b>` : ''}${trait.id ? '' : '（未匹配）'}</span>`;
+    }).join('') || `<span class="fine">${empty}</span>`}</span></div>`;
+  const board = m.board.filter((unit) => unit.id && !unit.excluded).map((unit) => unit.id);
+  const calculated = traitBreakdown(state.setData, board).filter((trait) => trait.tier > 0)
+    .map((trait) => ({ ...trait, count: trait.num }));
+  const inventory = (label, list) => list.length
+    ? `<div class="snap-row"><span class="snap-k">${label}</span><span class="snap-v">${list
+        .map((c) => `<span class="tchip ${c.id ? '' : 'snap-miss'}">${esc(c.name)} <b>${c.count}</b></span>`).join('')}</span></div>`
+    : '';
+  const need = [];
+  const unresolved = [...m.board, ...m.bench, ...m.shop].filter((u) => u.variants);
+  if (unresolved.length) need.push(`点击对应形态确认：${unresolved.map((u) => esc(u.name)).join('、')}`);
+  if (m.missing.length) need.push(`卡池里没对上：${m.missing.map((u) => esc(u.name)).join('、')}（可能是别赛季棋子或名字写法不同）`);
+  if (m.componentMissing.length) need.push(`散件没对上：${m.componentMissing.map(esc).join('、')}`);
+  box.innerHTML =
+    `<div class="snap-row"><span class="snap-k">识别</span><span class="snap-v">${head.map((h) => `<span class="tchip">${h}</span>`).join('')}</span></div>` +
+    row('场上', m.board, 'board') + row('备战席', m.bench, 'bench') + row('商店', m.shop, 'shop') +
+    traitRow('截图羁绊', m.traits, '未读到') + (board.length ? traitRow('场上复算', calculated, '按已确认棋子暂无激活羁绊') : '') +
+    inventory('散件', m.components) + inventory('未装备成装', m.items) +
+    (!snap.applied ? `<p class="fine">点击场上或备战席的棋子可排除误识别。商店棋子需单独点选。</p><div class="snap-actions snap-load-actions"><button class="primary" data-snap-apply ${locked ? 'disabled' : ''}>应用到推荐</button></div>` : '') +
+    (m.notes ? `<p class="fine">补充：${esc(m.notes)}</p>` : '') +
+    (need.length ? `<p class="snap-miss">${need.join('<br />')}</p>` : '');
+}
+
+async function importSnapshot(read) {
+  const snap = state.snap;
+  if (snap.busy || snap.importing) return;
+  snap.importing = true;
+  snap.error = null;
+  renderSnapshot();
+  let thumb;
+  try {
+    const file = await read();
+    if (!file) return;
+    if (file.size > MAX_SOURCE_BYTES) throw new Error('请选择不超过 20 MB 的图片。');
+    const kind = await imageKind(file);
+    if (!kind) throw new Error('请选择 JPG、PNG、WebP、GIF、BMP 或 AVIF 图片。');
+    const source = file.type === kind ? file : new Blob([file], { type: kind });
+    thumb = URL.createObjectURL(source);
+    const preview = new Image();
+    preview.src = thumb;
+    try { await preview.decode(); } catch { throw new Error('图片无法解码，请换一张或转成 PNG 后再试。'); }
+    if (snap.thumb) URL.revokeObjectURL(snap.thumb);
+    Object.assign(snap, { file: source, thumb, rotation: 0, mapped: null, meta: null, sent: null, applied: false });
+    thumb = null;
+  } catch (error) {
+    snap.error = { message: error.message };
+  } finally {
+    if (thumb) URL.revokeObjectURL(thumb);
+    snap.importing = false;
+    renderSnapshot();
+  }
+}
+
+const setSnapFile = (file) => importSnapshot(() => file);
+
+async function readClipboardImage() {
+  try {
+    const entries = await navigator.clipboard.read();
+    for (const entry of entries) {
+      const type = entry.types.find((candidate) => looksLikeImage({ type: candidate }));
+      if (type) return await entry.getType(type);
+    }
+  } catch {
+    throw new Error('无法读取剪贴板，请按 Ctrl+V 粘贴或选择文件。');
+  }
+  throw new Error('剪贴板里没有可导入的图片。');
+}
+
+function applySnapshot() {
+  const snap = state.snap;
+  if (!snap.mapped || snap.applied || snap.busy || snap.importing) return;
+  autoSelect(snap.mapped).ids.forEach((id) => state.selected.add(id));
+  for (const { id, count } of snap.mapped.components) {
+    if (id) state.owned.set(id, Math.max(state.owned.get(id) || 0, Math.min(4, count)));
+  }
+  for (const { id } of snap.mapped.items) if (id) state.ownedItems.add(id);
+  if (snap.mapped.level >= 5 && snap.mapped.level <= 10) {
+    state.level = snap.mapped.level;
+  }
+  snap.applied = true;
+  renderUnits();
+  renderResults();
+  renderSnapshot();
+}
+
+async function runRecognize() {
+  if (loadingSet || !state.snap.file || state.snap.busy || state.snap.importing || !state.setData?.units.length) return;
+  const set = state.meta;
+  const generation = boardLoad;
+  const reference = modelReference?.get();
+  state.snap.busy = true;
+  state.snap.error = null;
+  renderSnapshot();
+  try {
+    const payload = await compressSnapshot(state.snap.file, state.snap.rotation, reference ? 850_000 : undefined);
+    state.snap.sent = { kb: Math.round(payload.bytes / 1024), edge: payload.edge };
+    const result = await recognizeSnapshot({ ...payload, modelReference: reference });
+    if (state.meta !== set || generation !== boardLoad) return;
+    state.snap.meta = result.meta;
+    state.snap.mapped = matchSnapshot(result.snapshot, { setData: state.setData, itemsData: state.items });
+    state.snap.applied = false;
+  } catch (error) {
+    state.snap.error = { message: error?.message || '识别失败了。' };
+  } finally {
+    state.snap.busy = false;
+    renderSnapshot();
+  }
+}
+
+function clearSnapshot() {
+  if (state.snap.thumb) URL.revokeObjectURL(state.snap.thumb);
+  state.snap.file = null;
+  state.snap.rotation = 0;
+  state.snap.thumb = '';
+  state.snap.error = null;
+  state.snap.mapped = null;
+  state.snap.meta = null;
+  state.snap.sent = null;
+  state.snap.applied = false;
+  el('snapFile').value = '';
+  renderSnapshot();
+}
+
+function bind() {
+  screenReader = bindScreenReader({
+    start: el('screenStart'), finish: el('screenFinish'), stop: el('screenStop'), photo: el('screenPhoto'),
+    video: el('screenVideo'), status: el('screenStatus'), result: el('screenDirection'),
+    getContext: () => state.comps.length ? {
+      setData: state.setData, comps: state.comps, level: state.level, selected: [...state.selected],
+    } : null,
+  });
+  modelReference = bindModelReference({
+    file: el('modelFile'), unit: el('modelUnit'), display: el('modelDisplay'),
+    angle: el('modelAngle'), use: el('modelUse'), useAll: el('modelUseAll'),
+    clear: el('modelClear'), status: el('modelStatus'), preview: el('modelReferencePreview'),
+    game: el('modelGame'), save: el('modelSave'), load: el('modelLoad'), remove: el('modelRemove'),
+  });
+  el('setSelect').innerHTML = SETS.map((s) => `<option value="${s.set}">${esc(s.label)}${s.status === 'preview' ? ' · 待上线' : ''}</option>`).join('');
+  el('boardSource').replaceChildren(...BOARD_SOURCES.map(({ id, host, game }) => new Option(`${game} · ${host}`, id)));
+  el('boardSource').value = state.sourceId;
+  el('boardSource').onchange = (event) => {
+    state.sourceId = sourceFor(event.target.value).id;
+    modelReference.setScope(state.sourceId, !loadingSet && state.setData?.units.length ? state.setData.set : null, sourceFor(state.sourceId).game);
+    try { localStorage.setItem(SOURCE_KEY, state.sourceId); } catch { /* session choice still works */ }
+    void loadBoard();
+  };
+  el('setSelect').onchange = (e) => loadSet(e.target.value);
+  el('search').oninput = (e) => { state.query = e.target.value.trim(); renderUnits(); };
+  el('clearSel').onclick = () => { state.selected.clear(); renderUnits(); renderResults(); };
+  el('costTabs').onclick = (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    state.cost = b.dataset.cost === '' ? null : Number(b.dataset.cost);
+    renderCostTabs();
+    renderUnits();
+  };
+  el('unitGrid').onclick = (e) => {
+    const b = e.target.closest('.unit');
+    if (!b) return;
+    state.selected.has(b.dataset.id) ? state.selected.delete(b.dataset.id) : state.selected.add(b.dataset.id);
+    renderUnits();
+    renderResults();
+  };
+  el('selectedList').onclick = (e) => {
+    const b = e.target.closest('.unit');
+    if (!b) return;
+    state.selected.delete(b.dataset.id);
+    renderUnits();
+    renderResults();
+  };
+  el('comps').onclick = (e) => {
+    const a = e.target.closest('.comp');
+    if (!a || e.target.closest('.unit')) return;
+    const id = a.dataset.comp;
+    state.open.has(id) ? state.open.delete(id) : state.open.add(id);
+    renderResults();
+  };
+  el('compGrid').onclick = (e) => {
+    const b = e.target.closest('.ic');
+    if (!b) return;
+    const id = b.dataset.comp;
+    // 散件按 0→1→2→3→4 循环：一件最多同时握 4 个也是常见情况(打野/野怪轮)。
+    const next = ((state.owned.get(id) || 0) + 1) % 5;
+    next ? state.owned.set(id, next) : state.owned.delete(id);
+    renderSide();
+  };
+  el('clearComps').onclick = () => {
+    state.owned.clear();
+    state.ownedItems.clear();
+    renderSide();
+  };
+  el('paths').onclick = (e) => {
+    const b = e.target.closest('.cand');
+    if (!b) return;
+    state.selected.add(b.dataset.id);
+    renderUnits();
+    renderResults();
+  };
+  el('hexes').onclick = (e) => {
+    const b = e.target.closest('.hex');
+    if (!b) return;
+    state.chosen.has(b.dataset.hex) ? state.chosen.delete(b.dataset.hex) : state.chosen.add(b.dataset.hex);
+    renderSide();
+  };
+  el('gear').onclick = (e) => {
+    const b = e.target.closest('.gi');
+    if (!b) return;
+    state.ownedItems.has(b.dataset.item) ? state.ownedItems.delete(b.dataset.item) : state.ownedItems.add(b.dataset.item);
+    renderSide();
+  };
+  // 快照导入：文件选择 / 拖拽 / 粘贴三种入口，识别结果只做「勾选」，推荐仍由本地引擎出。
+  el('snapFile').onchange = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (file) void setSnapFile(file);
+  };
+  el('snapPaste').onclick = () => importSnapshot(readClipboardImage);
+  el('snapUrlForm').onsubmit = (e) => {
+    e.preventDefault();
+    const url = el('snapUrl').value;
+    void importSnapshot(() => importImageUrl(url));
+  };
+  el('snapRotate').onclick = () => {
+    state.snap.rotation = (state.snap.rotation + 90) % 360;
+    Object.assign(state.snap, { mapped: null, applied: false, error: null });
+    renderSnapshot();
+  };
+  el('snapRun').onclick = runRecognize;
+  el('snapClear').onclick = clearSnapshot;
+  const drop = el('snapDrop');
+  ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => setSnapFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]));
+  document.addEventListener('paste', (e) => {
+    const files = [...((e.clipboardData && e.clipboardData.items) || [])]
+      .filter((x) => x.kind === 'file')
+      .map((x) => x.getAsFile())
+      .filter(Boolean);
+    // 没有 image MIME 的剪贴板文件（部分截图工具）也放行，格式由 imageKind 嗅探决定。
+    const file = files.find(looksLikeImage) || e.clipboardData?.files?.[0] || files[0];
+    if (file) { e.preventDefault(); void setSnapFile(file); }
+  });
+  el('snapResult').onclick = (e) => {
+    if (e.target.closest('[data-snap-apply]')) { applySnapshot(); return; }
+    if (state.snap.busy || state.snap.importing) return;
+    const chip = e.target.closest('[data-snap],[data-var]');
+    if (chip) {
+      const id = chip.dataset.id;
+      const row = chip.dataset.var ? snapRow(chip.dataset.var) : null;
+      if (row) {
+        row.id = id;
+        row.variants = null;
+        if (!state.snap.applied && !chip.dataset.var.startsWith('shop:')) { renderSnapshot(); return; }
+      }
+      if (!state.snap.applied && chip.dataset.snap && !chip.dataset.snap.startsWith('shop:')) {
+        const candidate = snapRow(chip.dataset.snap);
+        if (candidate) candidate.excluded = !candidate.excluded;
+        renderSnapshot();
+        return;
+      }
+      state.selected.has(id) ? state.selected.delete(id) : state.selected.add(id);
+      renderUnits();
+      renderResults();
+      renderSnapshot();
+      return;
+    }
+    const miss = e.target.closest('[data-miss]');
+    if (miss) {
+      const row = snapRow(miss.dataset.miss);
+      if (row) { state.query = row.name; el('search').value = row.name; renderUnits(); el('search').focus(); }
+    }
+  };
+  pingSnapshot().then((ping) => { state.snap.ping = ping; renderSnapshot(); });
+  // 便于在控制台手测引擎：state 暴露给 window
+  window.__tft = { state, recommend, validateComps, traitPaths, rankAugments, planItems, matchSnapshot, compressSnapshot, setSnapFile, runRecognize, clearSnapshot };
+}
+
+bind();
+loadSet(SETS[0].set);

@@ -1,0 +1,1555 @@
+{
+  "source": "datatft.com",
+  "season": 18,
+  "version": "18.7",
+  "extractedAt": "2026-11-23",
+  "counts": {
+    "items": 137,
+    "characters": 65,
+    "augments": 256,
+    "comps": 36
+  },
+  "pages": {
+    "items": "https://www.datatft.com/item/tier",
+    "augments": "https://www.datatft.com/augment/tier",
+    "comps": "https://www.datatft.com/comps"
+  },
+  "augments": [
+    {
+      "id": "SilverDestiny_1_",
+      "name": "白银命运++",
+      "icon": "https://static.datatft.com/images/hex2/SilverDestiny_1_.png",
+      "rating": "S"
+    },
+    {
+      "id": "BranchingOut_1_",
+      "name": "节外生枝",
+      "icon": "https://static.datatft.com/images/hex2/BranchingOut_1_.png",
+      "rating": "S"
+    },
+    {
+      "id": "CarveAPath_1_",
+      "name": "战时补给：暴风大剑",
+      "icon": "https://static.datatft.com/images/hex2/CarveAPath_1_.png",
+      "rating": "S"
+    },
+    {
+      "id": "GriefoftheGreatGoddess_1_",
+      "name": "战时补给：女神之泪",
+      "icon": "https://static.datatft.com/images/hex2/GriefoftheGreatGoddess_1_.png",
+      "rating": "S"
+    },
+    {
+      "id": "RollingForDays_1_",
+      "name": "D个痛快！",
+      "icon": "https://static.datatft.com/images/hex2/RollingForDays_1_.png",
+      "rating": "S"
+    },
+    {
+      "id": "SmallGrabBag_1_",
+      "name": "小小福袋",
+      "icon": "https://static.datatft.com/images/hex2/SmallGrabBag_1_.png",
+      "rating": "S"
+    },
+    {
+      "id": "DA_18_RiftbeastTraitAugment_2_",
+      "name": "欧米茄之怪",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_RiftbeastTraitAugment_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "Swordsmith_2_",
+      "name": "剑之工匠",
+      "icon": "https://static.datatft.com/images/hex2/Swordsmith_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "BoosterPack1_2_",
+      "name": "扩展包++",
+      "icon": "https://static.datatft.com/images/hex2/BoosterPack1_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "InvestmentStrategy_2_",
+      "name": "投资策略 I",
+      "icon": "https://static.datatft.com/images/hex2/InvestmentStrategy_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "CalculatedLoss_2_",
+      "name": "存心失利",
+      "icon": "https://static.datatft.com/images/hex2/CalculatedLoss_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "Rodsmith_2_",
+      "name": "杖之工匠",
+      "icon": "https://static.datatft.com/images/hex2/Rodsmith_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "SpreadingRoots_2_",
+      "name": "蔓延之根",
+      "icon": "https://static.datatft.com/images/hex2/SpreadingRoots_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "SpreadingRoots_2_",
+      "name": "蔓延之根+",
+      "icon": "https://static.datatft.com/images/hex2/SpreadingRoots_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "GrabBag_2_",
+      "name": "大百宝袋",
+      "icon": "https://static.datatft.com/images/hex2/GrabBag_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "ExplosiveGrowth_2_",
+      "name": "爆炸式增长+",
+      "icon": "https://static.datatft.com/images/hex2/ExplosiveGrowth_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "PromisedProtection_2_",
+      "name": "承诺之护",
+      "icon": "https://static.datatft.com/images/hex2/PromisedProtection_2_.png",
+      "rating": "S"
+    },
+    {
+      "id": "DA_18_LuxAugmentII_3_",
+      "name": "创世神",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_LuxAugmentII_3_.png",
+      "rating": "S"
+    },
+    {
+      "id": "TacticiansKitchen_3_",
+      "name": "锅铲厨房",
+      "icon": "https://static.datatft.com/images/hex2/TacticiansKitchen_3_.png",
+      "rating": "S"
+    },
+    {
+      "id": "TheTraitTree_3_",
+      "name": "羁绊树+",
+      "icon": "https://static.datatft.com/images/hex2/TheTraitTree_3_.png",
+      "rating": "S"
+    },
+    {
+      "id": "TheTraitTree_3_",
+      "name": "羁绊树",
+      "icon": "https://static.datatft.com/images/hex2/TheTraitTree_3_.png",
+      "rating": "S"
+    },
+    {
+      "id": "Trade_3_",
+      "name": "贸易中心",
+      "icon": "https://static.datatft.com/images/hex2/Trade_3_.png",
+      "rating": "S"
+    },
+    {
+      "id": "DA_TraitLadder_3_",
+      "name": "羁绊天梯",
+      "icon": "https://static.datatft.com/images/hex2/DA_TraitLadder_3_.png",
+      "rating": "S"
+    },
+    {
+      "id": "Invested_3_",
+      "name": "投资++",
+      "icon": "https://static.datatft.com/images/hex2/Invested_3_.png",
+      "rating": "S"
+    },
+    {
+      "id": "Recombobulator_1_",
+      "name": "变形重组器",
+      "icon": "https://static.datatft.com/images/hex2/Recombobulator_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "LateGameSpecialist_1_",
+      "name": "后期专家",
+      "icon": "https://static.datatft.com/images/hex2/LateGameSpecialist_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_ChampDeliveryPlusPlus_1_",
+      "name": "弈子配送++",
+      "icon": "https://static.datatft.com/images/hex2/DA_ChampDeliveryPlusPlus_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "OneTwoFive_1_",
+      "name": "一，二，五！",
+      "icon": "https://static.datatft.com/images/hex2/OneTwoFive_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "PandorasBench_1_",
+      "name": "潘朵拉的备战席",
+      "icon": "https://static.datatft.com/images/hex2/PandorasBench_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_VerticalityI_1_",
+      "name": "纵深 I",
+      "icon": "https://static.datatft.com/images/hex2/DA_VerticalityI_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "BoxingLessons_1_",
+      "name": "拳击课程",
+      "icon": "https://static.datatft.com/images/hex2/BoxingLessons_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "SilverDestiny_1_",
+      "name": "白银命运+",
+      "icon": "https://static.datatft.com/images/hex2/SilverDestiny_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_CapitalGainsI_1_",
+      "name": "资本利得 I",
+      "icon": "https://static.datatft.com/images/hex2/DA_CapitalGainsI_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Expedition_1_",
+      "name": "远征",
+      "icon": "https://static.datatft.com/images/hex2/Expedition_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Caretaker_sChosen_1_",
+      "name": "游神的盟友",
+      "icon": "https://static.datatft.com/images/hex2/Caretaker_sChosen_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "BranchingOut_1_",
+      "name": "节外生枝+",
+      "icon": "https://static.datatft.com/images/hex2/BranchingOut_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Ascension_1_",
+      "name": "部分飞升",
+      "icon": "https://static.datatft.com/images/hex2/Ascension_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_QuickStreaks_1_",
+      "name": "连败连胜才能连鸡",
+      "icon": "https://static.datatft.com/images/hex2/DA_QuickStreaks_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "LongtimeCrafting_1_",
+      "name": "休眠锻炉",
+      "icon": "https://static.datatft.com/images/hex2/LongtimeCrafting_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "GroupHug1_1_",
+      "name": "拥抱 I",
+      "icon": "https://static.datatft.com/images/hex2/GroupHug1_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_18_SolarTraitAugment_1_",
+      "name": "太阳的抉择",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_SolarTraitAugment_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_ChampDelivery_1_",
+      "name": "弈子配送",
+      "icon": "https://static.datatft.com/images/hex2/DA_ChampDelivery_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_ChampDeliveryPlus_1_",
+      "name": "弈子配送+",
+      "icon": "https://static.datatft.com/images/hex2/DA_ChampDeliveryPlus_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "MissedConnections_1_",
+      "name": "别再错过",
+      "icon": "https://static.datatft.com/images/hex2/MissedConnections_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "RecurveWrecker_1_",
+      "name": "战时补给：反曲之弓",
+      "icon": "https://static.datatft.com/images/hex2/RecurveWrecker_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "SlightlyMagicRoll_1_",
+      "name": "轻量魔法投掷",
+      "icon": "https://static.datatft.com/images/hex2/SlightlyMagicRoll_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "missing-t1",
+      "name": "锻造挚友",
+      "icon": "https://static.datatft.com/images/hex2/missing-t1.png",
+      "rating": "A"
+    },
+    {
+      "id": "SilverDestiny_1_",
+      "name": "白银命运",
+      "icon": "https://static.datatft.com/images/hex2/SilverDestiny_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "PatienceIsAVirtue_1_",
+      "name": "耐心是一种美德",
+      "icon": "https://static.datatft.com/images/hex2/PatienceIsAVirtue_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "ExtraBuckles_1_",
+      "name": "战时补给：巨人腰带",
+      "icon": "https://static.datatft.com/images/hex2/ExtraBuckles_1_.png",
+      "rating": "A"
+    },
+    {
+      "id": "SoloPlate_2_",
+      "name": "单身板甲",
+      "icon": "https://static.datatft.com/images/hex2/SoloPlate_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "BodyguardsTraining_2_",
+      "name": "利落保镖",
+      "icon": "https://static.datatft.com/images/hex2/BodyguardsTraining_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "LegionofThrees_2_",
+      "name": "三幻神",
+      "icon": "https://static.datatft.com/images/hex2/LegionofThrees_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_BlackthornTraitAugment_2_",
+      "name": "装备提炼",
+      "icon": "https://static.datatft.com/images/hex2/DA_BlackthornTraitAugment_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "EpicRolldown_2_",
+      "name": "8级D干的传说",
+      "icon": "https://static.datatft.com/images/hex2/EpicRolldown_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Trade_2_",
+      "name": "DD街区",
+      "icon": "https://static.datatft.com/images/hex2/Trade_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_18_FOURcing_2_",
+      "name": "四之力",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_FOURcing_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DuoQueue_2_",
+      "name": "双排",
+      "icon": "https://static.datatft.com/images/hex2/DuoQueue_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "SpiritofRedemption_2_",
+      "name": "救赎盔甲",
+      "icon": "https://static.datatft.com/images/hex2/SpiritofRedemption_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "ArcaneViktory_2_",
+      "name": "双城赢家",
+      "icon": "https://static.datatft.com/images/hex2/ArcaneViktory_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "TimeSkip_2_",
+      "name": "时间跳跃",
+      "icon": "https://static.datatft.com/images/hex2/TimeSkip_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Caretaker_sChosen_2_",
+      "name": "游神的眷顾",
+      "icon": "https://static.datatft.com/images/hex2/Caretaker_sChosen_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "CyberneticUplink_2_",
+      "name": "源计划上行链路",
+      "icon": "https://static.datatft.com/images/hex2/CyberneticUplink_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "SeraphimsStaff_2_",
+      "name": "炽天使之拥",
+      "icon": "https://static.datatft.com/images/hex2/SeraphimsStaff_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "ExplosiveGrowth_2_",
+      "name": "爆炸式增长",
+      "icon": "https://static.datatft.com/images/hex2/ExplosiveGrowth_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "LearningFromExperience_2_",
+      "name": "耐心学习",
+      "icon": "https://static.datatft.com/images/hex2/LearningFromExperience_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Ascension_2_",
+      "name": "飞升",
+      "icon": "https://static.datatft.com/images/hex2/Ascension_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "EarlyLearning_2_",
+      "name": "宝宝学院",
+      "icon": "https://static.datatft.com/images/hex2/EarlyLearning_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "HealthyGains_2_",
+      "name": "心之钢",
+      "icon": "https://static.datatft.com/images/hex2/HealthyGains_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "AMagicalRoll_2_",
+      "name": "魔法投掷",
+      "icon": "https://static.datatft.com/images/hex2/AMagicalRoll_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "AdvancedLoan_2_",
+      "name": "高级贷款+",
+      "icon": "https://static.datatft.com/images/hex2/AdvancedLoan_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_18_CovenTraitAugment_2_",
+      "name": "女巫使魔",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_CovenTraitAugment_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "FrontlineFoundation_2_",
+      "name": "前线地基",
+      "icon": "https://static.datatft.com/images/hex2/FrontlineFoundation_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "UltraRapidFire_2_",
+      "name": "厨神阿福",
+      "icon": "https://static.datatft.com/images/hex2/UltraRapidFire_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "SpeedyDoubleKill_2_",
+      "name": "一波带走俩",
+      "icon": "https://static.datatft.com/images/hex2/SpeedyDoubleKill_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Pilfer_2_",
+      "name": "挖角",
+      "icon": "https://static.datatft.com/images/hex2/Pilfer_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "ExclusiveCustomization_2_",
+      "name": "专属定制",
+      "icon": "https://static.datatft.com/images/hex2/ExclusiveCustomization_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "PortableForge_2_",
+      "name": "便携锻炉",
+      "icon": "https://static.datatft.com/images/hex2/PortableForge_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "HeroicGrabBag_2_",
+      "name": "英勇福袋++",
+      "icon": "https://static.datatft.com/images/hex2/HeroicGrabBag_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "HeroicGrabBag_2_",
+      "name": "英勇福袋",
+      "icon": "https://static.datatft.com/images/hex2/HeroicGrabBag_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "WovenMagic_3_",
+      "name": "纺织魔法",
+      "icon": "https://static.datatft.com/images/hex2/WovenMagic_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "GildedSteel_2_",
+      "name": "镀金钢铁",
+      "icon": "https://static.datatft.com/images/hex2/GildedSteel_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "GoldenDestiny_2_",
+      "name": "黄金命运+",
+      "icon": "https://static.datatft.com/images/hex2/GoldenDestiny_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Dizzy_2_",
+      "name": "纷乱头脑",
+      "icon": "https://static.datatft.com/images/hex2/Dizzy_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Hyperroll_2_",
+      "name": "花到上头",
+      "icon": "https://static.datatft.com/images/hex2/Hyperroll_2_.png",
+      "rating": "A"
+    },
+    {
+      "id": "PrismaticDestiny_3_",
+      "name": "棱彩命运+",
+      "icon": "https://static.datatft.com/images/hex2/PrismaticDestiny_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "GoldenTicket_3_",
+      "name": "棱彩门票",
+      "icon": "https://static.datatft.com/images/hex2/GoldenTicket_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "UpwardMobility_3_",
+      "name": "上进心",
+      "icon": "https://static.datatft.com/images/hex2/UpwardMobility_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "RadiantRelic_3_",
+      "name": "光明圣物",
+      "icon": "https://static.datatft.com/images/hex2/RadiantRelic_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Silverticket_3_",
+      "name": "大买特买",
+      "icon": "https://static.datatft.com/images/hex2/Silverticket_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "HoldTheLine_3_",
+      "name": "坚守防线",
+      "icon": "https://static.datatft.com/images/hex2/HoldTheLine_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "MinMax_3_",
+      "name": "可大可小",
+      "icon": "https://static.datatft.com/images/hex2/MinMax_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "MoneyMonsoon_3_",
+      "name": "摇钱树",
+      "icon": "https://static.datatft.com/images/hex2/MoneyMonsoon_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Retribution_3_",
+      "name": "正义报复",
+      "icon": "https://static.datatft.com/images/hex2/Retribution_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "WandOverflow_3_",
+      "name": "法杖溢流",
+      "icon": "https://static.datatft.com/images/hex2/WandOverflow_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "CallToChaos_3_",
+      "name": "混沌召唤",
+      "icon": "https://static.datatft.com/images/hex2/CallToChaos_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "BuriedTreasures_3_",
+      "name": "珍藏财宝 III",
+      "icon": "https://static.datatft.com/images/hex2/BuriedTreasures_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "GoldenGamble_3_",
+      "name": "黄金赌约+",
+      "icon": "https://static.datatft.com/images/hex2/GoldenGamble_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "BeltOverflow_3_",
+      "name": "腰带溢流",
+      "icon": "https://static.datatft.com/images/hex2/BeltOverflow_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "GoldenGamble_3_",
+      "name": "黄金赌约++",
+      "icon": "https://static.datatft.com/images/hex2/GoldenGamble_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "GoldenGamble_3_",
+      "name": "黄金赌约",
+      "icon": "https://static.datatft.com/images/hex2/GoldenGamble_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "ComponentGrabBag_3_",
+      "name": "灵活",
+      "icon": "https://static.datatft.com/images/hex2/ComponentGrabBag_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "ForgedInStrength_3_",
+      "name": "神力天铸",
+      "icon": "https://static.datatft.com/images/hex2/ForgedInStrength_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "ComebackStory_3_",
+      "name": "绝境反击",
+      "icon": "https://static.datatft.com/images/hex2/ComebackStory_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "BladeOverflow_3_",
+      "name": "大剑溢流",
+      "icon": "https://static.datatft.com/images/hex2/BladeOverflow_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "RichGetRicher_3_",
+      "name": "对冲基金",
+      "icon": "https://static.datatft.com/images/hex2/RichGetRicher_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "TheBaronsLair_3_",
+      "name": "男爵幻域",
+      "icon": "https://static.datatft.com/images/hex2/TheBaronsLair_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "BronzeForLife_3_",
+      "name": "终身黄铜 II",
+      "icon": "https://static.datatft.com/images/hex2/BronzeForLife_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "Coronation_3_",
+      "name": "加冕礼",
+      "icon": "https://static.datatft.com/images/hex2/Coronation_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "OneBuffTwoBuff_3_",
+      "name": "1个霸符，2个霸符",
+      "icon": "https://static.datatft.com/images/hex2/OneBuffTwoBuff_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "WeStickTogether_3_",
+      "name": "水乳交融",
+      "icon": "https://static.datatft.com/images/hex2/WeStickTogether_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "UrfsGrabBag_3_",
+      "name": "阿福的百宝袋",
+      "icon": "https://static.datatft.com/images/hex2/UrfsGrabBag_3_.png",
+      "rating": "A"
+    },
+    {
+      "id": "DA_18_OnesTwosThree_1_",
+      "name": "一一二三",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_OnesTwosThree_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Kingslayer_1_",
+      "name": "弑君突刺",
+      "icon": "https://static.datatft.com/images/hex2/Kingslayer_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_18_WispRebatePlus_1_",
+      "name": "仙灵报恩",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_WispRebatePlus_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_18_WispRebatePlusPlus_1_",
+      "name": "仙灵报恩+",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_WispRebatePlusPlus_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Youngandwildandfree_1_",
+      "name": "不拘一格",
+      "icon": "https://static.datatft.com/images/hex2/Youngandwildandfree_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Buildinganarmy_1_",
+      "name": "团队建设",
+      "icon": "https://static.datatft.com/images/hex2/Buildinganarmy_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_LoadedDice_1_",
+      "name": "灌铅骰子",
+      "icon": "https://static.datatft.com/images/hex2/DA_LoadedDice_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "BandThieves_1_",
+      "name": "窃贼帮派",
+      "icon": "https://static.datatft.com/images/hex2/BandThieves_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "StandUnited_1_",
+      "name": "联合作战",
+      "icon": "https://static.datatft.com/images/hex2/StandUnited_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "CognitiveTax_1_",
+      "name": "认知税",
+      "icon": "https://static.datatft.com/images/hex2/CognitiveTax_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "CognitiveTax_1_",
+      "name": "认知税+",
+      "icon": "https://static.datatft.com/images/hex2/CognitiveTax_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "ItemGrabBag_1_",
+      "name": "装备百宝袋 I",
+      "icon": "https://static.datatft.com/images/hex2/ItemGrabBag_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "FeelingLucky_1_",
+      "name": "手气不错",
+      "icon": "https://static.datatft.com/images/hex2/FeelingLucky_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "IronAssets_1_",
+      "name": "黑铁资产",
+      "icon": "https://static.datatft.com/images/hex2/IronAssets_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "MarksMan_1_",
+      "name": "集中火力",
+      "icon": "https://static.datatft.com/images/hex2/MarksMan_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_FutureFocused_1_",
+      "name": "高瞻远瞩",
+      "icon": "https://static.datatft.com/images/hex2/DA_FutureFocused_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Pandora_1_",
+      "name": "潘朵拉的装备 I",
+      "icon": "https://static.datatft.com/images/hex2/Pandora_1_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_18_CovenTraitAugment_LootToAP_2_",
+      "name": "黑暗仪式",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_CovenTraitAugment_LootToAP_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_VerticalityII_2_",
+      "name": "纵深 II",
+      "icon": "https://static.datatft.com/images/hex2/DA_VerticalityII_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "BirthdayReunion_2_",
+      "name": "生日聚会",
+      "icon": "https://static.datatft.com/images/hex2/BirthdayReunion_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "NoScoutNoPivot_2_",
+      "name": "不侦察，不变阵",
+      "icon": "https://static.datatft.com/images/hex2/NoScoutNoPivot_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "InfinityProtection_2_",
+      "name": "三相庇护",
+      "icon": "https://static.datatft.com/images/hex2/InfinityProtection_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "ConstructaCompanion_2_.TFT_Set16",
+      "name": "挑个好伙计！",
+      "icon": "https://static.datatft.com/images/hex2/ConstructaCompanion_2_.TFT_Set16.png",
+      "rating": "B"
+    },
+    {
+      "id": "WorthTheWait_2_",
+      "name": "值得等待",
+      "icon": "https://static.datatft.com/images/hex2/WorthTheWait_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "LateGameScaling_2_",
+      "name": "后期收益",
+      "icon": "https://static.datatft.com/images/hex2/LateGameScaling_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_BonusGiftPlus_2_",
+      "name": "意外之礼+",
+      "icon": "https://static.datatft.com/images/hex2/DA_BonusGiftPlus_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Replication_2_",
+      "name": "反响",
+      "icon": "https://static.datatft.com/images/hex2/Replication_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "BacklineBlueprint_2_",
+      "name": "后排蓝图",
+      "icon": "https://static.datatft.com/images/hex2/BacklineBlueprint_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_BonusGift_2_",
+      "name": "意外之礼",
+      "icon": "https://static.datatft.com/images/hex2/DA_BonusGift_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Salvage_2_",
+      "name": "打捞桶",
+      "icon": "https://static.datatft.com/images/hex2/Salvage_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Salvage_2_",
+      "name": "打捞桶+",
+      "icon": "https://static.datatft.com/images/hex2/Salvage_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_ItsMeBaby_2_",
+      "name": "是我，宝贝！",
+      "icon": "https://static.datatft.com/images/hex2/DA_ItsMeBaby_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "HeroicGrabBag_2_",
+      "name": "英勇福袋+",
+      "icon": "https://static.datatft.com/images/hex2/HeroicGrabBag_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "CookingPot_2_",
+      "name": "金色炊具",
+      "icon": "https://static.datatft.com/images/hex2/CookingPot_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "TheGoldenDragon_2_",
+      "name": "金霖龙",
+      "icon": "https://static.datatft.com/images/hex2/TheGoldenDragon_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "HardBargain_2_",
+      "name": "砍价高手",
+      "icon": "https://static.datatft.com/images/hex2/HardBargain_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "BronzeForLife_2_",
+      "name": "终身黄铜 I",
+      "icon": "https://static.datatft.com/images/hex2/BronzeForLife_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "CognitiveOverload_2_",
+      "name": "认知过载",
+      "icon": "https://static.datatft.com/images/hex2/CognitiveOverload_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "MoneyHungry2_2_",
+      "name": "贪财+",
+      "icon": "https://static.datatft.com/images/hex2/MoneyHungry2_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "MoneyHungry1_2_",
+      "name": "贪财",
+      "icon": "https://static.datatft.com/images/hex2/MoneyHungry1_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_CapitalGainsII_2_",
+      "name": "资本利得 II",
+      "icon": "https://static.datatft.com/images/hex2/DA_CapitalGainsII_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "GoldenDestiny_2_",
+      "name": "黄金命运",
+      "icon": "https://static.datatft.com/images/hex2/GoldenDestiny_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Cybernetic_2_",
+      "name": "源计划植入",
+      "icon": "https://static.datatft.com/images/hex2/Cybernetic_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "CryMeARiver_2_",
+      "name": "泪流成河",
+      "icon": "https://static.datatft.com/images/hex2/CryMeARiver_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "ClearMind_2_",
+      "name": "清晰头脑",
+      "icon": "https://static.datatft.com/images/hex2/ClearMind_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Pandora_2_",
+      "name": "潘朵拉的装备 II",
+      "icon": "https://static.datatft.com/images/hex2/Pandora_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "JeweledLotus_2_",
+      "name": "珠光莲花 I",
+      "icon": "https://static.datatft.com/images/hex2/JeweledLotus_2_.png",
+      "rating": "B"
+    },
+    {
+      "id": "PrismaticDestiny_3_",
+      "name": "棱彩命运",
+      "icon": "https://static.datatft.com/images/hex2/PrismaticDestiny_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "LevelUp_3_",
+      "name": "升级咯！",
+      "icon": "https://static.datatft.com/images/hex2/LevelUp_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "InvestmentStrategy_3_",
+      "name": "投资策略 II",
+      "icon": "https://static.datatft.com/images/hex2/InvestmentStrategy_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Invested_3_",
+      "name": "投资+",
+      "icon": "https://static.datatft.com/images/hex2/Invested_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "ShimmerscaleEssence_3_",
+      "name": "金鳞精萃",
+      "icon": "https://static.datatft.com/images/hex2/ShimmerscaleEssence_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "TonsofStats_3_",
+      "name": "成吨的属性！",
+      "icon": "https://static.datatft.com/images/hex2/TonsofStats_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_NestingAnvils_3_",
+      "name": "锻造器套娃",
+      "icon": "https://static.datatft.com/images/hex2/DA_NestingAnvils_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "AwakenedSoul_3_",
+      "name": "灵魂唤醒",
+      "icon": "https://static.datatft.com/images/hex2/AwakenedSoul_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Pandora_3_",
+      "name": "潘朵拉的装备 III",
+      "icon": "https://static.datatft.com/images/hex2/Pandora_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "LivingForge_3_",
+      "name": "活体锻炉",
+      "icon": "https://static.datatft.com/images/hex2/LivingForge_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "AddictedtoRolling_3_",
+      "name": "意料之中的意外",
+      "icon": "https://static.datatft.com/images/hex2/AddictedtoRolling_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_NestingAnvilsPlus_3_",
+      "name": "锻造器套娃+",
+      "icon": "https://static.datatft.com/images/hex2/DA_NestingAnvilsPlus_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "RolltheDice_3_",
+      "name": "光明无赖",
+      "icon": "https://static.datatft.com/images/hex2/RolltheDice_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "DA_ComponentQuest_3_",
+      "name": "基础装备大冒险",
+      "icon": "https://static.datatft.com/images/hex2/DA_ComponentQuest_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "LuxurySubscription_3_",
+      "name": "奢侈品订购",
+      "icon": "https://static.datatft.com/images/hex2/LuxurySubscription_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "BandThieves_3_",
+      "name": "窃贼帮派 II++",
+      "icon": "https://static.datatft.com/images/hex2/BandThieves_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "GiantandMighty_3_",
+      "name": "大而有力",
+      "icon": "https://static.datatft.com/images/hex2/GiantandMighty_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "RolltheDice_3_",
+      "name": "交给运气",
+      "icon": "https://static.datatft.com/images/hex2/RolltheDice_3_.png",
+      "rating": "B"
+    },
+    {
+      "id": "Makeshift_1_",
+      "name": "应急护甲 I",
+      "icon": "https://static.datatft.com/images/hex2/Makeshift_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Dummify_1_",
+      "name": "假人化",
+      "icon": "https://static.datatft.com/images/hex2/Dummify_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "SilverSpoon_1_",
+      "name": "银汤匙",
+      "icon": "https://static.datatft.com/images/hex2/SilverSpoon_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Electrocharge_1_",
+      "name": "电火花 I",
+      "icon": "https://static.datatft.com/images/hex2/Electrocharge_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "GoodForSomething_1_",
+      "name": "有用之材 I",
+      "icon": "https://static.datatft.com/images/hex2/GoodForSomething_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "TwinGuardians_1_",
+      "name": "双子守护神",
+      "icon": "https://static.datatft.com/images/hex2/TwinGuardians_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "PowerUp_1_",
+      "name": "强化之能量",
+      "icon": "https://static.datatft.com/images/hex2/PowerUp_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "FindYourCenter_1_",
+      "name": "C位的觉悟",
+      "icon": "https://static.datatft.com/images/hex2/FindYourCenter_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Slice_of_Life_1_",
+      "name": "人生切片",
+      "icon": "https://static.datatft.com/images/hex2/Slice_of_Life_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_ResidualMagic_1_",
+      "name": "残留魔力",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_ResidualMagic_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_ResidualMagicPlus_1_",
+      "name": "残留魔力+",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_ResidualMagicPlus_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "KickStart_1_",
+      "name": "博弈开启",
+      "icon": "https://static.datatft.com/images/hex2/KickStart_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "GlassCannon_1_",
+      "name": "玻璃大炮 I",
+      "icon": "https://static.datatft.com/images/hex2/GlassCannon_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "CraftedCrafting_1_",
+      "name": "精心打造",
+      "icon": "https://static.datatft.com/images/hex2/CraftedCrafting_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Corrosion_1_",
+      "name": "腐蚀",
+      "icon": "https://static.datatft.com/images/hex2/Corrosion_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_ResidualMagicPlusPlus_1_",
+      "name": "残留魔力++",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_ResidualMagicPlusPlus_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "TheTower_1_",
+      "name": "高塔",
+      "icon": "https://static.datatft.com/images/hex2/TheTower_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "CelestialBlessing_1_",
+      "name": "星界赐福 I",
+      "icon": "https://static.datatft.com/images/hex2/CelestialBlessing_1_.png",
+      "rating": "C"
+    },
+    {
+      "id": "ClockworkAccelerator_2_",
+      "name": "发条增速器",
+      "icon": "https://static.datatft.com/images/hex2/ClockworkAccelerator_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "PlotArmor_2_",
+      "name": "应急护盾",
+      "icon": "https://static.datatft.com/images/hex2/PlotArmor_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "BoosterPack1_2_",
+      "name": "扩展包+",
+      "icon": "https://static.datatft.com/images/hex2/BoosterPack1_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "BoosterPack1_2_",
+      "name": "扩展包",
+      "icon": "https://static.datatft.com/images/hex2/BoosterPack1_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "AdvancedLoan_2_",
+      "name": "高级贷款",
+      "icon": "https://static.datatft.com/images/hex2/AdvancedLoan_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Electrocharge_2_",
+      "name": "电火花 II",
+      "icon": "https://static.datatft.com/images/hex2/Electrocharge_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Makeshift_2_",
+      "name": "应急护甲 II",
+      "icon": "https://static.datatft.com/images/hex2/Makeshift_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Windfall_2_",
+      "name": "获得21金币",
+      "icon": "https://static.datatft.com/images/hex2/Windfall_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "PrecisionGrace_2_",
+      "name": "挑战者的优雅",
+      "icon": "https://static.datatft.com/images/hex2/PrecisionGrace_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "GroupHug2_2_",
+      "name": "拥抱 II",
+      "icon": "https://static.datatft.com/images/hex2/GroupHug2_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_RivalsAugment_2_",
+      "name": "世纪和解",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_RivalsAugment_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_PrimalAugment_Nidalee_2_",
+      "name": "兽性本能",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_PrimalAugment_Nidalee_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_PrimalAugmentPlus_Nidalee_2_",
+      "name": "兽性本能+",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_PrimalAugmentPlus_Nidalee_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_PrimalAugmentPlus_Sivir_2_",
+      "name": "兽性本能+",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_PrimalAugmentPlus_Sivir_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Slammin_2_",
+      "name": "物尽其用",
+      "icon": "https://static.datatft.com/images/hex2/Slammin_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_ElderwoodTraitAugment_2_",
+      "name": "自然庇护所",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_ElderwoodTraitAugment_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_FloraFatalisAugment_2_",
+      "name": "致命丽花",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_FloraFatalisAugment_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Trade_2_",
+      "name": "DD街区+",
+      "icon": "https://static.datatft.com/images/hex2/Trade_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_WeightTheWorth_2_",
+      "name": "等待得值",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_WeightTheWorth_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Epoch_2_",
+      "name": "新纪元",
+      "icon": "https://static.datatft.com/images/hex2/Epoch_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Epoch_2_",
+      "name": "新纪元+",
+      "icon": "https://static.datatft.com/images/hex2/Epoch_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "HealingOrbs_2_",
+      "name": "治疗法球 II",
+      "icon": "https://static.datatft.com/images/hex2/HealingOrbs_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Slammin_2_",
+      "name": "物尽其用+",
+      "icon": "https://static.datatft.com/images/hex2/Slammin_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "GlassCannon_2_",
+      "name": "玻璃大炮 II",
+      "icon": "https://static.datatft.com/images/hex2/GlassCannon_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "Warpath_2_",
+      "name": "征战之路",
+      "icon": "https://static.datatft.com/images/hex2/Warpath_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "MaxBuild_2_",
+      "name": "顶尖构筑",
+      "icon": "https://static.datatft.com/images/hex2/MaxBuild_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "SoloLeveling_2_",
+      "name": "独自升级",
+      "icon": "https://static.datatft.com/images/hex2/SoloLeveling_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "CelestialBlessing_2_",
+      "name": "星界赐福 II",
+      "icon": "https://static.datatft.com/images/hex2/CelestialBlessing_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "TonsofStats_2_",
+      "name": "成吨的属性",
+      "icon": "https://static.datatft.com/images/hex2/TonsofStats_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "MirroredMonetization_2_",
+      "name": "恶意货币化",
+      "icon": "https://static.datatft.com/images/hex2/MirroredMonetization_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_18_FaeTraitAugment_2_",
+      "name": "巨化术",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_FaeTraitAugment_2_.png",
+      "rating": "C"
+    },
+    {
+      "id": "WorthTheWait_3_",
+      "name": "值得等待 II",
+      "icon": "https://static.datatft.com/images/hex2/WorthTheWait_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "JeweledLotus_3_",
+      "name": "珠光莲花 II",
+      "icon": "https://static.datatft.com/images/hex2/JeweledLotus_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "HardCommit_3_",
+      "name": "硬性承诺",
+      "icon": "https://static.datatft.com/images/hex2/HardCommit_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "LuckyGloves_3_",
+      "name": "幸运手套+",
+      "icon": "https://static.datatft.com/images/hex2/LuckyGloves_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DA_VerticalityIII_3_",
+      "name": "纵深 III",
+      "icon": "https://static.datatft.com/images/hex2/DA_VerticalityIII_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "DeadlierBlades_3_.TFT_Set15",
+      "name": "更要命的战刃",
+      "icon": "https://static.datatft.com/images/hex2/DeadlierBlades_3_.TFT_Set15.png",
+      "rating": "C"
+    },
+    {
+      "id": "DeadlierCaps_3_.TFT_Set15",
+      "name": "更要命的帽子",
+      "icon": "https://static.datatft.com/images/hex2/DeadlierCaps_3_.TFT_Set15.png",
+      "rating": "C"
+    },
+    {
+      "id": "BandThieves_3_",
+      "name": "窃贼帮派 II",
+      "icon": "https://static.datatft.com/images/hex2/BandThieves_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "BandThieves_3_",
+      "name": "窃贼帮派 II+",
+      "icon": "https://static.datatft.com/images/hex2/BandThieves_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "SweetTreats_3_",
+      "name": "甜点",
+      "icon": "https://static.datatft.com/images/hex2/SweetTreats_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "ConstructaCompanion_3_",
+      "name": "来个好伙计",
+      "icon": "https://static.datatft.com/images/hex2/ConstructaCompanion_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "CelestialBlessing_3_",
+      "name": "星界赐福 III",
+      "icon": "https://static.datatft.com/images/hex2/CelestialBlessing_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "GoingLong_3_",
+      "name": "遥遥领先",
+      "icon": "https://static.datatft.com/images/hex2/GoingLong_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "GoldenGifts_3_",
+      "name": "生日礼物",
+      "icon": "https://static.datatft.com/images/hex2/GoldenGifts_3_.png",
+      "rating": "C"
+    },
+    {
+      "id": "HealingOrbs_1_",
+      "name": "治疗法球 I",
+      "icon": "https://static.datatft.com/images/hex2/HealingOrbs_1_.png",
+      "rating": "D"
+    },
+    {
+      "id": "CalledShot_1_",
+      "name": "进攻宣告",
+      "icon": "https://static.datatft.com/images/hex2/CalledShot_1_.png",
+      "rating": "D"
+    },
+    {
+      "id": "DA_18_LunarTraitAugment_2_",
+      "name": "日月同辉",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_LunarTraitAugment_2_.png",
+      "rating": "D"
+    },
+    {
+      "id": "DA_18_LunarTraitAugmentPlus_2_",
+      "name": "日月同辉+",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_LunarTraitAugmentPlus_2_.png",
+      "rating": "D"
+    },
+    {
+      "id": "DA_18_SprykinAugment_2_",
+      "name": "毛茸茸小朋友",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_SprykinAugment_2_.png",
+      "rating": "D"
+    },
+    {
+      "id": "DA_18_BlossomTraitAugment_2_",
+      "name": "绽灵花的约定",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_BlossomTraitAugment_2_.png",
+      "rating": "D"
+    },
+    {
+      "id": "TheGoldenEgg_3_",
+      "name": "金蛋",
+      "icon": "https://static.datatft.com/images/hex2/TheGoldenEgg_3_.png",
+      "rating": "D"
+    },
+    {
+      "id": "CursedCrown_3_",
+      "name": "诅咒冠冕",
+      "icon": "https://static.datatft.com/images/hex2/CursedCrown_3_.png",
+      "rating": "D"
+    },
+    {
+      "id": "LuckyGloves_3_",
+      "name": "幸运手套",
+      "icon": "https://static.datatft.com/images/hex2/LuckyGloves_3_.png",
+      "rating": "D"
+    },
+    {
+      "id": "DA_18_InfernoTraitAugment_1_",
+      "name": "烧起来",
+      "icon": "https://static.datatft.com/images/hex2/DA_18_InfernoTraitAugment_1_.png",
+      "rating": null
+    },
+    {
+      "id": "Thecustomerisalwaysright_1_",
+      "name": "基础装备自助餐",
+      "icon": "https://static.datatft.com/images/hex2/Thecustomerisalwaysright_1_.png",
+      "rating": null
+    },
+    {
+      "id": "DoubleTrouble_2_",
+      "name": "好事成双",
+      "icon": "https://static.datatft.com/images/hex2/DoubleTrouble_2_.png",
+      "rating": null
+    },
+    {
+      "id": "Pandora_2_",
+      "name": "潘朵拉的装备 II+",
+      "icon": "https://static.datatft.com/images/hex2/Pandora_2_.png",
+      "rating": null
+    },
+    {
+      "id": "Pandora_2_",
+      "name": "潘朵拉的装备 II++",
+      "icon": "https://static.datatft.com/images/hex2/Pandora_2_.png",
+      "rating": null
+    },
+    {
+      "id": "Reinfourcement_2_",
+      "name": "四费增援",
+      "icon": "https://static.datatft.com/images/hex2/Reinfourcement_2_.png",
+      "rating": null
+    },
+    {
+      "id": "DA_NestingDollsPlus_3_",
+      "name": "弈子套娃",
+      "icon": "https://static.datatft.com/images/hex2/DA_NestingDollsPlus_3_.png",
+      "rating": null
+    }
+  ]
+}

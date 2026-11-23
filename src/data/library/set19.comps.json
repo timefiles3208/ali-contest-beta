@@ -1,0 +1,11 @@
+{
+  "set": 19,
+  "patch": null,
+  "updatedAt": "2026-11-21",
+  "provenance": {
+    "kind": "local-library",
+    "method": "空库：S19 未上正式服，不预写阵容，避免把测试服爆料当成结论",
+    "strengthMeaning": "同 set18.comps.json"
+  },
+  "comps": []
+}

@@ -1,0 +1,841 @@
+{
+  "source": "datatft.com",
+  "season": 18,
+  "version": "18.7",
+  "extractedAt": "2026-11-23",
+  "counts": {
+    "items": 137,
+    "characters": 65,
+    "augments": 256,
+    "comps": 36
+  },
+  "pages": {
+    "items": "https://www.datatft.com/item/tier",
+    "augments": "https://www.datatft.com/augment/tier",
+    "comps": "https://www.datatft.com/comps"
+  },
+  "items": [
+    {
+      "id": "525",
+      "name": "朔极之矛",
+      "icon": "https://static.datatft.com/images/equips/525.png",
+      "rating": "S"
+    },
+    {
+      "id": "539",
+      "name": "鬼索的狂暴之刃",
+      "icon": "https://static.datatft.com/images/equips/539.png",
+      "rating": "S"
+    },
+    {
+      "id": "620",
+      "name": "冕卫",
+      "icon": "https://static.datatft.com/images/equips/620.png",
+      "rating": "S"
+    },
+    {
+      "id": "32347",
+      "name": "恶火小斧",
+      "icon": "https://static.datatft.com/images/equips/32347.png",
+      "rating": "S"
+    },
+    {
+      "id": "20009",
+      "name": "金币收集者",
+      "icon": "https://static.datatft.com/images/equips/20009.png",
+      "rating": "S"
+    },
+    {
+      "id": "20044",
+      "name": "黎明核心",
+      "icon": "https://static.datatft.com/images/equips/20044.png",
+      "rating": "S"
+    },
+    {
+      "id": "33039",
+      "name": "主宰纹章",
+      "icon": "https://static.datatft.com/images/equips/33039.png",
+      "rating": "S"
+    },
+    {
+      "id": "33024",
+      "name": "永恒之森纹章",
+      "icon": "https://static.datatft.com/images/equips/33024.png",
+      "rating": "S"
+    },
+    {
+      "id": "624",
+      "name": "红霸符",
+      "icon": "https://static.datatft.com/images/equips/624.png",
+      "rating": "A"
+    },
+    {
+      "id": "31008",
+      "name": "虚空之杖",
+      "icon": "https://static.datatft.com/images/equips/31008.png",
+      "rating": "A"
+    },
+    {
+      "id": "31012",
+      "name": "振奋盔甲",
+      "icon": "https://static.datatft.com/images/equips/31012.png",
+      "rating": "A"
+    },
+    {
+      "id": "616",
+      "name": "圣盾使的誓约",
+      "icon": "https://static.datatft.com/images/equips/616.png",
+      "rating": "A"
+    },
+    {
+      "id": "567",
+      "name": "蓝霸符",
+      "icon": "https://static.datatft.com/images/equips/567.png",
+      "rating": "A"
+    },
+    {
+      "id": "555",
+      "name": "大天使之杖",
+      "icon": "https://static.datatft.com/images/equips/555.png",
+      "rating": "A"
+    },
+    {
+      "id": "579",
+      "name": "棘刺背心",
+      "icon": "https://static.datatft.com/images/equips/579.png",
+      "rating": "A"
+    },
+    {
+      "id": "581",
+      "name": "石像鬼石板甲",
+      "icon": "https://static.datatft.com/images/equips/581.png",
+      "rating": "A"
+    },
+    {
+      "id": "623",
+      "name": "薄暮法袍",
+      "icon": "https://static.datatft.com/images/equips/623.png",
+      "rating": "A"
+    },
+    {
+      "id": "597",
+      "name": "狂徒铠甲",
+      "icon": "https://static.datatft.com/images/equips/597.png",
+      "rating": "A"
+    },
+    {
+      "id": "607",
+      "name": "窃贼手套",
+      "icon": "https://static.datatft.com/images/equips/607.png",
+      "rating": "A"
+    },
+    {
+      "id": "553",
+      "name": "灭世者的死亡之帽",
+      "icon": "https://static.datatft.com/images/equips/553.png",
+      "rating": "A"
+    },
+    {
+      "id": "615",
+      "name": "夜之锋刃",
+      "icon": "https://static.datatft.com/images/equips/615.png",
+      "rating": "A"
+    },
+    {
+      "id": "618",
+      "name": "斯特拉克的挑战护手",
+      "icon": "https://static.datatft.com/images/equips/618.png",
+      "rating": "A"
+    },
+    {
+      "id": "621",
+      "name": "适应性头盔",
+      "icon": "https://static.datatft.com/images/equips/621.png",
+      "rating": "A"
+    },
+    {
+      "id": "617",
+      "name": "强袭者的链枷",
+      "icon": "https://static.datatft.com/images/equips/617.png",
+      "rating": "A"
+    },
+    {
+      "id": "30016",
+      "name": "枯萎珠宝",
+      "icon": "https://static.datatft.com/images/equips/30016.png",
+      "rating": "A"
+    },
+    {
+      "id": "20017",
+      "name": "大亨之铠",
+      "icon": "https://static.datatft.com/images/equips/20017.png",
+      "rating": "A"
+    },
+    {
+      "id": "20101",
+      "name": "投机者之刃",
+      "icon": "https://static.datatft.com/images/equips/20101.png",
+      "rating": "A"
+    },
+    {
+      "id": "30020",
+      "name": "光盾徽章",
+      "icon": "https://static.datatft.com/images/equips/30020.png",
+      "rating": "A"
+    },
+    {
+      "id": "33029",
+      "name": "神谕纹章",
+      "icon": "https://static.datatft.com/images/equips/33029.png",
+      "rating": "A"
+    },
+    {
+      "id": "33031",
+      "name": "法师纹章",
+      "icon": "https://static.datatft.com/images/equips/33031.png",
+      "rating": "A"
+    },
+    {
+      "id": "33034",
+      "name": "狂战士纹章",
+      "icon": "https://static.datatft.com/images/equips/33034.png",
+      "rating": "A"
+    },
+    {
+      "id": "33030",
+      "name": "迅捷射手纹章",
+      "icon": "https://static.datatft.com/images/equips/33030.png",
+      "rating": "A"
+    },
+    {
+      "id": "33020",
+      "name": "月蚀骑士纹章",
+      "icon": "https://static.datatft.com/images/equips/33020.png",
+      "rating": "A"
+    },
+    {
+      "id": "33025",
+      "name": "黑荆棘纹章",
+      "icon": "https://static.datatft.com/images/equips/33025.png",
+      "rating": "A"
+    },
+    {
+      "id": "31010",
+      "name": "海妖之怒",
+      "icon": "https://static.datatft.com/images/equips/31010.png",
+      "rating": "B"
+    },
+    {
+      "id": "535",
+      "name": "无尽之刃",
+      "icon": "https://static.datatft.com/images/equips/535.png",
+      "rating": "B"
+    },
+    {
+      "id": "521",
+      "name": "巨人杀手",
+      "icon": "https://static.datatft.com/images/equips/521.png",
+      "rating": "B"
+    },
+    {
+      "id": "519",
+      "name": "死亡之刃",
+      "icon": "https://static.datatft.com/images/equips/519.png",
+      "rating": "B"
+    },
+    {
+      "id": "625",
+      "name": "坚定之心",
+      "icon": "https://static.datatft.com/images/equips/625.png",
+      "rating": "B"
+    },
+    {
+      "id": "595",
+      "name": "水银",
+      "icon": "https://static.datatft.com/images/equips/595.png",
+      "rating": "B"
+    },
+    {
+      "id": "529",
+      "name": "饮血剑",
+      "icon": "https://static.datatft.com/images/equips/529.png",
+      "rating": "B"
+    },
+    {
+      "id": "613",
+      "name": "泰坦的坚决",
+      "icon": "https://static.datatft.com/images/equips/613.png",
+      "rating": "B"
+    },
+    {
+      "id": "561",
+      "name": "莫雷洛秘典",
+      "icon": "https://static.datatft.com/images/equips/561.png",
+      "rating": "B"
+    },
+    {
+      "id": "577",
+      "name": "正义之手",
+      "icon": "https://static.datatft.com/images/equips/577.png",
+      "rating": "B"
+    },
+    {
+      "id": "32351",
+      "name": "永恒契约",
+      "icon": "https://static.datatft.com/images/equips/32351.png",
+      "rating": "B"
+    },
+    {
+      "id": "30007",
+      "name": "连指手套",
+      "icon": "https://static.datatft.com/images/equips/30007.png",
+      "rating": "B"
+    },
+    {
+      "id": "30012",
+      "name": "密银黎明",
+      "icon": "https://static.datatft.com/images/equips/30012.png",
+      "rating": "B"
+    },
+    {
+      "id": "30019",
+      "name": "巫妖之祸",
+      "icon": "https://static.datatft.com/images/equips/30019.png",
+      "rating": "B"
+    },
+    {
+      "id": "31004",
+      "name": "纳沃利烁刃",
+      "icon": "https://static.datatft.com/images/equips/31004.png",
+      "rating": "B"
+    },
+    {
+      "id": "30011",
+      "name": "卢登的激荡",
+      "icon": "https://static.datatft.com/images/equips/30011.png",
+      "rating": "B"
+    },
+    {
+      "id": "20003",
+      "name": "魔蕴",
+      "icon": "https://static.datatft.com/images/equips/20003.png",
+      "rating": "B"
+    },
+    {
+      "id": "30006",
+      "name": "视界专注",
+      "icon": "https://static.datatft.com/images/equips/30006.png",
+      "rating": "B"
+    },
+    {
+      "id": "31005",
+      "name": "斯塔缇克电刃",
+      "icon": "https://static.datatft.com/images/equips/31005.png",
+      "rating": "B"
+    },
+    {
+      "id": "20004",
+      "name": "三相之力",
+      "icon": "https://static.datatft.com/images/equips/20004.png",
+      "rating": "B"
+    },
+    {
+      "id": "20002",
+      "name": "死亡蔑视",
+      "icon": "https://static.datatft.com/images/equips/20002.png",
+      "rating": "B"
+    },
+    {
+      "id": "30002",
+      "name": "飞升护符",
+      "icon": "https://static.datatft.com/images/equips/30002.png",
+      "rating": "B"
+    },
+    {
+      "id": "30017",
+      "name": "智慧末刃",
+      "icon": "https://static.datatft.com/images/equips/30017.png",
+      "rating": "B"
+    },
+    {
+      "id": "33027",
+      "name": "裁决使纹章",
+      "icon": "https://static.datatft.com/images/equips/33027.png",
+      "rating": "B"
+    },
+    {
+      "id": "33032",
+      "name": "重装战士纹章",
+      "icon": "https://static.datatft.com/images/equips/33032.png",
+      "rating": "B"
+    },
+    {
+      "id": "33028",
+      "name": "斗士纹章",
+      "icon": "https://static.datatft.com/images/equips/33028.png",
+      "rating": "B"
+    },
+    {
+      "id": "33047",
+      "name": "绝命花妖纹章",
+      "icon": "https://static.datatft.com/images/equips/33047.png",
+      "rating": "B"
+    },
+    {
+      "id": "33038",
+      "name": "护卫纹章",
+      "icon": "https://static.datatft.com/images/equips/33038.png",
+      "rating": "B"
+    },
+    {
+      "id": "610",
+      "name": "海克斯科技枪刃",
+      "icon": "https://static.datatft.com/images/equips/610.png",
+      "rating": "C"
+    },
+    {
+      "id": "565",
+      "name": "珠光护手",
+      "icon": "https://static.datatft.com/images/equips/565.png",
+      "rating": "C"
+    },
+    {
+      "id": "583",
+      "name": "日炎斗篷",
+      "icon": "https://static.datatft.com/images/equips/583.png",
+      "rating": "C"
+    },
+    {
+      "id": "609",
+      "name": "巨龙之爪",
+      "icon": "https://static.datatft.com/images/equips/609.png",
+      "rating": "C"
+    },
+    {
+      "id": "619",
+      "name": "纳什之牙",
+      "icon": "https://static.datatft.com/images/equips/619.png",
+      "rating": "C"
+    },
+    {
+      "id": "551",
+      "name": "最后的轻语",
+      "icon": "https://static.datatft.com/images/equips/551.png",
+      "rating": "C"
+    },
+    {
+      "id": "611",
+      "name": "离子火花",
+      "icon": "https://static.datatft.com/images/equips/611.png",
+      "rating": "C"
+    },
+    {
+      "id": "30004",
+      "name": "鱼骨头",
+      "icon": "https://static.datatft.com/images/equips/30004.png",
+      "rating": "C"
+    },
+    {
+      "id": "30009",
+      "name": "疾射火炮",
+      "icon": "https://static.datatft.com/images/equips/30009.png",
+      "rating": "C"
+    },
+    {
+      "id": "31007",
+      "name": "顽强不屈",
+      "icon": "https://static.datatft.com/images/equips/31007.png",
+      "rating": "C"
+    },
+    {
+      "id": "30021",
+      "name": "探索者的护臂",
+      "icon": "https://static.datatft.com/images/equips/30021.png",
+      "rating": "C"
+    },
+    {
+      "id": "32346",
+      "name": "黎明圣盾",
+      "icon": "https://static.datatft.com/images/equips/32346.png",
+      "rating": "C"
+    },
+    {
+      "id": "32349",
+      "name": "黄昏圣盾",
+      "icon": "https://static.datatft.com/images/equips/32349.png",
+      "rating": "C"
+    },
+    {
+      "id": "20010",
+      "name": "中娅悖论",
+      "icon": "https://static.datatft.com/images/equips/20010.png",
+      "rating": "C"
+    },
+    {
+      "id": "20011",
+      "name": "碎舰者",
+      "icon": "https://static.datatft.com/images/equips/20011.png",
+      "rating": "C"
+    },
+    {
+      "id": "31006",
+      "name": "巨型九头蛇",
+      "icon": "https://static.datatft.com/images/equips/31006.png",
+      "rating": "C"
+    },
+    {
+      "id": "33021",
+      "name": "约德尔人和朋友纹章",
+      "icon": "https://static.datatft.com/images/equips/33021.png",
+      "rating": "C"
+    },
+    {
+      "id": "33019",
+      "name": "灵魂莲华纹章",
+      "icon": "https://static.datatft.com/images/equips/33019.png",
+      "rating": "C"
+    },
+    {
+      "id": "33022",
+      "name": "花仙子纹章",
+      "icon": "https://static.datatft.com/images/equips/33022.png",
+      "rating": "C"
+    },
+    {
+      "id": "33023",
+      "name": "地狱火纹章",
+      "icon": "https://static.datatft.com/images/equips/33023.png",
+      "rating": "C"
+    },
+    {
+      "id": "33033",
+      "name": "猎人纹章",
+      "icon": "https://static.datatft.com/images/equips/33033.png",
+      "rating": "C"
+    },
+    {
+      "id": "33026",
+      "name": "野兽之灵纹章",
+      "icon": "https://static.datatft.com/images/equips/33026.png",
+      "rating": "C"
+    },
+    {
+      "id": "30018",
+      "name": "禁忌雕像",
+      "icon": "https://static.datatft.com/images/equips/30018.png",
+      "rating": "D"
+    },
+    {
+      "id": "32345",
+      "name": "虚空护手",
+      "icon": "https://static.datatft.com/images/equips/32345.png",
+      "rating": "D"
+    },
+    {
+      "id": "33035",
+      "name": "魔女纹章",
+      "icon": "https://static.datatft.com/images/equips/33035.png",
+      "rating": "D"
+    },
+    {
+      "id": "33036",
+      "name": "绝命花妖纹章",
+      "icon": "https://static.datatft.com/images/equips/33036.png",
+      "rating": "D"
+    },
+    {
+      "id": "608",
+      "name": "金铲铲冠冕",
+      "icon": "https://static.datatft.com/images/equips/608.png",
+      "rating": null
+    },
+    {
+      "id": "31002",
+      "name": "金锅锅冠冕",
+      "icon": "https://static.datatft.com/images/equips/31002.png",
+      "rating": null
+    },
+    {
+      "id": "31003",
+      "name": "金锅铲冠冕",
+      "icon": "https://static.datatft.com/images/equips/31003.png",
+      "rating": null
+    },
+    {
+      "id": "30013",
+      "name": "暗行者之爪",
+      "icon": "https://static.datatft.com/images/equips/30013.png",
+      "rating": null
+    },
+    {
+      "id": "1519",
+      "name": "光明版死亡之刃",
+      "icon": "https://static.datatft.com/images/equips/1519.png",
+      "rating": null
+    },
+    {
+      "id": "1521",
+      "name": "光明版巨人杀手",
+      "icon": "https://static.datatft.com/images/equips/1521.png",
+      "rating": null
+    },
+    {
+      "id": "1523",
+      "name": "光明版海克斯科技枪刃",
+      "icon": "https://static.datatft.com/images/equips/1523.png",
+      "rating": null
+    },
+    {
+      "id": "1525",
+      "name": "光明版朔极之矛",
+      "icon": "https://static.datatft.com/images/equips/1525.png",
+      "rating": null
+    },
+    {
+      "id": "1527",
+      "name": "光明版夜之锋刃",
+      "icon": "https://static.datatft.com/images/equips/1527.png",
+      "rating": null
+    },
+    {
+      "id": "1529",
+      "name": "光明版饮血剑",
+      "icon": "https://static.datatft.com/images/equips/1529.png",
+      "rating": null
+    },
+    {
+      "id": "1618",
+      "name": "光明版斯特拉克的挑战护手",
+      "icon": "https://static.datatft.com/images/equips/1618.png",
+      "rating": null
+    },
+    {
+      "id": "1535",
+      "name": "光明版无尽之刃",
+      "icon": "https://static.datatft.com/images/equips/1535.png",
+      "rating": null
+    },
+    {
+      "id": "1624",
+      "name": "光明版红霸符",
+      "icon": "https://static.datatft.com/images/equips/1624.png",
+      "rating": null
+    },
+    {
+      "id": "1539",
+      "name": "光明版鬼索的狂暴之刃",
+      "icon": "https://static.datatft.com/images/equips/1539.png",
+      "rating": null
+    },
+    {
+      "id": "31009",
+      "name": "光明版虚空之杖",
+      "icon": "https://static.datatft.com/images/equips/31009.png",
+      "rating": null
+    },
+    {
+      "id": "1543",
+      "name": "光明版泰坦的坚决",
+      "icon": "https://static.datatft.com/images/equips/1543.png",
+      "rating": null
+    },
+    {
+      "id": "31011",
+      "name": "光明版海妖之怒",
+      "icon": "https://static.datatft.com/images/equips/31011.png",
+      "rating": null
+    },
+    {
+      "id": "1619",
+      "name": "光明版纳什之牙",
+      "icon": "https://static.datatft.com/images/equips/1619.png",
+      "rating": null
+    },
+    {
+      "id": "1551",
+      "name": "光明版最后的轻语",
+      "icon": "https://static.datatft.com/images/equips/1551.png",
+      "rating": null
+    },
+    {
+      "id": "1553",
+      "name": "光明版灭世者的死亡之帽",
+      "icon": "https://static.datatft.com/images/equips/1553.png",
+      "rating": null
+    },
+    {
+      "id": "1555",
+      "name": "光明版大天使之杖",
+      "icon": "https://static.datatft.com/images/equips/1555.png",
+      "rating": null
+    },
+    {
+      "id": "1620",
+      "name": "光明版冕卫",
+      "icon": "https://static.datatft.com/images/equips/1620.png",
+      "rating": null
+    },
+    {
+      "id": "1559",
+      "name": "光明版离子火花",
+      "icon": "https://static.datatft.com/images/equips/1559.png",
+      "rating": null
+    },
+    {
+      "id": "1561",
+      "name": "光明版莫雷洛秘典",
+      "icon": "https://static.datatft.com/images/equips/1561.png",
+      "rating": null
+    },
+    {
+      "id": "1565",
+      "name": "光明版珠光护手",
+      "icon": "https://static.datatft.com/images/equips/1565.png",
+      "rating": null
+    },
+    {
+      "id": "1567",
+      "name": "光明版蓝霸符",
+      "icon": "https://static.datatft.com/images/equips/1567.png",
+      "rating": null
+    },
+    {
+      "id": "1616",
+      "name": "光明版圣盾使的誓约",
+      "icon": "https://static.datatft.com/images/equips/1616.png",
+      "rating": null
+    },
+    {
+      "id": "1621",
+      "name": "光明版适应性头盔",
+      "icon": "https://static.datatft.com/images/equips/1621.png",
+      "rating": null
+    },
+    {
+      "id": "31013",
+      "name": "光明版振奋盔甲",
+      "icon": "https://static.datatft.com/images/equips/31013.png",
+      "rating": null
+    },
+    {
+      "id": "1577",
+      "name": "光明版正义之手",
+      "icon": "https://static.datatft.com/images/equips/1577.png",
+      "rating": null
+    },
+    {
+      "id": "1579",
+      "name": "光明版棘刺背心",
+      "icon": "https://static.datatft.com/images/equips/1579.png",
+      "rating": null
+    },
+    {
+      "id": "1581",
+      "name": "光明版石像鬼石板甲",
+      "icon": "https://static.datatft.com/images/equips/1581.png",
+      "rating": null
+    },
+    {
+      "id": "1583",
+      "name": "光明版日炎斗篷",
+      "icon": "https://static.datatft.com/images/equips/1583.png",
+      "rating": null
+    },
+    {
+      "id": "1625",
+      "name": "光明版坚定之心",
+      "icon": "https://static.datatft.com/images/equips/1625.png",
+      "rating": null
+    },
+    {
+      "id": "30044",
+      "name": "光明版巨龙之爪",
+      "icon": "https://static.datatft.com/images/equips/30044.png",
+      "rating": null
+    },
+    {
+      "id": "1623",
+      "name": "光明版薄暮法袍",
+      "icon": "https://static.datatft.com/images/equips/1623.png",
+      "rating": null
+    },
+    {
+      "id": "1595",
+      "name": "光明版水银",
+      "icon": "https://static.datatft.com/images/equips/1595.png",
+      "rating": null
+    },
+    {
+      "id": "1597",
+      "name": "光明版狂徒铠甲",
+      "icon": "https://static.datatft.com/images/equips/1597.png",
+      "rating": null
+    },
+    {
+      "id": "1617",
+      "name": "光明版强袭者的链枷",
+      "icon": "https://static.datatft.com/images/equips/1617.png",
+      "rating": null
+    },
+    {
+      "id": "1607",
+      "name": "光明版窃贼手套",
+      "icon": "https://static.datatft.com/images/equips/1607.png",
+      "rating": null
+    },
+    {
+      "id": "33044",
+      "name": "生命药水",
+      "icon": "https://static.datatft.com/images/equips/33044.png",
+      "rating": null
+    },
+    {
+      "id": "33054",
+      "name": "光明版生命药水",
+      "icon": "https://static.datatft.com/images/equips/33054.png",
+      "rating": null
+    },
+    {
+      "id": "33055",
+      "name": "法力药水",
+      "icon": "https://static.datatft.com/images/equips/33055.png",
+      "rating": null
+    },
+    {
+      "id": "33051",
+      "name": "光明版法力药水",
+      "icon": "https://static.datatft.com/images/equips/33051.png",
+      "rating": null
+    },
+    {
+      "id": "33053",
+      "name": "爆炸药水",
+      "icon": "https://static.datatft.com/images/equips/33053.png",
+      "rating": null
+    },
+    {
+      "id": "33046",
+      "name": "光明版爆炸药水",
+      "icon": "https://static.datatft.com/images/equips/33046.png",
+      "rating": null
+    },
+    {
+      "id": "32544",
+      "name": "阿尔法印记",
+      "icon": "https://static.datatft.com/images/equips/32544.png",
+      "rating": null
+    },
+    {
+      "id": "32545",
+      "name": "毛绒绒大朋友",
+      "icon": "https://static.datatft.com/images/equips/32545.png",
+      "rating": null
+    },
+    {
+      "id": "32546",
+      "name": "毛绒绒大朋友",
+      "icon": "https://static.datatft.com/images/equips/32546.png",
+      "rating": null
+    }
+  ]
+}

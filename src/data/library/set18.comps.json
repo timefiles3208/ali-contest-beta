@@ -1,0 +1,1879 @@
+{
+  "set": 18,
+  "patch": "26.22",
+  "updatedAt": "2026-11-22",
+  "provenance": {
+    "kind": "local-library",
+    "method": "人工整理，但单位与羁绊成员/层数阈值全部来自 Riot 官方数据(DDragon 卡池 + CDragon 羁绊映射)，由 scripts/check-library.mjs 校验自洽",
+    "strengthMeaning": "有 rank 的阵容：strength 由榜单前四率折算(0.55..0.85，低出场样本往中间收)；其余仍是人工先验，不是实时胜率",
+    "note": "大元素使拉克丝的 9 个变体是同一棋子的不同形态，不能同时上场，所以阵容里最多只引用其中一个变体",
+    "itemAndHexMeaning": "items 优先取榜单该棋子的常见件（datatft BIS），其次保留人工整理顺序；hexes 为按羁绊关联从官方海克斯池筛出的候选，不代表版本最优",
+    "board": {
+      "source": "datatft.com S18 热门阵容榜单（36 套）",
+      "page": "https://www.datatft.com/comps",
+      "patch": "18.7",
+      "window": "最近五天 / 钻石及以上",
+      "curatedAt": "2026-11-22",
+      "method": "人工整理：读公开页面渲染出的阵容名/棋子/图标编号/羁绊层数与榜单指标，再对到 Riot 官方 id；未调用其加密数据接口",
+      "limits": "装备与羁绊层数按榜单口径；蓝霸符/红霸符在榜单里是召唤物占位，不在官方卡池，已丢弃；rank 只代表榜单样本，不等于实时对局胜率",
+      "matchedExisting": 2,
+      "addedFromBoard": 10
+    }
+  },
+  "comps": [
+    {
+      "id": "s18-elderwood-gnar",
+      "name": "永恒之森 纳尔",
+      "units": [
+        "DA_18_Ornn",
+        "DA_18_Xayah",
+        "DA_18_Alistar",
+        "DA_18_LeBlanc",
+        "DA_18_Hecarim",
+        "DA_18_Ezreal",
+        "DA_18_GnarSmall"
+      ],
+      "core": [
+        "DA_18_Ornn",
+        "DA_18_Xayah",
+        "DA_18_Alistar",
+        "DA_18_GnarSmall"
+      ],
+      "carry": [
+        "DA_18_GnarSmall",
+        "DA_18_Ezreal"
+      ],
+      "tank": [
+        "DA_18_Ornn",
+        "DA_18_Alistar"
+      ],
+      "traits": [
+        "DA_18_Elderwood"
+      ],
+      "aimTraits": {
+        "DA_18_Elderwood": 7
+      },
+      "level": 7,
+      "strength": 0.8,
+      "diff": "中等",
+      "econ": "永恒之森按层数放置可成长的植物：3/5/7/9/11 层逐档变强，7 层是第一个真正能锁血的拐点。奥恩和霞是 1 费启动件，必须提前拿到。",
+      "notes": "纳尔(5费)变身后切后排，伊泽瑞尔补远程输出；拿到「拉克丝 (永恒之森)」可再顶 1 层，但会挤掉一个输出位。",
+      "items": {
+        "DA_18_GnarSmall": [
+          "DA_Deathblade",
+          "DA_InfinityEdge",
+          "DA_Bloodthirster"
+        ],
+        "DA_18_Ezreal": [
+          "DA_SpearOfShojin",
+          "DA_InfinityEdge",
+          "DA_Bloodthirster"
+        ],
+        "DA_18_Ornn": [
+          "DA_GargoyleStoneplate",
+          "DA_BrambleVest",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_Alistar": [
+          "DA_SunfireCape",
+          "DA_SpiritVisage",
+          "DA_ProtectorsVow"
+        ],
+        "DA_18_Xayah": [
+          "DA_KrakensFury",
+          "DA_Deathblade",
+          "DA_GiantSlayer"
+        ],
+        "DA_18_LeBlanc": [
+          "DA_Morellonomicon",
+          "DA_SpearOfShojin",
+          "DA_VoidStaff"
+        ],
+        "DA_18_Hecarim": [
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor",
+          "DA_GargoyleStoneplate"
+        ]
+      },
+      "hexes": [
+        "DA_18_ElderwoodTraitAugment",
+        "DA_18_WeightTheWorth",
+        "DA_BranchingOut",
+        "DA_ForgeAFriend"
+      ]
+    },
+    {
+      "id": "s18-blossom-ashe",
+      "name": "灵魂莲华 艾希",
+      "units": [
+        "DA_Karma18",
+        "DA_18_Yorick",
+        "DA_18_Yunara",
+        "DA_18_MasterYi_AD",
+        "DA_18_Sett",
+        "DA_18_Ahri",
+        "DA_18_Ashe"
+      ],
+      "core": [
+        "DA_18_Yunara",
+        "DA_Karma18",
+        "DA_18_Yorick",
+        "DA_18_Ashe"
+      ],
+      "carry": [
+        "DA_18_Ashe",
+        "DA_18_Ahri"
+      ],
+      "tank": [
+        "DA_18_Sett"
+      ],
+      "traits": [
+        "DA_18_Blossom"
+      ],
+      "aimTraits": {
+        "DA_18_Blossom": 7
+      },
+      "level": 8,
+      "strength": 0.84,
+      "diff": "偏高",
+      "econ": "灵魂莲华的层数会强化你招募的自然仙灵，所以这套的强度不只来自 7 层羁绊本身；低费三件套(芸阿娜/卡尔玛/约里克)决定前中期能不能撑到 8 人口。",
+      "notes": "艾希不来就用阿狸单核；易在这套里同时吃魔战士与灵魂莲华，是 3 费阶段的输出补量。",
+      "items": {
+        "DA_18_Ashe": [
+          "DA_InfinityEdge",
+          "DA_GuinsoosRageblade",
+          "DA_LastWhisper"
+        ],
+        "DA_18_Ahri": [
+          "DA_JeweledGauntlet",
+          "DA_SpearOfShojin",
+          "DA_Morellonomicon"
+        ],
+        "DA_18_Sett": [
+          "DA_GargoyleStoneplate",
+          "DA_DragonsClaw",
+          "DA_SunfireCape"
+        ],
+        "DA_Karma18": [
+          "DA_BlueBuff",
+          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap"
+        ],
+        "DA_18_Yunara": [
+          "DA_LastWhisper",
+          "DA_SpearOfShojin",
+          "DA_18_EmblemBlackthorn"
+        ],
+        "DA_18_MasterYi_AD": [
+          "DA_18_EmblemBrawler",
+          "DA_EdgeOfNight",
+          "DA_GuinsoosRageblade"
+        ]
+      },
+      "hexes": [
+        "DA_18_BlossomTraitAugment",
+        "DA_18_ResidualMagicPlus",
+        "DA_18_WispRebatePlus",
+        "DA_BranchingOut"
+      ]
+    },
+    {
+      "id": "s18-coven-morgana",
+      "name": "魔女 莫甘娜",
+      "units": [
+        "DA_18_Camille",
+        "DA_18_Elise",
+        "DA_18_Caitlyn",
+        "DA_18_Cassiopeia",
+        "DA_18_Morgana"
+      ],
+      "core": [
+        "DA_18_Caitlyn",
+        "DA_18_Cassiopeia",
+        "DA_18_Morgana"
+      ],
+      "carry": [
+        "DA_18_Morgana",
+        "DA_18_Caitlyn"
+      ],
+      "tank": [
+        "DA_18_Elise"
+      ],
+      "traits": [
+        "DA_18_Coven"
+      ],
+      "aimTraits": {
+        "DA_18_Coven": 5
+      },
+      "level": 6,
+      "strength": 0.74,
+      "diff": "低",
+      "econ": "魔女靠击杀敌方弈子或输掉对战攒魔女精粹换奖励，天生适合连败起经济；卡池只有 5 个魔女，5 层封顶，多出来的人口补控制或前排。",
+      "notes": "6 人口就能满羁绊，是低费速成方案；莫甘娜是 4 费，D 不到就以卡西奥佩娅 + 凯特琳打到前中期。",
+      "items": {
+        "DA_18_Morgana": [
+          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap",
+          "DA_ArchangelsStaff"
+        ],
+        "DA_18_Caitlyn": [
+          "DA_InfinityEdge",
+          "DA_Deathblade",
+          "DA_LastWhisper"
+        ],
+        "DA_18_Elise": [
+          "DA_SunfireCape",
+          "DA_SpiritVisage",
+          "DA_GargoyleStoneplate"
+        ],
+        "DA_18_Camille": [
+          "DA_EdgeOfNight",
+          "DA_InfinityEdge",
+          "DA_SteraksGage"
+        ],
+        "DA_18_Cassiopeia": [
+          "DA_ArchangelsStaff",
+          "DA_HextechGunblade",
+          "DA_SpearOfShojin"
+        ]
+      },
+      "hexes": [
+        "DA_18_CovenTraitAugment",
+        "DA_18_CovenTraitAugment_LootToAP",
+        "DA_BranchingOut",
+        "DA_PandorasItemsI"
+      ]
+    },
+    {
+      "id": "s18-blackthorn-azir",
+      "name": "黑荆棘 阿兹尔",
+      "units": [
+        "DA_18_RekSai",
+        "DA_18_Veigar",
+        "DA_18_Warwick",
+        "DA_18_Azir",
+        "DA_18_Malphite",
+        "DA_Lux18_Blackthorn"
+      ],
+      "core": [
+        "DA_18_Azir",
+        "DA_18_Malphite",
+        "DA_18_Warwick"
+      ],
+      "carry": [
+        "DA_18_Azir"
+      ],
+      "tank": [
+        "DA_18_Malphite",
+        "DA_18_RekSai"
+      ],
+      "traits": [
+        "DA_18_Blackthorn"
+      ],
+      "aimTraits": {
+        "DA_18_Blackthorn": 6
+      },
+      "level": 8,
+      "strength": 0.76,
+      "diff": "中等",
+      "econ": "黑荆棘 2/4/6 层：战斗开始献祭场上 1 名弈子强化其他友军，6 层后被献祭者不再损失反而吃到额外强化——所以前排厚度比输出更重要。",
+      "notes": "6 层需要「拉克丝 (黑荆棘)」变体；拿不到就按 4 层打，把人口留给主宰或护卫补前排。",
+      "items": {
+        "DA_18_Azir": [
+          "DA_ArchangelsStaff",
+          "DA_JeweledGauntlet",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_Malphite": [
+          "DA_GargoyleStoneplate",
+          "DA_BrambleVest",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_RekSai": [
+          "DA_RedBuff",
+          "DA_VoidStaff",
+          "DA_SunfireCape"
+        ],
+        "DA_18_Veigar": [
+          "DA_BlueBuff",
+          "DA_HextechGunblade",
+          "DA_JeweledGauntlet"
+        ],
+        "DA_18_Warwick": [
+          "DA_SpearOfShojin",
+          "DA_SteraksGage",
+          "DA_TitansResolve"
+        ]
+      },
+      "hexes": [
+        "DA_BlackthornTraitAugment",
+        "DA_18_DuoQueue",
+        "DA_ComponentBuffet",
+        "DA_BranchingOut"
+      ]
+    },
+    {
+      "id": "s18-inferno-kennen",
+      "name": "地狱火 凯南",
+      "units": [
+        "DA_18_Akali_AD",
+        "DA_18_Varus",
+        "DA_18_Shen",
+        "DA_Amumu18",
+        "DA_18_Kennen",
+        "DA_18_Rammus"
+      ],
+      "core": [
+        "DA_18_Kennen",
+        "DA_Amumu18",
+        "DA_18_Varus"
+      ],
+      "carry": [
+        "DA_18_Kennen",
+        "DA_18_Varus"
+      ],
+      "tank": [
+        "DA_Amumu18",
+        "DA_18_Rammus"
+      ],
+      "traits": [
+        "DA_18_Inferno",
+        "DA_18_Sprykin"
+      ],
+      "aimTraits": {
+        "DA_18_Inferno": 5
+      },
+      "level": 6,
+      "strength": 0.75,
+      "diff": "中等",
+      "econ": "地狱火伤害附带可叠加的灼烧与重伤，5/6 层会点燃商店并给出更高星级弈子——这套的钱应该花在 D 牌而不是升级。",
+      "notes": "拉莫斯提供护卫 + 约德尔人和朋友的补层挂件；「拉克丝 (地狱火)」可把地狱火顶到 6 层。",
+      "items": {
+        "DA_18_Kennen": [
+          "DA_HextechGunblade",
+          "DA_JeweledGauntlet",
+          "DA_BlueBuff"
+        ],
+        "DA_18_Varus": [
+          "DA_GuinsoosRageblade",
+          "DA_InfinityEdge",
+          "DA_KrakensFury"
+        ],
+        "DA_Amumu18": [
+          "DA_SunfireCape",
+          "DA_DragonsClaw",
+          "DA_GargoyleStoneplate"
+        ],
+        "DA_18_Akali_AD": [
+          "DA_EdgeOfNight",
+          "DA_HandOfJustice",
+          "DA_JeweledGauntlet"
+        ],
+        "DA_18_Rammus": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [
+        "DA_18_InfernoTraitAugment",
+        "DA_18_OnesTwosThree",
+        "DA_BranchingOut",
+        "DA_ItemGrabBag"
+      ]
+    },
+    {
+      "id": "s18-riftbeast-elder-dragon",
+      "name": "峡谷野怪 远古巨龙",
+      "units": [
+        "DA_18_Sentry",
+        "DA_Cinderling18",
+        "DA_Gromp18_AP",
+        "DA_Murkwolf18",
+        "DA_Scuttlecrab18",
+        "DA_Krug18",
+        "DA_CrimsonRaptor18",
+        "DA_Sentinel18",
+        "DA_Brambleback18",
+        "DA_18_ElderDragon"
+      ],
+      "core": [
+        "DA_18_Sentry",
+        "DA_Cinderling18",
+        "DA_Gromp18_AP",
+        "DA_Murkwolf18",
+        "DA_Scuttlecrab18"
+      ],
+      "carry": [
+        "DA_18_ElderDragon"
+      ],
+      "tank": [
+        "DA_Sentinel18",
+        "DA_Brambleback18"
+      ],
+      "traits": [
+        "DA_Riftbeast18"
+      ],
+      "aimTraits": {
+        "DA_Riftbeast18": 10
+      },
+      "level": 10,
+      "strength": 0.77,
+      "diff": "中等",
+      "econ": "峡谷野怪 3/5/7/10 层：5 层时商店会被峡谷野怪占满(追三星变容易)，10 层的终极体就是远古巨龙本身。这套需要 10 人口，必须靠连胜或连败利息把等级抬起来。",
+      "notes": "前 9 个野怪全是 1-4 费，卡的是人口而不是 D 牌运气；远古巨龙不来就停在 7 层，用石甲虫/锋喙鸟当肉盾打消耗。",
+      "items": {
+        "DA_18_ElderDragon": [
+          "DA_InfinityEdge",
+          "DA_Deathblade",
+          "DA_StrikersFlail"
+        ],
+        "DA_Sentinel18": [
+          "DA_WarmogsArmor",
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage"
+        ],
+        "DA_Brambleback18": [
+          "DA_BrambleVest",
+          "DA_DragonsClaw",
+          "DA_SunfireCape"
+        ],
+        "DA_18_Sentry": [
+          "DA_BlueBuff",
+          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap"
+        ],
+        "DA_Krug18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Murkwolf18": [
+          "DA_EdgeOfNight",
+          "DA_HandOfJustice",
+          "DA_Quicksilver"
+        ],
+        "DA_Scuttlecrab18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_CrimsonRaptor18": [
+          "DA_GuinsoosRageblade",
+          "DA_TitansResolve",
+          "DA_18_EmblemFae"
+        ]
+      },
+      "hexes": [
+        "DA_18_RiftbeastTraitAugment",
+        "DA_18_DuoQueue",
+        "DA_LevelUp",
+        "DA_SoloLeveling"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "高野怪驻灵",
+        "appear": 0.11,
+        "top4": 58.3,
+        "first": 10.9,
+        "avg": 4.12,
+        "diff": "适中",
+        "econ": "未标注",
+        "matchedUnits": 6
+      }
+    },
+    {
+      "id": "s18-eclipse-alune",
+      "name": "日月双蚀 拉露恩",
+      "units": [
+        "DA_18_Leona",
+        "DA_18_Kayle",
+        "DA_18_Sejuani",
+        "DA_18_Diana",
+        "DA_18_Aphelios",
+        "DA_18_Alune"
+      ],
+      "core": [
+        "DA_18_Leona",
+        "DA_18_Kayle",
+        "DA_18_Sejuani",
+        "DA_18_Diana"
+      ],
+      "carry": [
+        "DA_18_Alune",
+        "DA_18_Aphelios"
+      ],
+      "tank": [
+        "DA_18_Leona",
+        "DA_18_Sejuani"
+      ],
+      "traits": [
+        "DA_18_Solar",
+        "DA_18_Lunar"
+      ],
+      "aimTraits": {
+        "DA_18_Solar": 3,
+        "DA_18_Lunar": 3
+      },
+      "level": 7,
+      "strength": 0.81,
+      "diff": "低",
+      "econ": "日蚀骑士给护盾与法术伤害(3 层封顶)，月蚀骑士给攻速与法术强度(最高 5 层)；两边同时登场会额外触发日月双蚀的联动效果。",
+      "notes": "月蚀要顶到 4-5 层需要「拉克丝 (月蚀骑士)」，日蚀 3 层已经封顶、多带无意义——所以这套的补层方向是月蚀侧。",
+      "items": {
+        "DA_18_Alune": [
+          "DA_BlueBuff",
+          "DA_JeweledGauntlet",
+          "DA_ArchangelsStaff"
+        ],
+        "DA_18_Aphelios": [
+          "DA_InfinityEdge",
+          "DA_GuinsoosRageblade",
+          "DA_LastWhisper"
+        ],
+        "DA_18_Leona": [
+          "DA_GargoyleStoneplate",
+          "DA_DragonsClaw",
+          "DA_SunfireCape"
+        ],
+        "DA_18_Sejuani": [
+          "DA_Evenshroud",
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage"
+        ],
+        "DA_18_Kayle": [
+          "DA_18_EmblemFae",
+          "DA_GuinsoosRageblade",
+          "DA_JeweledGauntlet"
+        ]
+      },
+      "hexes": [
+        "DA_18_LunarTraitAugment",
+        "DA_18_SolarTraitAugment",
+        "DA_18_LuxAugmentII",
+        "DA_BranchingOut"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "日蚀花仙霞",
+        "appear": 0.05,
+        "top4": 60.5,
+        "first": 17.4,
+        "avg": 3.93,
+        "diff": "简单",
+        "econ": "4/5级追三星",
+        "matchedUnits": 3
+      }
+    },
+    {
+      "id": "s18-sprykin-tristana",
+      "name": "约德尔人和朋友 崔丝塔娜",
+      "units": [
+        "DA_18_Veigar",
+        "DA_18_Kobuko",
+        "DA_18_Teemo",
+        "DA_18_Rammus",
+        "DA_18_Tristana",
+        "DA_18_GnarSmall"
+      ],
+      "core": [
+        "DA_18_Teemo",
+        "DA_18_Tristana",
+        "DA_18_Kobuko"
+      ],
+      "carry": [
+        "DA_18_Tristana",
+        "DA_18_Veigar"
+      ],
+      "tank": [
+        "DA_18_Rammus"
+      ],
+      "traits": [
+        "DA_18_Sprykin"
+      ],
+      "aimTraits": {
+        "DA_18_Sprykin": 5
+      },
+      "level": 7,
+      "strength": 0.72,
+      "diff": "中等",
+      "econ": "约德尔人和朋友分 3/5/7 档，卡池只有 6 名约德尔，所以 6 人落在 5 档、7 档在本赛季实际打不到——多出来的人口应该补质量而不是凑层数。",
+      "notes": "纳尔同时是永恒之森，来牌顺可以转永恒之森；崔丝塔娜还挂花仙子与猎人，是这套最灵活的挂件。",
+      "items": {
+        "DA_18_Tristana": [
+          "DA_GuinsoosRageblade",
+          "DA_InfinityEdge",
+          "DA_RedBuff"
+        ],
+        "DA_18_Veigar": [
+          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_Rammus": [
+          "DA_SunfireCape",
+          "DA_DragonsClaw",
+          "DA_ThiefsGloves"
+        ],
+        "DA_18_Teemo": [
+          "DA_JeweledGauntlet",
+          "DA_SpearOfShojin",
+          "DA_StrikersFlail"
+        ]
+      },
+      "hexes": [
+        "DA_18_SprykinAugment",
+        "DA_18_WeightTheWorth",
+        "DA_18_OnesTwosThree",
+        "DA_PandorasItemsI"
+      ]
+    },
+    {
+      "id": "s18-adaptor-masteryi",
+      "name": "魔战士 易",
+      "units": [
+        "DA_18_Akali_AD",
+        "DA_Gromp18_AP",
+        "DA_KogMaw18_AD",
+        "DA_18_MasterYi_AD",
+        "DA_Nidalee18_AP"
+      ],
+      "core": [
+        "DA_18_MasterYi_AD",
+        "DA_KogMaw18_AD",
+        "DA_Nidalee18_AP"
+      ],
+      "carry": [
+        "DA_18_MasterYi_AD",
+        "DA_KogMaw18_AD"
+      ],
+      "tank": [
+        "DA_Gromp18_AP"
+      ],
+      "traits": [
+        "DA_18_Adaptor"
+      ],
+      "aimTraits": {
+        "DA_18_Adaptor": 4
+      },
+      "level": 6,
+      "strength": 0.7,
+      "diff": "低",
+      "econ": "魔战士 2/3/4 层，4 层就是封顶，5 个成员全带即成型；整套只花 1-4 费，是典型低费锁血路线。",
+      "notes": "魔沼蛙同时是峡谷野怪，后续想转 10 野怪这套能直接接上；奈德丽还挂野兽之灵。",
+      "items": {
+        "DA_18_MasterYi_AD": [
+          "DA_GuinsoosRageblade",
+          "DA_Bloodthirster",
+          "DA_InfinityEdge"
+        ],
+        "DA_KogMaw18_AD": [
+          "DA_GuinsoosRageblade",
+          "DA_TitansResolve",
+          "DA_KrakensFury"
+        ],
+        "DA_Gromp18_AP": [
+          "DA_SunfireCape",
+          "DA_SpiritVisage",
+          "DA_GargoyleStoneplate"
+        ],
+        "DA_18_Akali_AD": [
+          "DA_EdgeOfNight",
+          "DA_HandOfJustice",
+          "DA_JeweledGauntlet"
+        ],
+        "DA_Nidalee18_AP": [
+          "DA_SteraksGage",
+          "DA_Bloodthirster",
+          "DA_EdgeOfNight"
+        ]
+      },
+      "hexes": [
+        "DA_18_FOURcing",
+        "DA_ExclusiveCustomization",
+        "DA_ComponentBuffet",
+        "DA_BranchingOut"
+      ]
+    },
+    {
+      "id": "s18-execitioner-kennen",
+      "name": "裁决使 凯南",
+      "units": [
+        "DA_18_Yunara",
+        "DA_18_Azir",
+        "DA_18_Ezreal",
+        "DA_18_Soraka",
+        "DA_18_Kennen"
+      ],
+      "core": [
+        "DA_18_Kennen",
+        "DA_18_Ezreal",
+        "DA_18_Yunara"
+      ],
+      "carry": [
+        "DA_18_Kennen",
+        "DA_18_Ezreal"
+      ],
+      "tank": [
+        "DA_18_Azir"
+      ],
+      "traits": [
+        "DA_18_Executioner"
+      ],
+      "aimTraits": {
+        "DA_18_Executioner": 4
+      },
+      "level": 8,
+      "strength": 0.68,
+      "diff": "中等",
+      "econ": "裁决使 2/3/4 层封顶，5 个成员全带即满；但这套横跨灵魂莲华/永恒之森/黑荆棘/绝命花妖，来牌顺序决定你先满哪个副羁绊。",
+      "notes": "索拉卡与费德提克共享绝命花妖(2 人羁绊)，凯南是唯一的 5 费核心，D 不到就用伊泽瑞尔当主C。",
+      "items": {
+        "DA_18_Kennen": [
+          "DA_HextechGunblade",
+          "DA_JeweledGauntlet",
+          "DA_BlueBuff"
+        ],
+        "DA_18_Ezreal": [
+          "DA_SpearOfShojin",
+          "DA_InfinityEdge",
+          "DA_Bloodthirster"
+        ],
+        "DA_18_Azir": [
+          "DA_ArchangelsStaff",
+          "DA_JeweledGauntlet",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_Yunara": [
+          "DA_LastWhisper",
+          "DA_SpearOfShojin",
+          "DA_18_EmblemBlackthorn"
+        ],
+        "DA_18_Soraka": [
+          "DA_18_EmblemElderwood",
+          "DA_RabadonsDeathcap",
+          "DA_SpearOfShojin"
+        ]
+      },
+      "hexes": [
+        "DA_18_DuoQueue",
+        "DA_ExclusiveCustomization",
+        "DA_BranchingOut",
+        "DA_WeStickTogether"
+      ]
+    },
+    {
+      "id": "s18-hunter-ashe",
+      "name": "猎人 艾希",
+      "units": [
+        "DA_Cinderling18",
+        "DA_18_Caitlyn",
+        "DA_18_Tristana",
+        "DA_18_Sivir",
+        "DA_18_Ashe"
+      ],
+      "core": [
+        "DA_18_Sivir",
+        "DA_18_Ashe",
+        "DA_18_Tristana"
+      ],
+      "carry": [
+        "DA_18_Ashe",
+        "DA_18_Sivir"
+      ],
+      "tank": [
+        "DA_Cinderling18"
+      ],
+      "traits": [
+        "DA_18_Hunter"
+      ],
+      "aimTraits": {
+        "DA_18_Hunter": 5
+      },
+      "level": 7,
+      "strength": 0.73,
+      "diff": "中等",
+      "econ": "猎人 2/3/4/5 层，5 层是这套的目标；绯红树怪与凯特琳提供前期层数，希维尔/艾希负责后期收口。",
+      "notes": "艾希同时是灵魂莲华，可与灵魂莲华互转；崔丝塔娜带约德尔与花仙子，是这套的第三条羁绊线。",
+      "items": {
+        "DA_18_Ashe": [
+          "DA_InfinityEdge",
+          "DA_GuinsoosRageblade",
+          "DA_LastWhisper"
+        ],
+        "DA_18_Sivir": [
+          "DA_HextechGunblade",
+          "DA_ArchangelsStaff",
+          "DA_JeweledGauntlet"
+        ],
+        "DA_Cinderling18": [
+          "DA_SunfireCape",
+          "DA_GargoyleStoneplate",
+          "DA_VoidStaff"
+        ],
+        "DA_18_Caitlyn": [
+          "DA_GuinsoosRageblade",
+          "DA_HextechGunblade",
+          "DA_KrakensFury"
+        ],
+        "DA_18_Tristana": [
+          "DA_GiantSlayer",
+          "DA_GuinsoosRageblade",
+          "DA_HextechGunblade"
+        ]
+      },
+      "hexes": [
+        "DA_ExclusiveCustomization",
+        "DA_18_DuoQueue",
+        "DA_BranchingOut",
+        "DA_ItemGrabBag"
+      ]
+    },
+    {
+      "id": "s18-fae-lillia",
+      "name": "花仙子 莉莉娅",
+      "units": [
+        "DA_18_Xayah",
+        "DA_18_Rakan",
+        "DA_18_Tristana",
+        "DA_18_Lillia"
+      ],
+      "core": [
+        "DA_18_Rakan",
+        "DA_18_Xayah",
+        "DA_18_Lillia"
+      ],
+      "carry": [
+        "DA_18_Lillia",
+        "DA_18_Tristana"
+      ],
+      "tank": [
+        "DA_18_Rakan"
+      ],
+      "traits": [
+        "DA_18_Fae"
+      ],
+      "aimTraits": {
+        "DA_18_Fae": 4
+      },
+      "level": 6,
+      "strength": 0.66,
+      "diff": "低",
+      "econ": "花仙子只有 2/4 两档，4 名成员就已经满层，第 5 个成员「拉克丝 (花仙子)」不再加层数——所以这套省下来的人口应该补前排或追三星崔丝塔娜。",
+      "notes": "霞是永恒之森、崔丝塔娜是约德尔，这套天然有两条转型出口，适合开局来牌杂的对局。",
+      "items": {
+        "DA_18_Lillia": [
+          "DA_BlueBuff",
+          "DA_JeweledGauntlet",
+          "DA_HextechGunblade"
+        ],
+        "DA_18_Tristana": [
+          "DA_GuinsoosRageblade",
+          "DA_InfinityEdge",
+          "DA_RedBuff"
+        ],
+        "DA_18_Rakan": [
+          "DA_SunfireCape",
+          "DA_DragonsClaw",
+          "DA_SpiritVisage"
+        ],
+        "DA_18_Xayah": [
+          "DA_KrakensFury",
+          "DA_Deathblade",
+          "DA_GiantSlayer"
+        ]
+      },
+      "hexes": [
+        "DA_18_FaeTraitAugment",
+        "DA_18_WeightTheWorth",
+        "DA_BranchingOut",
+        "DA_PandorasItemsI"
+      ]
+    },
+    {
+      "id": "s18-primal-lux",
+      "name": "野兽之灵 奈德丽",
+      "units": [
+        "DA_Vi18",
+        "DA_Nidalee18_AP",
+        "DA_18_Sivir",
+        "DA_18_Lux_Primal"
+      ],
+      "core": [
+        "DA_Nidalee18_AP",
+        "DA_18_Sivir",
+        "DA_18_Lux_Primal"
+      ],
+      "carry": [
+        "DA_Nidalee18_AP",
+        "DA_18_Sivir"
+      ],
+      "tank": [
+        "DA_Vi18"
+      ],
+      "traits": [
+        "DA_Primal18"
+      ],
+      "aimTraits": {
+        "DA_Primal18": 4
+      },
+      "level": 7,
+      "strength": 0.82,
+      "diff": "高",
+      "econ": "野兽之灵分 2 档(2-3 人)和 4 档(4 人封顶)：蔚 + 奈德丽 + 希维尔只有 3 人，落在 2 档，必须凑满 4 人才进 4 档。",
+      "notes": "第 4 人只能是「拉克丝 (野兽之灵)」，而拉克丝本身是大元素使机制件——这套的前提是先拿到拉克丝变体，否则就停在 2 档当过渡用。",
+      "items": {
+        "DA_Nidalee18_AP": [
+          "DA_JeweledGauntlet",
+          "DA_SpearOfShojin",
+          "DA_ArchangelsStaff"
+        ],
+        "DA_18_Sivir": [
+          "DA_HextechGunblade",
+          "DA_ArchangelsStaff",
+          "DA_InfinityEdge"
+        ],
+        "DA_Vi18": [
+          "DA_GargoyleStoneplate",
+          "DA_SunfireCape",
+          "DA_Bloodthirster"
+        ]
+      },
+      "hexes": [
+        "DA_18_PrimalAugment_Nidalee",
+        "DA_18_PrimalAugmentPlus_Nidalee",
+        "DA_18_LuxAugmentII",
+        "DA_BranchingOut"
+      ]
+    },
+    {
+      "id": "s18-board-95",
+      "name": "拉露恩95",
+      "units": [
+        "DA_18_Diana",
+        "DA_Fiddlesticks18",
+        "DA_Amumu18",
+        "DA_18_Lillia",
+        "DA_Taric18",
+        "DA_18_Maokai",
+        "DA_18_Kennen",
+        "DA_Lux18_Base",
+        "DA_18_Alune",
+        "DA_18_Ivern"
+      ],
+      "core": [
+        "DA_18_Alune",
+        "DA_Taric18",
+        "DA_18_Diana",
+        "DA_Fiddlesticks18"
+      ],
+      "carry": [
+        "DA_18_Alune"
+      ],
+      "tank": [
+        "DA_Taric18"
+      ],
+      "traits": [
+        "DA_18_Lunar",
+        "DA_18_Vanguard",
+        "DA_18_Defender",
+        "DA_18_Spellweaver",
+        "DA_18_Inferno",
+        "DA_Juggernaut18"
+      ],
+      "aimTraits": {
+        "DA_Emerald18": 1,
+        "DA_18_Maokai_UniqueTrait": 1,
+        "DA_18_Greenfather": 1,
+        "DA_AluneUniqueTrait18": 1,
+        "DA_18_LuxUniqueTrait": 1,
+        "DA_18_Spellweaver": 2,
+        "DA_18_Vanguard": 2,
+        "DA_18_Defender": 2,
+        "DA_Juggernaut18": 2,
+        "DA_18_Inferno": 2,
+        "DA_18_Lunar": 2,
+        "DA_FloraFatalis18": 1
+      },
+      "level": 9,
+      "strength": 0.78,
+      "diff": "中等",
+      "econ": "榜单节奏「未标注」· 9 人口成型（datatft 59% 前四 / 20.4% 登顶 / 均位 3.96）",
+      "notes": "按 datatft 榜单「拉露恩95」整理：主C 拉露恩，前排 塔里克，靠 月蚀骑士2层 + 重装战士2层 撑强度。",
+      "items": {
+        "DA_Taric18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_Alune": [
+          "DA_JeweledGauntlet",
+          "DA_NashorsTooth",
+          "DA_SpearOfShojin"
+        ],
+        "DA_Fiddlesticks18": [
+          "DA_AdaptiveHelm",
+          "DA_Crownguard",
+          "DA_TitansResolve"
+        ],
+        "DA_Amumu18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_Maokai": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [
+        "DA_18_LunarTraitAugment",
+        "DA_18_LunarTraitAugmentPlus",
+        "DA_18_InfernoTraitAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "拉露恩95",
+        "appear": 0.84,
+        "top4": 59,
+        "first": 20.4,
+        "avg": 3.96,
+        "diff": "适中",
+        "econ": "未标注",
+        "matchedUnits": 10
+      }
+    },
+    {
+      "id": "s18-board-1",
+      "name": "日蚀卡尔玛",
+      "units": [
+        "DA_18_Yorick",
+        "DA_18_Leona",
+        "DA_Karma18",
+        "DA_18_Sejuani",
+        "DA_18_Yunara",
+        "DA_18_LeBlanc",
+        "DA_18_Kayle",
+        "DA_18_Azir"
+      ],
+      "core": [
+        "DA_18_Yunara",
+        "DA_18_Sejuani",
+        "DA_18_Kayle",
+        "DA_Karma18"
+      ],
+      "carry": [
+        "DA_18_Yunara",
+        "DA_Karma18"
+      ],
+      "tank": [
+        "DA_18_Sejuani"
+      ],
+      "traits": [
+        "DA_18_Blossom",
+        "DA_18_Solar",
+        "DA_Juggernaut18",
+        "DA_18_Summoner",
+        "DA_18_Spellweaver",
+        "DA_18_Executioner"
+      ],
+      "aimTraits": {
+        "DA_18_Solar": 3,
+        "DA_18_Blossom": 3,
+        "DA_18_Spellweaver": 2,
+        "DA_18_Executioner": 2,
+        "DA_18_Summoner": 2,
+        "DA_Juggernaut18": 2
+      },
+      "level": 8,
+      "strength": 0.85,
+      "diff": "低",
+      "econ": "榜单节奏「4/5级追三星」· 8 人口成型（datatft 65.5% 前四 / 17% 登顶 / 均位 3.74）",
+      "notes": "按 datatft 榜单「日蚀卡尔玛」整理：主C 芸阿娜、卡尔玛，前排 瑟庄妮，靠 灵魂莲华3层 + 日蚀骑士3层 撑强度。",
+      "items": {
+        "DA_18_Yorick": [
+          "DA_SunfireCape"
+        ],
+        "DA_Karma18": [
+          "DA_BlueBuff",
+          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap"
+        ],
+        "DA_18_Sejuani": [
+          "DA_GargoyleStoneplate",
+          "DA_WarmogsArmor",
+          "DA_SpiritVisage"
+        ],
+        "DA_18_Yunara": [
+          "DA_Deathblade",
+          "DA_LastWhisper",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_LeBlanc": [
+          "DA_VoidStaff",
+          "DA_Morellonomicon",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_Kayle": [
+          "DA_GuinsoosRageblade",
+          "DA_JeweledGauntlet",
+          "DA_18_EmblemFae"
+        ],
+        "DA_18_Azir": [
+          "DA_GuinsoosRageblade",
+          "DA_HextechGunblade",
+          "DA_RabadonsDeathcap"
+        ]
+      },
+      "hexes": [
+        "DA_18_BlossomTraitAugment",
+        "DA_18_LunarTraitAugment",
+        "DA_18_LunarTraitAugmentPlus",
+        "DA_18_SolarTraitAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "日蚀卡尔玛",
+        "appear": 0.3,
+        "top4": 65.5,
+        "first": 17,
+        "avg": 3.74,
+        "diff": "简单",
+        "econ": "4/5级追三星",
+        "matchedUnits": 8
+      }
+    },
+    {
+      "id": "s18-board-2",
+      "name": "森林小法",
+      "units": [
+        "DA_18_Ornn",
+        "DA_18_RekSai",
+        "DA_18_Veigar",
+        "DA_18_Alistar",
+        "DA_18_LeBlanc",
+        "DA_Fiddlesticks18",
+        "DA_18_Cassiopeia"
+      ],
+      "core": [
+        "DA_Fiddlesticks18",
+        "DA_18_Cassiopeia",
+        "DA_18_LeBlanc",
+        "DA_18_Alistar"
+      ],
+      "carry": [
+        "DA_18_LeBlanc",
+        "DA_18_Veigar"
+      ],
+      "tank": [
+        "DA_18_Ornn",
+        "DA_18_Alistar"
+      ],
+      "traits": [
+        "DA_18_Spellweaver",
+        "DA_18_Elderwood",
+        "DA_18_Defender",
+        "DA_18_Blackthorn",
+        "DA_18_Brawler"
+      ],
+      "aimTraits": {
+        "DA_18_Spellweaver": 4,
+        "DA_18_Elderwood": 3,
+        "DA_18_Brawler": 2,
+        "DA_18_Defender": 2,
+        "DA_18_Blackthorn": 2,
+        "DA_FloraFatalis18": 1
+      },
+      "level": 7,
+      "strength": 0.85,
+      "diff": "中等",
+      "econ": "榜单节奏「4/5级追三星」· 7 人口成型（datatft 65.7% 前四 / 16.6% 登顶 / 均位 3.7）",
+      "notes": "按 datatft 榜单「森林小法」整理：主C 乐芙兰、维迦，前排 奥恩、阿利斯塔，靠 法师4层 + 永恒之森3层 撑强度。",
+      "items": {
+        "DA_18_Ornn": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_Veigar": [
+          "DA_BlueBuff",
+          "DA_HextechGunblade",
+          "DA_JeweledGauntlet"
+        ],
+        "DA_18_Alistar": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_LeBlanc": [
+          "DA_Morellonomicon",
+          "DA_SpearOfShojin",
+          "DA_VoidStaff"
+        ],
+        "DA_Fiddlesticks18": [
+          "DA_AdaptiveHelm",
+          "DA_Crownguard",
+          "DA_TitansResolve"
+        ],
+        "DA_18_Cassiopeia": [
+          "DA_ArchangelsStaff",
+          "DA_HextechGunblade",
+          "DA_SpearOfShojin"
+        ]
+      },
+      "hexes": [
+        "DA_18_ElderwoodTraitAugment",
+        "DA_BlackthornTraitAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "森林小法",
+        "appear": 0.18,
+        "top4": 65.7,
+        "first": 16.6,
+        "avg": 3.7,
+        "diff": "适中",
+        "econ": "4/5级追三星",
+        "matchedUnits": 7
+      }
+    },
+    {
+      "id": "s18-board-3",
+      "name": "猎手豹女",
+      "units": [
+        "DA_18_RekSai",
+        "DA_Cinderling18",
+        "DA_Krug18",
+        "DA_KogMaw18_AD",
+        "DA_18_Malphite",
+        "DA_Nidalee18_AP",
+        "DA_18_Sivir"
+      ],
+      "core": [
+        "DA_18_Sivir",
+        "DA_18_Malphite",
+        "DA_Nidalee18_AP",
+        "DA_Krug18"
+      ],
+      "carry": [
+        "DA_18_Sivir"
+      ],
+      "tank": [
+        "DA_18_Malphite"
+      ],
+      "traits": [
+        "DA_18_Blackthorn",
+        "DA_18_Brawler",
+        "DA_Riftbeast18",
+        "DA_18_Hunter",
+        "DA_18_Adaptor",
+        "DA_Primal18"
+      ],
+      "aimTraits": {
+        "DA_18_Caustic": 1,
+        "DA_18_Battlemage": 1,
+        "DA_Riftbeast18": 2,
+        "DA_18_Adaptor": 2,
+        "DA_18_Brawler": 2,
+        "DA_18_Hunter": 2,
+        "DA_18_Invoker": 1,
+        "DA_18_Blackthorn": 2,
+        "DA_Primal18": 2
+      },
+      "level": 7,
+      "strength": 0.85,
+      "diff": "低",
+      "econ": "榜单节奏「速升8级」· 7 人口成型（datatft 68.3% 前四 / 12.5% 登顶 / 均位 3.67）",
+      "notes": "按 datatft 榜单「猎手豹女」整理：主C 希维尔，前排 墨菲特，靠 黑荆棘2层 + 斗士2层 撑强度。",
+      "items": {
+        "DA_KogMaw18_AD": [
+          "DA_RedBuff",
+          "DA_GiantSlayer",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_Malphite": [
+          "DA_Crownguard",
+          "DA_GargoyleStoneplate",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Nidalee18_AP": [
+          "DA_Bloodthirster",
+          "DA_EdgeOfNight",
+          "DA_SteraksGage"
+        ],
+        "DA_18_Sivir": [
+          "DA_BlueBuff",
+          "DA_Deathblade",
+          "DA_InfinityEdge"
+        ],
+        "DA_Krug18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [
+        "DA_18_RiftbeastTraitAugment",
+        "DA_18_PrimalAugment_Nidalee",
+        "DA_18_PrimalAugmentPlus_Nidalee",
+        "DA_BlackthornTraitAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "猎手豹女",
+        "appear": 0.07,
+        "top4": 68.3,
+        "first": 12.5,
+        "avg": 3.67,
+        "diff": "简单",
+        "econ": "速升8级",
+        "matchedUnits": 7
+      }
+    },
+    {
+      "id": "s18-board-95",
+      "name": "德莱文95",
+      "units": [
+        "DA_Amumu18",
+        "DA_Taric18",
+        "DA_18_Maokai",
+        "DA_18_Kennen",
+        "DA_18_ElderDragon",
+        "DA_18_Ivern",
+        "DA_Draven18"
+      ],
+      "core": [
+        "DA_Draven18",
+        "DA_18_ElderDragon",
+        "DA_18_Maokai",
+        "DA_18_Kennen"
+      ],
+      "carry": [
+        "DA_Draven18",
+        "DA_18_ElderDragon"
+      ],
+      "tank": [
+        "DA_18_Maokai"
+      ],
+      "traits": [
+        "DA_18_Inferno",
+        "DA_Juggernaut18"
+      ],
+      "aimTraits": {
+        "DA_Emerald18": 1,
+        "DA_18_Maokai_UniqueTrait": 1,
+        "DA_18_Greenfather": 1,
+        "DA_DravenUniqueTrait18": 1,
+        "DA_18_ApexPredator": 1,
+        "DA_18_Vanguard": 1,
+        "DA_Juggernaut18": 2,
+        "DA_18_Inferno": 2,
+        "DA_Riftbeast18": 1
+      },
+      "level": 7,
+      "strength": 0.68,
+      "diff": "中等",
+      "econ": "榜单节奏「未标注」· 7 人口成型（datatft 54.1% 前四 / 22% 登顶 / 均位 4.14）",
+      "notes": "按 datatft 榜单「德莱文95」整理：主C 德莱文、远古巨龙，前排 茂凯，靠 地狱火2层 + 主宰2层 撑强度。",
+      "items": {
+        "DA_18_Maokai": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_ElderDragon": [
+          "DA_InfinityEdge",
+          "DA_LastWhisper",
+          "DA_StrikersFlail"
+        ],
+        "DA_18_Ivern": [
+          "DA_SpearOfShojin"
+        ],
+        "DA_Draven18": [
+          "DA_Deathblade",
+          "DA_GuinsoosRageblade",
+          "DA_KrakensFury"
+        ],
+        "DA_Amumu18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Taric18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [
+        "DA_18_InfernoTraitAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "德莱文95",
+        "appear": 1.04,
+        "top4": 54.1,
+        "first": 22,
+        "avg": 4.14,
+        "diff": "适中",
+        "econ": "未标注",
+        "matchedUnits": 7
+      }
+    },
+    {
+      "id": "s18-board-5",
+      "name": "地狱火艾希",
+      "units": [
+        "DA_18_Varus",
+        "DA_Vi18",
+        "DA_Amumu18",
+        "DA_18_Sivir",
+        "DA_Taric18",
+        "DA_18_Kennen",
+        "DA_18_Ashe",
+        "DA_Lux18_Base"
+      ],
+      "core": [
+        "DA_18_Kennen",
+        "DA_18_Ashe",
+        "DA_18_Sivir",
+        "DA_Amumu18"
+      ],
+      "carry": [
+        "DA_18_Sivir"
+      ],
+      "tank": [
+        "DA_Amumu18"
+      ],
+      "traits": [
+        "DA_18_Inferno",
+        "DA_Primal18",
+        "DA_Juggernaut18",
+        "DA_18_Hunter"
+      ],
+      "aimTraits": {
+        "DA_Emerald18": 1,
+        "DA_18_LuxUniqueTrait": 1,
+        "DA_18_Inferno": 3,
+        "DA_18_Hunter": 2,
+        "DA_18_Vanguard": 1,
+        "DA_Juggernaut18": 2,
+        "DA_Primal18": 2
+      },
+      "level": 8,
+      "strength": 0.81,
+      "diff": "低",
+      "econ": "榜单节奏「速升8级」· 8 人口成型（datatft 60.7% 前四 / 21% 登顶 / 均位 3.86）",
+      "notes": "按 datatft 榜单「地狱火艾希」整理：主C 希维尔，前排 阿木木，靠 地狱火3层 + 野兽之灵2层 撑强度。",
+      "items": {
+        "DA_Amumu18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_Sivir": [
+          "DA_InfinityEdge",
+          "DA_LastWhisper",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_Ashe": [
+          "DA_18_EmblemInferno",
+          "DA_RedBuff",
+          "DA_SpearOfShojin"
+        ],
+        "DA_18_Varus": [
+          "DA_InfinityEdge",
+          "DA_LastWhisper",
+          "DA_SpearOfShojin"
+        ],
+        "DA_Vi18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Taric18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [
+        "DA_18_InfernoTraitAugment",
+        "DA_18_PrimalAugment_Nidalee",
+        "DA_18_PrimalAugmentPlus_Nidalee"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "地狱火艾希",
+        "appear": 0.06,
+        "top4": 60.7,
+        "first": 21,
+        "avg": 3.86,
+        "diff": "简单",
+        "econ": "速升8级",
+        "matchedUnits": 8
+      }
+    },
+    {
+      "id": "s18-board-6",
+      "name": "6主宰婕拉",
+      "units": [
+        "DA_18_Yorick",
+        "DA_18_Sejuani",
+        "DA_Scuttlecrab18",
+        "DA_Vi18",
+        "DA_Amumu18",
+        "DA_18_Zyra",
+        "DA_18_Maokai",
+        "DA_18_Ivern"
+      ],
+      "core": [
+        "DA_18_Maokai",
+        "DA_18_Zyra",
+        "DA_Amumu18",
+        "DA_Vi18"
+      ],
+      "carry": [
+        "DA_18_Zyra"
+      ],
+      "tank": [
+        "DA_Amumu18",
+        "DA_18_Maokai"
+      ],
+      "traits": [
+        "DA_Juggernaut18",
+        "DA_18_Summoner"
+      ],
+      "aimTraits": {
+        "DA_Juggernaut18": 6,
+        "DA_18_Maokai_UniqueTrait": 1,
+        "DA_18_ZyraUniqueTrait": 1,
+        "DA_18_Greenfather": 1,
+        "DA_18_Summoner": 2
+      },
+      "level": 8,
+      "strength": 0.85,
+      "diff": "低",
+      "econ": "榜单节奏「速升8级」· 8 人口成型（datatft 63.9% 前四 / 14.5% 登顶 / 均位 3.82）",
+      "notes": "按 datatft 榜单「6主宰婕拉」整理：主C 婕拉，前排 阿木木、茂凯，靠 主宰6层 + 召唤师2层 撑强度。",
+      "items": {
+        "DA_Amumu18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_Zyra": [
+          "DA_ArchangelsStaff",
+          "DA_HextechGunblade",
+          "DA_VoidStaff"
+        ],
+        "DA_18_Maokai": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_Sejuani": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Scuttlecrab18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Vi18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "6主宰婕拉",
+        "appear": 0.09,
+        "top4": 63.9,
+        "first": 14.5,
+        "avg": 3.82,
+        "diff": "简单",
+        "econ": "速升8级",
+        "matchedUnits": 8
+      }
+    },
+    {
+      "id": "s18-board-7",
+      "name": "提莫牛头",
+      "units": [
+        "DA_18_Kobuko",
+        "DA_18_Veigar",
+        "DA_18_Alistar",
+        "DA_18_Teemo",
+        "DA_18_LeBlanc",
+        "DA_18_Hecarim",
+        "DA_18_Morgana"
+      ],
+      "core": [
+        "DA_18_Morgana",
+        "DA_18_Hecarim",
+        "DA_18_LeBlanc",
+        "DA_18_Alistar"
+      ],
+      "carry": [
+        "DA_18_LeBlanc",
+        "DA_18_Morgana"
+      ],
+      "tank": [
+        "DA_18_Alistar"
+      ],
+      "traits": [
+        "DA_18_Sprykin",
+        "DA_18_Elderwood",
+        "DA_18_Brawler",
+        "DA_18_Spellweaver",
+        "DA_18_Invoker"
+      ],
+      "aimTraits": {
+        "DA_18_Invoker": 2,
+        "DA_18_Sprykin": 3,
+        "DA_18_Elderwood": 3,
+        "DA_18_Spellweaver": 2,
+        "DA_18_Brawler": 2,
+        "DA_18_Vanguard": 1
+      },
+      "level": 7,
+      "strength": 0.85,
+      "diff": "低",
+      "econ": "榜单节奏「6级追三星」· 7 人口成型（datatft 68.2% 前四 / 8% 登顶 / 均位 3.74）",
+      "notes": "按 datatft 榜单「提莫牛头」整理：主C 乐芙兰、莫甘娜，前排 阿利斯塔，靠 约德尔人和朋友3层 + 永恒之森3层 撑强度。",
+      "items": {
+        "DA_18_Alistar": [
+          "DA_GargoyleStoneplate",
+          "DA_WarmogsArmor",
+          "DA_SpiritVisage"
+        ],
+        "DA_18_Teemo": [
+          "DA_JeweledGauntlet",
+          "DA_SpearOfShojin",
+          "DA_StrikersFlail"
+        ],
+        "DA_18_LeBlanc": [
+          "DA_Morellonomicon",
+          "DA_SpearOfShojin",
+          "DA_VoidStaff"
+        ],
+        "DA_18_Morgana": [
+          "DA_Morellonomicon",
+          "DA_VoidStaff",
+          "DA_HextechGunblade"
+        ],
+        "DA_18_Veigar": [
+          "DA_BlueBuff",
+          "DA_HextechGunblade",
+          "DA_JeweledGauntlet"
+        ],
+        "DA_18_Hecarim": [
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor",
+          "DA_GargoyleStoneplate"
+        ]
+      },
+      "hexes": [
+        "DA_18_ElderwoodTraitAugment",
+        "DA_18_SprykinAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "提莫牛头",
+        "appear": 0.15,
+        "top4": 68.2,
+        "first": 8,
+        "avg": 3.74,
+        "diff": "简单",
+        "econ": "6级追三星",
+        "matchedUnits": 7
+      }
+    },
+    {
+      "id": "s18-board-8",
+      "name": "七野怪大红",
+      "units": [
+        "DA_18_Sentry",
+        "DA_Murkwolf18",
+        "DA_Krug18",
+        "DA_18_ElderDragon",
+        "DA_Taric18",
+        "DA_18_GnarSmall"
+      ],
+      "core": [
+        "DA_18_ElderDragon",
+        "DA_18_GnarSmall",
+        "DA_Krug18",
+        "DA_Murkwolf18"
+      ],
+      "carry": [
+        "DA_18_ElderDragon"
+      ],
+      "tank": [
+        "DA_Krug18"
+      ],
+      "traits": [
+        "DA_Riftbeast18",
+        "DA_18_Brawler"
+      ],
+      "aimTraits": {
+        "DA_Riftbeast18": 4,
+        "DA_Emerald18": 1,
+        "DA_18_ApexPredator": 1,
+        "DA_18_Slayer": 1,
+        "DA_18_Brawler": 2,
+        "DA_18_Vanguard": 1,
+        "DA_18_Invoker": 1
+      },
+      "level": 7,
+      "strength": 0.74,
+      "diff": "低",
+      "econ": "榜单节奏「速升8级」· 7 人口成型（datatft 56.8% 前四 / 11.7% 登顶 / 均位 4.16）",
+      "notes": "按 datatft 榜单「七野怪大红」整理：主C 远古巨龙，前排 远古石甲虫，靠 峡谷野怪4层 + 斗士2层 撑强度。",
+      "items": {
+        "DA_Krug18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_18_ElderDragon": [
+          "DA_InfinityEdge",
+          "DA_LastWhisper",
+          "DA_StrikersFlail"
+        ],
+        "DA_18_Sentry": [
+          "DA_BlueBuff",
+          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap"
+        ],
+        "DA_Murkwolf18": [
+          "DA_EdgeOfNight",
+          "DA_HandOfJustice",
+          "DA_Quicksilver"
+        ],
+        "DA_Taric18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [
+        "DA_18_RiftbeastTraitAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "七野怪大红",
+        "appear": 0.57,
+        "top4": 56.8,
+        "first": 11.7,
+        "avg": 4.16,
+        "diff": "简单",
+        "econ": "速升8级",
+        "matchedUnits": 6
+      }
+    },
+    {
+      "id": "s18-board-9",
+      "name": "花仙鸡哥",
+      "units": [
+        "DA_18_Rakan",
+        "DA_18_Xayah",
+        "DA_Scuttlecrab18",
+        "DA_Krug18",
+        "DA_18_Hecarim",
+        "DA_CrimsonRaptor18",
+        "DA_18_Lillia",
+        "DA_18_GnarSmall"
+      ],
+      "core": [
+        "DA_18_GnarSmall",
+        "DA_18_Lillia",
+        "DA_CrimsonRaptor18",
+        "DA_18_Hecarim"
+      ],
+      "carry": [
+        "DA_CrimsonRaptor18"
+      ],
+      "tank": [
+        "DA_18_Hecarim"
+      ],
+      "traits": [
+        "DA_18_Fae",
+        "DA_18_Elderwood",
+        "DA_Riftbeast18",
+        "DA_Juggernaut18",
+        "DA_18_Vanguard",
+        "DA_18_Rapidfire",
+        "DA_18_Brawler"
+      ],
+      "aimTraits": {
+        "DA_18_Fae": 3,
+        "DA_18_Elderwood": 3,
+        "DA_Riftbeast18": 3,
+        "DA_18_Brawler": 2,
+        "DA_18_Rapidfire": 2,
+        "DA_18_Vanguard": 2,
+        "DA_Juggernaut18": 2
+      },
+      "level": 8,
+      "strength": 0.74,
+      "diff": "中等",
+      "econ": "榜单节奏「6/7级追三星」· 8 人口成型（datatft 59.3% 前四 / 16% 登顶 / 均位 3.99）",
+      "notes": "按 datatft 榜单「花仙鸡哥」整理：主C 深红锋喙鸟，前排 赫卡里姆，靠 花仙子3层 + 永恒之森3层 撑强度。",
+      "items": {
+        "DA_18_Xayah": [
+          "DA_LastWhisper",
+          "DA_KrakensFury",
+          "DA_Deathblade"
+        ],
+        "DA_18_Hecarim": [
+          "DA_ProtectorsVow",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_CrimsonRaptor18": [
+          "DA_18_EmblemFae",
+          "DA_GuinsoosRageblade",
+          "DA_TitansResolve"
+        ],
+        "DA_18_Rakan": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Scuttlecrab18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ],
+        "DA_Krug18": [
+          "DA_GargoyleStoneplate",
+          "DA_SpiritVisage",
+          "DA_WarmogsArmor"
+        ]
+      },
+      "hexes": [
+        "DA_18_FaeTraitAugment",
+        "DA_18_RiftbeastTraitAugment",
+        "DA_18_ElderwoodTraitAugment"
+      ],
+      "rank": {
+        "source": "datatft.com",
+        "boardTitle": "花仙鸡哥",
+        "appear": 0.01,
+        "top4": 59.3,
+        "first": 16,
+        "avg": 3.99,
+        "diff": "适中",
+        "econ": "6/7级追三星",
+        "matchedUnits": 8
+      }
+    }
+  ]
+}

@@ -1,0 +1,934 @@
+{
+  "source": "datatft.com",
+  "season": 18,
+  "version": "18.7",
+  "extractedAt": "2026-11-23",
+  "counts": {
+    "items": 137,
+    "characters": 65,
+    "augments": 256,
+    "comps": 36
+  },
+  "pages": {
+    "items": "https://www.datatft.com/item/tier",
+    "augments": "https://www.datatft.com/augment/tier",
+    "comps": "https://www.datatft.com/comps"
+  },
+  "characters": [
+    {
+      "id": "918007",
+      "key": "DA_18_LeBlanc",
+      "name": "乐芙兰",
+      "title": "诡术妖姬",
+      "cost": 2,
+      "races": [
+        "永恒之森"
+      ],
+      "jobs": [
+        "法师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918007.jpg"
+    },
+    {
+      "id": "918009",
+      "key": "DA_Fiddlesticks18",
+      "name": "费德提克",
+      "title": "远古恐惧",
+      "cost": 3,
+      "races": [
+        "绝命花妖"
+      ],
+      "jobs": [
+        "护卫",
+        "法师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918009.jpg"
+    },
+    {
+      "id": "918010",
+      "key": "DA_18_Kayle",
+      "name": "凯尔",
+      "title": "正义天使",
+      "cost": 2,
+      "races": [
+        "日蚀骑士"
+      ],
+      "jobs": [
+        "迅捷射手"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918010.jpg"
+    },
+    {
+      "id": "918011",
+      "key": "DA_18_MasterYi_AD",
+      "name": "易",
+      "title": "无极剑圣",
+      "cost": 3,
+      "races": [
+        "灵魂莲华"
+      ],
+      "jobs": [
+        "魔战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918011.jpg"
+    },
+    {
+      "id": "918012",
+      "key": "DA_18_Alistar",
+      "name": "阿利斯塔",
+      "title": "牛头酋长",
+      "cost": 2,
+      "races": [
+        "永恒之森"
+      ],
+      "jobs": [
+        "斗士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918012.jpg"
+    },
+    {
+      "id": "918015",
+      "key": "DA_18_Sivir",
+      "name": "希维尔",
+      "title": "战争女神",
+      "cost": 4,
+      "races": [
+        "野兽之灵"
+      ],
+      "jobs": [
+        "猎人"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918015.jpg"
+    },
+    {
+      "id": "918016",
+      "key": "DA_18_Soraka",
+      "name": "索拉卡",
+      "title": "众星之子",
+      "cost": 4,
+      "races": [
+        "绝命花妖"
+      ],
+      "jobs": [
+        "裁决使"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918016.jpg"
+    },
+    {
+      "id": "918017",
+      "key": "DA_18_Teemo",
+      "name": "提莫",
+      "title": "迅捷斥候",
+      "cost": 2,
+      "races": [
+        "约德尔人和朋友"
+      ],
+      "jobs": [
+        "神谕"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918017.jpg"
+    },
+    {
+      "id": "918018",
+      "key": "DA_18_Tristana",
+      "name": "崔丝塔娜",
+      "title": "麦林炮手",
+      "cost": 3,
+      "races": [
+        "花仙子",
+        "约德尔人和朋友"
+      ],
+      "jobs": [
+        "猎人"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918018.jpg"
+    },
+    {
+      "id": "918019",
+      "key": "DA_18_Warwick",
+      "name": "沃里克",
+      "title": "祖安怒兽",
+      "cost": 2,
+      "races": [
+        "黑荆棘"
+      ],
+      "jobs": [
+        "狂战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918019.jpg"
+    },
+    {
+      "id": "918022",
+      "key": "DA_18_Ashe",
+      "name": "艾希",
+      "title": "寒冰射手",
+      "cost": 5,
+      "races": [
+        "灵魂莲华"
+      ],
+      "jobs": [
+        "猎人"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918022.jpg"
+    },
+    {
+      "id": "918025",
+      "key": "DA_18_Morgana",
+      "name": "莫甘娜",
+      "title": "堕落天使",
+      "cost": 4,
+      "races": [
+        "魔女"
+      ],
+      "jobs": [
+        "神谕"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918025.jpg"
+    },
+    {
+      "id": "918032",
+      "key": "DA_Amumu18",
+      "name": "阿木木",
+      "title": "殇之木乃伊",
+      "cost": 4,
+      "races": [
+        "地狱火"
+      ],
+      "jobs": [
+        "主宰"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918032.jpg"
+    },
+    {
+      "id": "918033",
+      "key": "DA_18_Rammus",
+      "name": "拉莫斯",
+      "title": "披甲龙龟",
+      "cost": 3,
+      "races": [
+        "约德尔人和朋友"
+      ],
+      "jobs": [
+        "护卫"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918033.jpg"
+    },
+    {
+      "id": "918043",
+      "key": "DA_Karma18",
+      "name": "卡尔玛",
+      "title": "天启者",
+      "cost": 1,
+      "races": [
+        "灵魂莲华"
+      ],
+      "jobs": [
+        "法师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918043.jpg"
+    },
+    {
+      "id": "918044",
+      "key": "DA_Taric18",
+      "name": "塔里克",
+      "title": "瓦洛兰之盾",
+      "cost": 5,
+      "races": [
+        "宝石骑士"
+      ],
+      "jobs": [
+        "重装战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918044.jpg"
+    },
+    {
+      "id": "918045",
+      "key": "DA_18_Veigar",
+      "name": "维迦",
+      "title": "邪恶小法师",
+      "cost": 1,
+      "races": [
+        "黑荆棘",
+        "约德尔人和朋友"
+      ],
+      "jobs": [
+        "法师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918045.jpg"
+    },
+    {
+      "id": "918051",
+      "key": "DA_18_Caitlyn",
+      "name": "凯特琳",
+      "title": "皮城女警",
+      "cost": 2,
+      "races": [
+        "魔女"
+      ],
+      "jobs": [
+        "猎人"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918051.jpg"
+    },
+    {
+      "id": "918054",
+      "key": "DA_18_Malphite",
+      "name": "墨菲特",
+      "title": "熔岩巨兽",
+      "cost": 4,
+      "races": [
+        "黑荆棘",
+        "魔岩巨兽"
+      ],
+      "jobs": [],
+      "icon": "https://static.datatft.com/images/heros/default/918054.jpg"
+    },
+    {
+      "id": "918057",
+      "key": "DA_18_Maokai",
+      "name": "茂凯",
+      "title": "扭曲树精",
+      "cost": 5,
+      "races": [
+        "远古树精"
+      ],
+      "jobs": [
+        "主宰"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918057.jpg"
+    },
+    {
+      "id": "918060",
+      "key": "DA_18_Elise",
+      "name": "伊莉丝",
+      "title": "蜘蛛女皇",
+      "cost": 2,
+      "races": [
+        "魔女"
+      ],
+      "jobs": [
+        "重装战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918060.jpg"
+    },
+    {
+      "id": "918069",
+      "key": "DA_18_Cassiopeia",
+      "name": "卡西奥佩娅",
+      "title": "魔蛇之拥",
+      "cost": 3,
+      "races": [
+        "魔女"
+      ],
+      "jobs": [
+        "法师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918069.jpg"
+    },
+    {
+      "id": "918076",
+      "key": "DA_Nidalee18_AP",
+      "name": "奈德丽",
+      "title": "狂野女猎手",
+      "cost": 4,
+      "races": [
+        "野兽之灵"
+      ],
+      "jobs": [
+        "魔战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918076.jpg"
+    },
+    {
+      "id": "918081",
+      "key": "DA_18_Ezreal",
+      "name": "伊泽瑞尔",
+      "title": "探险家",
+      "cost": 4,
+      "races": [
+        "永恒之森"
+      ],
+      "jobs": [
+        "裁决使"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918081.jpg"
+    },
+    {
+      "id": "918083",
+      "key": "DA_18_Yorick",
+      "name": "约里克",
+      "title": "牧魂人",
+      "cost": 1,
+      "races": [
+        "灵魂莲华"
+      ],
+      "jobs": [
+        "主宰",
+        "召唤师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918083.jpg"
+    },
+    {
+      "id": "918084",
+      "key": "DA_18_Akali_AD",
+      "name": "阿卡丽",
+      "title": "离群之刺",
+      "cost": 1,
+      "races": [
+        "地狱火"
+      ],
+      "jobs": [
+        "魔战士",
+        "狂战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918084.jpg"
+    },
+    {
+      "id": "918085",
+      "key": "DA_18_Kennen",
+      "name": "凯南",
+      "title": "狂暴之心",
+      "cost": 5,
+      "races": [
+        "地狱火",
+        "约德尔人和朋友"
+      ],
+      "jobs": [
+        "裁决使"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918085.jpg"
+    },
+    {
+      "id": "918089",
+      "key": "DA_18_Leona",
+      "name": "蕾欧娜",
+      "title": "曙光女神",
+      "cost": 1,
+      "races": [
+        "日蚀骑士"
+      ],
+      "jobs": [
+        "护卫"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918089.jpg"
+    },
+    {
+      "id": "918096",
+      "key": "DA_KogMaw18_AD",
+      "name": "克格莫",
+      "title": "深渊巨口",
+      "cost": 3,
+      "races": [
+        "帝王斑蝶"
+      ],
+      "jobs": [
+        "魔战士",
+        "神谕"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918096.jpg"
+    },
+    {
+      "id": "918098",
+      "key": "DA_18_Shen",
+      "name": "慎",
+      "title": "暮光之眼",
+      "cost": 2,
+      "races": [
+        "地狱火"
+      ],
+      "jobs": [
+        "护卫"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918098.jpg"
+    },
+    {
+      "id": "918099",
+      "key": "DA_Lux18_Base",
+      "name": "拉克丝",
+      "title": "光辉女郎",
+      "cost": 5,
+      "races": [
+        "自然之力！大元素使"
+      ],
+      "jobs": [],
+      "icon": "https://static.datatft.com/images/heros/default/918099.jpg"
+    },
+    {
+      "id": "918103",
+      "key": "DA_18_Ahri",
+      "name": "阿狸",
+      "title": "九尾妖狐",
+      "cost": 4,
+      "races": [
+        "灵魂莲华"
+      ],
+      "jobs": [
+        "法师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918103.jpg"
+    },
+    {
+      "id": "918107",
+      "key": "DA_18_Rengar",
+      "name": "雷恩加尔",
+      "title": "傲之追猎者",
+      "cost": 3,
+      "races": [
+        "宿敌"
+      ],
+      "jobs": [],
+      "icon": "https://static.datatft.com/images/heros/default/918107.jpg"
+    },
+    {
+      "id": "918110",
+      "key": "DA_18_Varus",
+      "name": "韦鲁斯",
+      "title": "惩戒之箭",
+      "cost": 1,
+      "races": [
+        "地狱火"
+      ],
+      "jobs": [
+        "迅捷射手"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918110.jpg"
+    },
+    {
+      "id": "918113",
+      "key": "DA_18_Sejuani",
+      "name": "瑟庄妮",
+      "title": "北地之怒",
+      "cost": 2,
+      "races": [
+        "日蚀骑士"
+      ],
+      "jobs": [
+        "主宰"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918113.jpg"
+    },
+    {
+      "id": "918119",
+      "key": "DA_Draven18",
+      "name": "德莱文",
+      "title": "荣耀行刑官",
+      "cost": 5,
+      "races": [
+        "赏金猎人"
+      ],
+      "jobs": [],
+      "icon": "https://static.datatft.com/images/heros/default/918119.jpg"
+    },
+    {
+      "id": "918120",
+      "key": "DA_18_Hecarim",
+      "name": "赫卡里姆",
+      "title": "战争之影",
+      "cost": 3,
+      "races": [
+        "永恒之森"
+      ],
+      "jobs": [
+        "重装战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918120.jpg"
+    },
+    {
+      "id": "918121",
+      "key": "DA_18_KhaZix",
+      "name": "卡兹克",
+      "title": "虚空掠夺者",
+      "cost": 3,
+      "races": [
+        "宿敌"
+      ],
+      "jobs": [],
+      "icon": "https://static.datatft.com/images/heros/default/918121.jpg"
+    },
+    {
+      "id": "918131",
+      "key": "DA_18_Diana",
+      "name": "黛安娜",
+      "title": "皎月女神",
+      "cost": 3,
+      "races": [
+        "月蚀骑士"
+      ],
+      "jobs": [
+        "狂战士",
+        "重装战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918131.jpg"
+    },
+    {
+      "id": "918143",
+      "key": "DA_18_Zyra",
+      "name": "婕拉",
+      "title": "荆棘之兴",
+      "cost": 4,
+      "races": [
+        "荆棘之兴"
+      ],
+      "jobs": [
+        "召唤师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918143.jpg"
+    },
+    {
+      "id": "918150",
+      "key": "DA_18_GnarSmall",
+      "name": "纳尔",
+      "title": "迷失之牙",
+      "cost": 5,
+      "races": [
+        "永恒之森",
+        "约德尔人和朋友"
+      ],
+      "jobs": [
+        "斗士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918150.jpg"
+    },
+    {
+      "id": "918164",
+      "key": "DA_18_Camille",
+      "name": "卡蜜尔",
+      "title": "青钢影",
+      "cost": 1,
+      "races": [
+        "魔女"
+      ],
+      "jobs": [
+        "狂战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918164.jpg"
+    },
+    {
+      "id": "918254",
+      "key": "DA_Vi18",
+      "name": "蔚",
+      "title": "皮城执法官",
+      "cost": 3,
+      "races": [
+        "野兽之灵"
+      ],
+      "jobs": [
+        "主宰"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918254.jpg"
+    },
+    {
+      "id": "918268",
+      "key": "DA_18_Azir",
+      "name": "阿兹尔",
+      "title": "沙漠皇帝",
+      "cost": 3,
+      "races": [
+        "黑荆棘"
+      ],
+      "jobs": [
+        "裁决使",
+        "召唤师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918268.jpg"
+    },
+    {
+      "id": "918421",
+      "key": "DA_18_RekSai",
+      "name": "雷克塞",
+      "title": "虚空遁地兽",
+      "cost": 1,
+      "races": [
+        "黑荆棘"
+      ],
+      "jobs": [
+        "斗士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918421.jpg"
+    },
+    {
+      "id": "918427",
+      "key": "DA_18_Ivern",
+      "name": "艾翁",
+      "title": "翠神",
+      "cost": 5,
+      "races": [
+        "翠神",
+        "永恒之森"
+      ],
+      "jobs": [],
+      "icon": "https://static.datatft.com/images/heros/default/918427.jpg"
+    },
+    {
+      "id": "918497",
+      "key": "DA_18_Rakan",
+      "name": "洛",
+      "title": "幻翎",
+      "cost": 1,
+      "races": [
+        "花仙子"
+      ],
+      "jobs": [
+        "主宰",
+        "重装战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918497.jpg"
+    },
+    {
+      "id": "918498",
+      "key": "DA_18_Xayah",
+      "name": "霞",
+      "title": "逆羽",
+      "cost": 1,
+      "races": [
+        "永恒之森",
+        "花仙子"
+      ],
+      "jobs": [
+        "迅捷射手"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918498.jpg"
+    },
+    {
+      "id": "918516",
+      "key": "DA_18_Ornn",
+      "name": "奥恩",
+      "title": "山隐之焰",
+      "cost": 1,
+      "races": [
+        "永恒之森"
+      ],
+      "jobs": [
+        "护卫"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918516.jpg"
+    },
+    {
+      "id": "918523",
+      "key": "DA_18_Aphelios",
+      "name": "厄斐琉斯",
+      "title": "残月之肃",
+      "cost": 4,
+      "races": [
+        "月蚀骑士"
+      ],
+      "jobs": [
+        "迅捷射手"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918523.jpg"
+    },
+    {
+      "id": "918804",
+      "key": "DA_18_Yunara",
+      "name": "芸阿娜",
+      "title": "不破之誓",
+      "cost": 2,
+      "races": [
+        "灵魂莲华"
+      ],
+      "jobs": [
+        "裁决使"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918804.jpg"
+    },
+    {
+      "id": "918875",
+      "key": "DA_18_Sett",
+      "name": "瑟提",
+      "title": "腕豪",
+      "cost": 4,
+      "races": [
+        "灵魂莲华"
+      ],
+      "jobs": [
+        "斗士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918875.jpg"
+    },
+    {
+      "id": "918876",
+      "key": "DA_18_Lillia",
+      "name": "莉莉娅",
+      "title": "含羞蓓蕾",
+      "cost": 4,
+      "races": [
+        "花仙子"
+      ],
+      "jobs": [
+        "护卫"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918876.jpg"
+    },
+    {
+      "id": "918954",
+      "key": "DA_18_Kobuko",
+      "name": "可酷伯",
+      "title": "可酷伯",
+      "cost": 1,
+      "races": [
+        "约德尔人和朋友"
+      ],
+      "jobs": [
+        "斗士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918954.jpg"
+    },
+    {
+      "id": "918955",
+      "key": "DA_18_Alune",
+      "name": "拉露恩",
+      "title": "拉露恩",
+      "cost": 5,
+      "races": [
+        "月华神女",
+        "月蚀骑士"
+      ],
+      "jobs": [
+        "法师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918955.jpg"
+    },
+    {
+      "id": "918989",
+      "key": "DA_18_Sentry",
+      "name": "苍蓝哨戒",
+      "title": "驻灵",
+      "cost": 1,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "神谕"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918989.jpg"
+    },
+    {
+      "id": "918990",
+      "key": "DA_Cinderling18",
+      "name": "绯红树怪",
+      "title": "绯红树怪",
+      "cost": 1,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "猎人"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918990.jpg"
+    },
+    {
+      "id": "918991",
+      "key": "DA_Gromp18_AP",
+      "name": "魔沼蛙",
+      "title": "魔沼蛙",
+      "cost": 2,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "魔战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918991.jpg"
+    },
+    {
+      "id": "918992",
+      "key": "DA_Murkwolf18",
+      "name": "暗影狼",
+      "title": "暗影狼",
+      "cost": 2,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "狂战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918992.jpg"
+    },
+    {
+      "id": "918993",
+      "key": "DA_Krug18",
+      "name": "远古石甲虫",
+      "title": "石甲虫",
+      "cost": 3,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "斗士",
+        "召唤师"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918993.jpg"
+    },
+    {
+      "id": "918994",
+      "key": "DA_Scuttlecrab18",
+      "name": "峡谷迅捷蟹",
+      "title": "迅捷蟹",
+      "cost": 2,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "主宰"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918994.jpg"
+    },
+    {
+      "id": "918995",
+      "key": "DA_CrimsonRaptor18",
+      "name": "深红锋喙鸟",
+      "title": "锋喙鸟",
+      "cost": 3,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "召唤师",
+        "迅捷射手"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918995.jpg"
+    },
+    {
+      "id": "918996",
+      "key": "DA_Brambleback18",
+      "name": "绯红印记树怪",
+      "title": "绯红印记树怪",
+      "cost": 4,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "狂战士"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918996.jpg"
+    },
+    {
+      "id": "918997",
+      "key": "DA_Sentinel18",
+      "name": "苍蓝雕纹魔像",
+      "title": "苍蓝雕纹魔像",
+      "cost": 4,
+      "races": [
+        "峡谷野怪"
+      ],
+      "jobs": [
+        "重装战士",
+        "神谕"
+      ],
+      "icon": "https://static.datatft.com/images/heros/default/918997.jpg"
+    },
+    {
+      "id": "918998",
+      "key": "DA_18_ElderDragon",
+      "name": "远古巨龙",
+      "title": "远古巨龙",
+      "cost": 5,
+      "races": [
+        "顶级掠食者",
+        "峡谷野怪"
+      ],
+      "jobs": [],
+      "icon": "https://static.datatft.com/images/heros/default/918998.jpg"
+    }
+  ]
+}
