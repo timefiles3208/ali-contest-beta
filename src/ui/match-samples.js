@@ -1,4 +1,4 @@
-import { aggregateTftMatches, unpackMatchFile } from '../engine/match-samples.js';
+import { aggregateTftMatches, unpackMatchFile } from '../engine/match-samples.js?v=match-variants';
 
 const MAX_IMPORT_BYTES = 15 * 1024 * 1024;
 
@@ -12,12 +12,28 @@ export function bindMatchSamples({ panel, input, clear, status, output, getConte
     clear.disabled = !report && !busy;
   }
 
-  function table(report) {
+  function table(report, setData) {
     const list = document.createElement('ol');
+    const names = new Map(setData.units.map(unit => [unit.id, unit.name]));
     for (const row of report.comps) {
       const li = document.createElement('li');
       const enough = row.samples >= 10;
       li.textContent = `${row.name} · ${row.samples} 个终局棋盘 · 前四 ${row.top4}% · 登顶 ${row.first}% · 平均 ${row.average} 名${enough ? '' : ' · 样本较少'}`;
+      if (row.variants.length) {
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = '查看终局阵容变体';
+        const variants = document.createElement('ul');
+        for (const variant of row.variants) {
+          const item = document.createElement('li');
+          const level = variant.level === null ? '等级未记录' : `终局 ${variant.level} 级`;
+          const lineup = variant.units.map(id => names.get(id) || id).join('、');
+          item.textContent = `${level} · ${lineup} · ${variant.samples} 个棋盘 · 平均 ${variant.average} 名`;
+          variants.append(item);
+        }
+        details.append(summary, variants);
+        li.append(details);
+      }
       list.append(li);
     }
     output.replaceChildren(list);
@@ -58,7 +74,7 @@ export function bindMatchSamples({ panel, input, clear, status, output, getConte
       status.textContent = report.matches
         ? `读取 ${report.matches} 局排位，匹配 ${report.matchedBoards} 个终局棋盘，跳过 ${skipped} 局。`
         : `没有通过校验的 S18 18.7 排位对局，跳过 ${skipped} 局。`;
-      table(report);
+      table(report, context.setData);
     } catch {
       if (job === revision) status.textContent = '无法导入。请选择包含 Riot TFT 对局详情的 JSON 文件。';
     } finally {

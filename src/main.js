@@ -4,7 +4,7 @@ import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=opening-advice';
 import { bindOpeningAdvice } from './ui/opening-advice.js';
-import { bindMatchSamples } from './ui/match-samples.js';
+import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js';
 import { rankOpening } from './engine/opening.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';

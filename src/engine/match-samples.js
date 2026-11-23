@@ -5,6 +5,8 @@ const MIN_BOARD_UNITS = 5;
 const MIN_OVERLAP = 4;
 const MIN_SIMILARITY = 0.55;
 const MIN_MARGIN = 0.08;
+const MAX_VARIANTS = 3;
+const averagePlacement = (total, samples) => Math.round(100 * total / samples) / 100;
 
 const validVersion = version => typeof version === 'string'
   && /^(?:Version\s+)?(?:16\.23|18\.7)(?:[.\s]|$)/i.test(version.trim());
@@ -55,24 +57,38 @@ export function aggregateTftMatches(records, { comps, setData }) {
     seen.add(id);
     output.matches++;
 
-    for (const { units, placement } of people) {
-      const board = new Set(units.map(unit => String(unit?.character_id || '').replace(/^TFT18_/, 'DA_18_')).filter(id => known.has(id)));
+    for (const { units, placement, level } of people) {
+      const lineup = units.map(unit => String(unit?.character_id || '').replace(/^TFT18_/, 'DA_18_'));
+      const board = new Set(lineup.filter(id => known.has(id)));
       const comp = closestComp(board, candidates);
       if (!comp) { output.unmatchedBoards++; continue; }
       output.matchedBoards++;
-      const row = totals.get(comp.id) || { id: comp.id, name: comp.name, samples: 0, four: 0, wins: 0, place: 0 };
+      const row = totals.get(comp.id) || { id: comp.id, name: comp.name, samples: 0, four: 0, wins: 0, place: 0,
+        variants: new Map() };
       row.samples++;
       row.four += Number(placement <= 4);
       row.wins += Number(placement === 1);
       row.place += placement;
       totals.set(comp.id, row);
+
+      if (!lineup.every(id => known.has(id))) continue;
+      const finalLevel = Number.isInteger(level) && level > 0 ? level : null;
+      lineup.sort();
+      const key = JSON.stringify([finalLevel, lineup]);
+      const variant = row.variants.get(key) || { level: finalLevel, units: lineup, samples: 0, place: 0 };
+      variant.samples++;
+      variant.place += placement;
+      row.variants.set(key, variant);
     }
   }
 
   const rounded = value => Math.round(value * 10) / 10;
-  output.comps = [...totals.values()].map(({ id, name, samples, four, wins, place }) => ({
+  output.comps = [...totals.values()].map(({ id, name, samples, four, wins, place, variants }) => ({
     id, name, samples, top4: rounded(100 * four / samples), first: rounded(100 * wins / samples),
-    average: Math.round(100 * place / samples) / 100,
+    average: averagePlacement(place, samples),
+    variants: [...variants.values()].map(({ place, ...variant }) => ({
+      ...variant, average: averagePlacement(place, variant.samples),
+    })).sort((a, b) => b.samples - a.samples || a.average - b.average).slice(0, MAX_VARIANTS),
   })).sort((a, b) => Number(b.samples >= 10) - Number(a.samples >= 10)
     || b.top4 - a.top4 || a.average - b.average || b.samples - a.samples);
   return output;

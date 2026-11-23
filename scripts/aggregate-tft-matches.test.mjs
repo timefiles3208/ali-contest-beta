@@ -26,3 +26,22 @@ test('ambiguous matches do not inflate board statistics',()=>{
   assert.equal(r.matchedBoards,0);
   assert.equal(r.comps.length,0);
 });
+
+test('groups observed board variants by actual level and units, regardless of unit order', () => {
+  const match = fixture('A');
+  const [first, second, third, fourth] = match.info.participants;
+  first.level = second.level = third.level = 8;
+  second.units.reverse();
+  third.units.push({ character_id: 'TFT18_f' });
+  fourth.level = 7;
+  const result = aggregateTftMatches([match], { setData, comps });
+  const [alpha, beta] = result.comps;
+  assert.deepEqual(alpha.variants, [
+    { level: 8, units: units.slice(0, 5), samples: 2, average: 1.5 },
+    { level: 8, units: units.slice(0, 6), samples: 1, average: 3 },
+    { level: 7, units: units.slice(0, 5), samples: 1, average: 4 },
+  ]);
+  assert.deepEqual(beta.variants, [
+    { level: null, units: units.slice(5), samples: 4, average: 6.5 },
+  ]);
+});
