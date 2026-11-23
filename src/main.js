@@ -1,14 +1,14 @@
 import { SETS, findSet } from './data/sets.js';
 import { loadJson, iconHtml } from './ui/helpers.js';
-import { bindModelReference } from './ui/model-reference.js';
-import { bindScreenReader } from './ui/screen-reader.js';
+import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
+import { bindScreenReader } from './ui/screen-reader.js?v=screenshot-ocr';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
 import { planItems } from './engine/items.js';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js';
-import { compressSnapshot, recognizeSnapshot, matchSnapshot, autoSelect, pingSnapshot, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=screenshot-ocr';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -39,7 +39,7 @@ const state = {
   owned: new Map(),
   ownedItems: new Set(),
   chosen: new Set(),
-  snap: { ping: undefined, file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, meta: null, sent: null, applied: false },
+  snap: { file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false },
 };
 
 async function loadBoard() {
@@ -97,8 +97,6 @@ async function loadSet(setNum) {
   state.ownedItems.clear();
   state.chosen.clear();
   state.snap.mapped = null;
-  state.snap.meta = null;
-  state.snap.sent = null;
   state.snap.applied = false;
   state.snap.error = null;
   el('search').value = '';
@@ -450,7 +448,7 @@ function renderSnapshot() {
   thumb.style.transform = `rotate(${snap.rotation}deg)`;
   thumb.classList.toggle('sideways', snap.rotation % 180 !== 0);
   const locked = snap.busy || snap.importing;
-  el('snapRun').disabled = !snap.file || !state.setData?.units.length || locked || snap.ping?.login === false || snap.ping?.cloud === false;
+  el('snapRun').disabled = !snap.file || !state.setData?.units.length || locked;
   el('snapClear').disabled = !snap.file || locked;
   el('snapRotate').disabled = !snap.file || locked;
   el('snapPaste').disabled = locked;
@@ -463,13 +461,14 @@ function renderSnapshot() {
     status.textContent = '正在读取图片…';
   } else if (snap.busy) {
     status.className = 'snap-status wait';
-    status.textContent = '正在准备模拟识别结果…';
+    status.textContent = '正在读取截图上的文字…';
   } else if (snap.error) {
     status.className = 'snap-status bad';
     status.textContent = snap.error.message;
   } else if (snap.mapped) {
     status.className = 'snap-status ok';
-    status.textContent = snap.applied ? '识别结果已应用。' : '识别完成，请核对结果后应用。';
+    status.textContent = snap.applied ? '识别结果已应用。' : snap.mapped.candidates.length
+      ? '已读取截图文字，请勾选确认拥有的棋子。' : '读到了羁绊名。棋子名未读到，可在下方手选。';
   } else if (snap.file) {
     status.className = 'snap-status ok';
     status.textContent = '截图已就绪，点「开始识别」。';
@@ -482,8 +481,7 @@ function renderSnapshot() {
   const m = snap.mapped;
   if (!m) { box.innerHTML = ''; return; }
   const head = [
-    snap.meta?.model ? `模型 ${esc(snap.meta.model)}` : null,
-    snap.meta?.elapsedMs ? `用时 ${(snap.meta.elapsedMs / 1000).toFixed(1)}s` : null,
+    '本地文字识别',
     m.level ? `人口 ${m.level}` : null,
     m.gold != null ? `金币 ${m.gold}` : null,
     m.hp != null ? `血量 ${m.hp}` : null,
@@ -504,16 +502,16 @@ function renderSnapshot() {
         .map((c) => `<span class="tchip ${c.id ? '' : 'snap-miss'}">${esc(c.name)} <b>${c.count}</b></span>`).join('')}</span></div>`
     : '';
   const need = [];
-  const unresolved = [...m.board, ...m.bench, ...m.shop].filter((u) => u.variants);
+  const unresolved = [...m.candidates, ...m.board, ...m.bench, ...m.shop].filter((u) => u.variants);
   if (unresolved.length) need.push(`点击对应形态确认：${unresolved.map((u) => esc(u.name)).join('、')}`);
   if (m.missing.length) need.push(`卡池里没对上：${m.missing.map((u) => esc(u.name)).join('、')}（可能是别赛季棋子或名字写法不同）`);
   if (m.componentMissing.length) need.push(`散件没对上：${m.componentMissing.map(esc).join('、')}`);
   box.innerHTML =
     `<div class="snap-row"><span class="snap-k">识别</span><span class="snap-v">${head.map((h) => `<span class="tchip">${h}</span>`).join('')}</span></div>` +
-    row('场上', m.board, 'board') + row('备战席', m.bench, 'bench') + row('商店', m.shop, 'shop') +
+    row('待核对棋子', m.candidates, 'candidates') + row('场上', m.board, 'board') + row('备战席', m.bench, 'bench') + row('商店', m.shop, 'shop') +
     traitRow('截图羁绊', m.traits, '未读到') + (board.length ? traitRow('场上复算', calculated, '按已确认棋子暂无激活羁绊') : '') +
     inventory('散件', m.components) + inventory('未装备成装', m.items) +
-    (!snap.applied ? `<p class="fine">点击场上或备战席的棋子可排除误识别。商店棋子需单独点选。</p><div class="snap-actions snap-load-actions"><button class="primary" data-snap-apply ${locked ? 'disabled' : ''}>应用到推荐</button></div>` : '') +
+    (!snap.applied && m.candidates.length ? `<div class="snap-actions snap-load-actions"><button class="primary" data-snap-apply ${locked || !autoSelect(m).ids.length ? 'disabled' : ''}>应用到推荐</button></div>` : '') +
     (m.notes ? `<p class="fine">补充：${esc(m.notes)}</p>` : '') +
     (need.length ? `<p class="snap-miss">${need.join('<br />')}</p>` : '');
 }
@@ -537,7 +535,7 @@ async function importSnapshot(read) {
     preview.src = thumb;
     try { await preview.decode(); } catch { throw new Error('图片无法解码，请换一张或转成 PNG 后再试。'); }
     if (snap.thumb) URL.revokeObjectURL(snap.thumb);
-    Object.assign(snap, { file: source, thumb, rotation: 0, mapped: null, meta: null, sent: null, applied: false });
+    Object.assign(snap, { file: source, thumb, rotation: 0, mapped: null, applied: false });
     thumb = null;
   } catch (error) {
     snap.error = { message: error.message };
@@ -566,7 +564,9 @@ async function readClipboardImage() {
 function applySnapshot() {
   const snap = state.snap;
   if (!snap.mapped || snap.applied || snap.busy || snap.importing) return;
-  autoSelect(snap.mapped).ids.forEach((id) => state.selected.add(id));
+  const { ids } = autoSelect(snap.mapped);
+  if (!ids.length) return;
+  ids.forEach((id) => state.selected.add(id));
   for (const { id, count } of snap.mapped.components) {
     if (id) state.owned.set(id, Math.max(state.owned.get(id) || 0, Math.min(4, count)));
   }
@@ -584,20 +584,22 @@ async function runRecognize() {
   if (loadingSet || !state.snap.file || state.snap.busy || state.snap.importing || !state.setData?.units.length) return;
   const set = state.meta;
   const generation = boardLoad;
-  const reference = modelReference?.get();
+  const current = () => state.meta === set && generation === boardLoad;
   state.snap.busy = true;
   state.snap.error = null;
+  state.snap.mapped = null;
+  state.snap.applied = false;
   renderSnapshot();
   try {
-    const payload = await compressSnapshot(state.snap.file, state.snap.rotation, reference ? 850_000 : undefined);
-    state.snap.sent = { kb: Math.round(payload.bytes / 1024), edge: payload.edge };
-    const result = await recognizeSnapshot({ ...payload, modelReference: reference });
-    if (state.meta !== set || generation !== boardLoad) return;
-    state.snap.meta = result.meta;
-    state.snap.mapped = matchSnapshot(result.snapshot, { setData: state.setData, itemsData: state.items });
-    state.snap.applied = false;
+    const result = await recognizeSnapshot(state.snap.file, state.snap.rotation, state.setData, current);
+    if (!result || !current()) return;
+    if (!result.candidates.length && !result.traits.length) {
+      state.snap.error = { message: '没有读到当前赛季的棋子名或羁绊名。请核对游戏与赛季，并使用原始截图或裁出名称较清晰的区域。' };
+      return;
+    }
+    state.snap.mapped = matchSnapshot(result, { setData: state.setData, itemsData: state.items });
   } catch (error) {
-    state.snap.error = { message: error?.message || '识别失败了。' };
+    if (current()) state.snap.error = { message: error?.message || '识别失败了。' };
   } finally {
     state.snap.busy = false;
     renderSnapshot();
@@ -611,8 +613,6 @@ function clearSnapshot() {
   state.snap.thumb = '';
   state.snap.error = null;
   state.snap.mapped = null;
-  state.snap.meta = null;
-  state.snap.sent = null;
   state.snap.applied = false;
   el('snapFile').value = '';
   renderSnapshot();
@@ -747,6 +747,7 @@ function bind() {
       if (row) {
         row.id = id;
         row.variants = null;
+        row.excluded = false;
         if (!state.snap.applied && !chip.dataset.var.startsWith('shop:')) { renderSnapshot(); return; }
       }
       if (!state.snap.applied && chip.dataset.snap && !chip.dataset.snap.startsWith('shop:')) {
@@ -767,9 +768,8 @@ function bind() {
       if (row) { state.query = row.name; el('search').value = row.name; renderUnits(); el('search').focus(); }
     }
   };
-  pingSnapshot().then((ping) => { state.snap.ping = ping; renderSnapshot(); });
   // 便于在控制台手测引擎：state 暴露给 window
-  window.__tft = { state, recommend, validateComps, traitPaths, rankAugments, planItems, matchSnapshot, compressSnapshot, setSnapFile, runRecognize, clearSnapshot };
+  window.__tft = { state, recommend, validateComps, traitPaths, rankAugments, planItems, matchSnapshot, setSnapFile, runRecognize, clearSnapshot };
 }
 
 bind();

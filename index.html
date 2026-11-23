@@ -22,7 +22,7 @@
   </div>
 </header>
 
-<main><aside class="panel" aria-label="公网测试版"><strong>公网测试版</strong><p class="fine">下方「屏幕识别」读取实际画面文字。「导入对局截图」保留固定结果演示，可用示例文件验证导入和模型复用。</p><p><a href="./samples/demo-model.glb" download>下载示例 GLB</a>　<a href="./samples/demo-board.png" download>下载示例截图</a></p></aside>
+<main><aside class="panel" aria-label="公网测试版"><strong>公网测试版</strong><p class="fine">屏幕与截图中的文字都在浏览器内识别。</p><p><a href="./samples/demo-model.glb" download>下载示例 GLB</a></p></aside>
   <section class="panel snapshot" aria-labelledby="screenTitle">
     <h2 id="screenTitle">屏幕识别 · 2-1 阵容方向</h2>
     <p class="fine">共享游戏窗口后，画面文字在浏览器内识别。2-1 选完海克斯后点击生成方向，同时结束共享。手机可导入该阶段的截图。</p>
@@ -38,7 +38,7 @@
     <video id="screenVideo" class="screen-video" muted playsinline hidden aria-label="共享画面预览"></video>
   </section>
   <section class="panel snapshot">
-    <h2>1 · 导入对局截图（可选，模拟识别）</h2>
+    <h2>1 · 导入对局截图（可选）</h2>
     <div class="snap-grid">
       <div class="drop" id="snapDrop">
         <label class="dt" for="snapFile">选择截图</label>
@@ -61,7 +61,7 @@
           <button id="snapUrlLoad" class="ghost" type="submit">导入链接</button>
         </form>
         <p id="snapStatus" class="snap-status" role="status">正在准备截图工具…</p>
-        <p class="fine">支持完整棋盘和局部截图。点「开始识别」可查看固定示例，结果可先核对再应用。</p>
+        <p class="fine">请用原始截图，或裁出商店、羁绊栏等含清晰名称的区域。识别出的棋子名需核对后应用到推荐。</p>
         <details class="snap-model">
           <summary>棋子 3D 模型参考（可选）</summary>
           <p class="fine"><strong id="modelGame"></strong>。GLB 模型可保存到当前浏览器。金铲铲缺少已保存的模型时，可载入同赛季同棋子的云顶模型作为参考。</p>
@@ -135,6 +135,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js"></script>
+<script type="module" src="./src/main.js?v=screenshot-ocr"></script>
 </body>
 </html>

@@ -1,7 +1,5 @@
-// 公网测试版在浏览器内演示图片压缩与固定识别结果。
-const MAX_EDGE_LADDER = [1440, 1180, 960];
-const QUALITY_LADDER = [0.82, 0.72, 0.6];
-const B64_LIMIT = 900_000;
+import { readOcr } from './local-ocr.js';
+import { screenEvidence } from '../engine/screen-insights.js';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
@@ -12,14 +10,6 @@ export class SnapshotError extends Error {
     this.loginUrl = loginUrl;
   }
 }
-
-export const pingSnapshot = async () => ({ ok: true });
-
-export const recognizeSnapshot = async () => ({
-  ok: true,
-  meta: { model: '固定示例' },
-  snapshot: { stage: '2-1', board: [{ name: '奥恩', stars: 1 }], notes: '这是测试数据。' },
-});
 
 function readAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -37,9 +27,6 @@ const loadImage = (src) =>
     img.onerror = () => reject(new SnapshotError('file_unreadable', '浏览器无法解码这张图片。'));
     img.src = src;
   });
-
-const canvasToBlob = (canvas, type, quality) =>
-  new Promise((resolve) => canvas.toBlob((b) => resolve(b), type, quality));
 
 export const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 const SNIFF_BYTES = 32;
@@ -117,46 +104,33 @@ export async function importImageUrl(value) {
   }
 }
 
-// 云端请求体上限 1 MiB，所以按「边长 → 质量」两档阶梯压到阈值内。
-export async function compressSnapshot(file, rotation = 0, limit = B64_LIMIT) {
-  const kind = await imageKind(file);
-  if (!kind) {
-    throw new SnapshotError('file_type', '请选择 JPG、PNG、WebP、GIF、BMP 或 AVIF 图片。');
-  }
-  const img = await loadImage(await readAsDataUrl(file.type === kind ? file : new Blob([file], { type: kind })));
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  for (const edge of MAX_EDGE_LADDER) {
-    const scale = Math.min(1, edge / Math.max(img.naturalWidth, img.naturalHeight));
-    const width = Math.max(1, Math.round(img.naturalWidth * scale));
-    const height = Math.max(1, Math.round(img.naturalHeight * scale));
-    const sideways = rotation % 180 !== 0;
-    canvas.width = sideways ? height : width;
-    canvas.height = sideways ? width : height;
-    ctx.fillStyle = '#0b1220';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(rotation * Math.PI / 180);
-    ctx.drawImage(img, -width / 2, -height / 2, width, height);
-    for (const quality of QUALITY_LADDER) {
-      const blob = await canvasToBlob(canvas, 'image/jpeg', quality);
-      if (!blob) continue;
-      const base64 = (await readAsDataUrlFromBlob(blob)).split(',')[1] || '';
-      if (base64.length <= limit) {
-        return { base64, mediaType: 'image/jpeg', edge: Math.max(canvas.width, canvas.height), bytes: blob.size, natural: Math.max(img.naturalWidth, img.naturalHeight) };
-      }
-    }
-  }
-  throw new SnapshotError('image_too_large', '这张截图压到最小仍然过大，请只截住棋盘区域。');
+export function snapshotFromEvidence(evidence, setData) {
+  const names = (entries, ids) => entries.filter(({ id }) => ids.includes(id)).map(({ name }) => ({ name }));
+  return {
+    stage: evidence.stage,
+    candidates: names(setData.units, evidence.units),
+    traits: names(setData.traits || [], evidence.traits),
+  };
 }
 
-const readAsDataUrlFromBlob = (blob) =>
-  new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onload = () => resolve(String(fr.result));
-    fr.onerror = () => reject(new SnapshotError('file_unreadable', '压缩后的图片读取失败。'));
-    fr.readAsDataURL(blob);
-  });
+export async function recognizeSnapshot(file, rotation, setData, isCurrent) {
+  const img = await loadImage(await readAsDataUrl(file));
+  const scale = Math.min(3.5, 2160 / Math.max(img.naturalWidth, img.naturalHeight));
+  const width = Math.max(1, Math.round(img.naturalWidth * scale));
+  const height = Math.max(1, Math.round(img.naturalHeight * scale));
+  const sideways = rotation % 180 !== 0;
+  const canvas = document.createElement('canvas');
+  canvas.width = sideways ? height : width;
+  canvas.height = sideways ? width : height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(rotation * Math.PI / 180);
+  ctx.drawImage(img, -width / 2, -height / 2, width, height);
+  const text = await readOcr(canvas, isCurrent);
+  return text === null ? null : snapshotFromEvidence(screenEvidence(text, setData), setData);
+}
 
 const norm = (s) => String(s ?? '').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
 const stripVariant = (s) => String(s ?? '').replace(/\s*[(（][^)）]*[)）]/g, '');
@@ -216,6 +190,7 @@ export function matchSnapshot(snapshot, { setData, itemsData }) {
   const unitMap = indexByName(setData?.units || []);
   const traitMap = indexByName(setData?.traits || []);
   const mapped = {
+    candidates: mapUnits(snapshot?.candidates, unitMap).map(unit => ({ ...unit, excluded: true })),
     board: mapUnits(snapshot?.board, unitMap),
     bench: mapUnits(snapshot?.bench, unitMap),
     shop: mapUnits(snapshot?.shop, unitMap),
@@ -232,16 +207,16 @@ export function matchSnapshot(snapshot, { setData, itemsData }) {
     stage: snapshot?.stage || null,
     notes: snapshot?.notes || null,
   };
-  const all = [...mapped.board, ...mapped.bench, ...mapped.shop];
+  const all = [...mapped.candidates, ...mapped.board, ...mapped.bench, ...mapped.shop];
   mapped.missing = all.filter((u) => u.name && !u.id && !u.variants).map((u) => u.name);
   mapped.ambiguous = all.filter((u) => u.variants);
   mapped.componentMissing = mapped.components.filter((c) => !c.id).map((c) => c.name);
   return mapped;
 }
 
-// 只应用场上和备战席中已匹配、且未被用户排除的棋子。
+// 应用已核对的棋子。OCR 候选默认需要主动勾选。
 export function autoSelect(mapped) {
-  const selected = [...mapped.board, ...mapped.bench].filter((u) => u.id && !u.excluded);
+  const selected = [...mapped.board, ...mapped.bench, ...(mapped.candidates || [])].filter((u) => u.id && !u.excluded);
   const ids = [...new Set(selected.map((u) => u.id))];
   const stars = new Map();
   for (const u of selected) if (u.star) stars.set(u.id, Math.max(stars.get(u.id) || 0, u.star));

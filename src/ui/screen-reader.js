@@ -1,31 +1,8 @@
 import { screenEvidence, screenDirection, stageAfterOpening } from '../engine/screen-insights.js';
 
-const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
+import { readOcr } from '../adapters/local-ocr.js';
 const FRAME_INTERVAL_MS = 3500;
 const CAPTURE_LIMIT_MS = 180_000;
-
-async function loadWorker() {
-  if (!globalThis.Tesseract) {
-    const script = document.createElement('script');
-    script.src = new URL('tesseract.min.js', OCR_DIR);
-    await new Promise((resolve, reject) => {
-      script.onload = resolve;
-      script.onerror = () => {
-        script.remove();
-        reject(new Error('识别组件加载失败，请重试。'));
-      };
-      document.head.append(script);
-    });
-  }
-  const worker = await globalThis.Tesseract.createWorker(['chi_sim', 'eng'], 1, {
-    workerPath: new URL('worker.min.js', OCR_DIR).href,
-    corePath: OCR_DIR.href,
-    langPath: new URL('lang', OCR_DIR).href,
-    workerBlobURL: false,
-  });
-  await worker.setParameters({ tessedit_pageseg_mode: '11' });
-  return worker;
-}
 
 function toCanvas(image, width, height) {
   const canvas = document.createElement('canvas');
@@ -38,8 +15,7 @@ function toCanvas(image, width, height) {
 
 export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext }) {
   const supported = Boolean(navigator.mediaDevices?.getDisplayMedia);
-  let active, worker, finishedJob;
-  let scanQueue = Promise.resolve();
+  let active, finishedJob;
   const say = (message) => { status.textContent = message; };
   const clearResult = () => {
     result.textContent = '';
@@ -69,17 +45,9 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       ? toCanvas(video, video.videoWidth, video.videoHeight) : null;
   }
 
-  function read(canvas, setData, isCurrent) {
-    const job = scanQueue.then(async () => {
-      if (!isCurrent()) return null;
-      worker ||= loadWorker().catch(error => { worker = null; throw error; });
-      const engine = await worker;
-      if (!isCurrent()) return null;
-      const { data } = await engine.recognize(canvas);
-      return screenEvidence(data.text, setData);
-    });
-    scanQueue = job.catch(() => {});
-    return job;
+  async function read(canvas, setData, isCurrent) {
+    const text = await readOcr(canvas, isCurrent);
+    return text === null || !isCurrent() ? null : screenEvidence(text, setData);
   }
 
   function showDirection(context, evidence) {

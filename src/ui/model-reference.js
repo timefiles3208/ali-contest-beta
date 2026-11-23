@@ -264,7 +264,7 @@ export function bindModelReference({ file, unit, display, angle, use, useAll, cl
       preview.replaceChildren(image);
       preview.hidden = false;
       const viewpoint = angles.length ? '六视角' : '单视角';
-      setStatus(`当前参考：${name}（${usesFallback() ? '云顶模型，' : ''}${viewpoint}）。开始识别时会同时发送这张参考图。`);
+      setStatus(`当前参考：${name}（${usesFallback() ? '云顶模型，' : ''}${viewpoint}），可对照截图核对棋子。`);
     } catch (error) {
       if (current === revision) setStatus(error.message || '模型参考图生成失败，请重试。');
     } finally {
