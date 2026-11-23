@@ -115,6 +115,28 @@ button.ghost { background: transparent; }
 .row { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; }
 .row .k { color: var(--dim); width: 68px; flex: none; }
 .row .v { display: flex; flex-wrap: wrap; gap: 6px; }
+.comp-guide { padding: 12px 0; border-block: 1px solid var(--line); }
+.guide-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.comp-guide h3 { margin: 0 0 5px; font-size: 14px; }
+.comp-guide .fine { margin: 0 0 9px; }
+.guide-board { max-width: 340px; padding: 8px; background: #101822; border-radius: 8px; }
+.guide-rank { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; padding-right: 6%; }
+.guide-rank:nth-child(even) { padding-right: 0; padding-left: 6%; }
+.guide-cell {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  min-width: 0; min-height: 44px; padding: 3px 0;
+  background: #202d3b; border-bottom: 2px solid #101822; border-radius: 7px;
+}
+.guide-cell.occupied { background: #253d49; }
+.guide-cell > span:last-child { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 10px; }
+.guide-roll ul { display: grid; gap: 7px; margin: 0; padding-left: 18px; font-size: 13px; }
+.guide-targets { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 12px; }
+.guide-targets th, .guide-targets td { border-top: 1px solid var(--line); padding: 7px 6px; text-align: left; vertical-align: top; }
+.guide-targets th { font-weight: 600; }
+.guide-targets thead, .guide-targets small { color: var(--dim); }
+.guide-targets small { display: block; font-size: 10px; }
+.guide-stars { white-space: nowrap; color: var(--accent); }
+@media (max-width: 620px) { .guide-layout { grid-template-columns: minmax(0, 1fr); } }
 .unit.mini { padding: 3px; border-radius: 8px; background: #101822; border-color: #263444; cursor: default; width: 58px; gap: 2px; }
 .unit.mini .ico { width: 34px; height: 34px; }
 .unit.mini .nm { font-size: 10px; }

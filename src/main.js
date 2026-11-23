@@ -11,8 +11,9 @@ import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
 import { planItems } from './engine/items.js';
+import { buildCompGuide } from './engine/comp-guide.js';
 import { validateComps } from './adapters/provider.js';
-import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js';
+import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=comp-guide';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-hex';
 
 const el = (id) => document.getElementById(id);
@@ -184,9 +185,43 @@ function renderSelected() {
   el('selCount').textContent = `${list.length} 选 / 人口 ${state.level}`;
 }
 
-function miniUnit(unit, lack) {
+function renderCompGuide(comp) {
+  const { board, units, rolls } = buildCompGuide(comp, state.setData);
   const version = state.setData.source?.ddragonVersion;
-  return `<span class="unit mini ${lack ? 'lack' : ''}" title="${esc(unit.id)}">${iconHtml(unit, version, 34)}<span class="nm">${esc(unit.name)}${lack ? ' 缺' : ''}</span></span>`;
+  const items = new Map((state.items?.items || []).map(item => [item.id, item.name]));
+  const rows = board.map((row, i) => `<div class="guide-rank" aria-label="第 ${i + 1} 排">
+    ${row.map(unit => unit
+      ? `<span class="guide-cell occupied" title="${esc(unit.name)} · ${unit.stars} 星">${iconHtml(unit, version, 26)}<span>${esc(unit.name)}</span></span>`
+      : '<span class="guide-cell" aria-hidden="true"></span>').join('')}
+  </div>`).join('');
+  const targets = units.map(unit => `<tr>
+    <th scope="row">${esc(unit.name)}</th>
+    <td><span class="guide-stars">${unit.stars} 星</span><small>${unit.sourceStars ? '来源标注' : '参考'}</small></td>
+    <td>${unit.items.map(id => items.get(id)).filter(Boolean).map(esc).join('、') || '—'}</td>
+  </tr>`).join('');
+  const levels = rolls.map(({ level, targets }) =>
+    `<li><strong>${level} 级</strong> · ${targets.map(unit => `${esc(unit.name)} ${unit.stars} 星`).join('、')}</li>`).join('');
+  const riftbeastShop = comp.aimTraits?.DA_Riftbeast18 >= 5
+    && rolls.some(({ targets }) => targets.some(unit => unit.traits?.includes('DA_Riftbeast18')));
+  return `<section class="comp-guide" aria-label="阵容攻略">
+    <div class="guide-layout">
+      <div class="guide-position">
+        <h3>参考站位</h3>
+        <p class="fine">上方为前排，按羁绊和装备推演。</p>
+        <div class="guide-board">${rows}</div>
+      </div>
+      <div class="guide-roll">
+        <h3>推荐搜牌等级</h3>
+        <p class="fine">按目标棋子的费用和星级估算。</p>
+        ${levels ? `<ul>${levels}</ul>` : '<p class="fine">缺少可用于估算的棋子费用。</p>'}
+        ${riftbeastShop ? '<p class="fine">开启 5 峡谷野怪时，也可利用羁绊商店补牌。</p>' : ''}
+      </div>
+    </div>
+    <table class="guide-targets">
+      <thead><tr><th scope="col">棋子</th><th scope="col">目标星级</th><th scope="col">推荐装备</th></tr></thead>
+      <tbody>${targets}</tbody>
+    </table>
+  </section>`;
 }
 
 function openingContext() {
@@ -239,11 +274,11 @@ function renderResults() {
     const coreMissing = r.detail.coreMissing;
     const tags = [c.level ? `${c.level} 人口成型` : null, c.diff ? `难度 ${c.diff}` : null, c.carry?.length ? `主C ${c.carry.map((id) => unitOf(id)?.name).filter(Boolean).join('/')}` : null]
       .filter(Boolean).map(esc).join('<span>·</span>');
-    const body = `<div class="rows">
+    const body = state.open.has(c.id) ? `<div class="rows">
       ${r.reasons.length ? `<div class="row"><span class="k">开局契合</span><span class="v">${esc(r.reasons.join(' · '))}</span></div>` : ''}
       ${r.detail.coreHit.length ? `<div class="row"><span class="k">已命中核心</span><span class="v">${r.detail.coreHit.map((n) => `<span class="tchip">${esc(n)}</span>`).join('')}</span></div>` : ''}
       ${coreMissing.length ? `<div class="row"><span class="k">核心缺口</span><span class="v warnline">${coreMissing.map(esc).join('、')}</span></div>` : ''}
-      <div class="row"><span class="k">成型阵容</span><span class="v">${c.units.map((id) => { const u = unitOf(id); return u ? miniUnit(u, !sel.has(id)) : ''; }).join('')}</span></div>
+      ${renderCompGuide(c)}
       ${(() => { const act = r.simulatedTraits.filter((t) => t.tier > 0); return act.length ? `<div class="row"><span class="k">当前羁绊</span><span class="v">${act.map((t) => `<span class="tchip ${t.aim && t.tier >= t.aim ? 'hi' : ''}">${esc(t.name)} <b>${t.tier}</b>${t.aim ? `<em style="opacity:.55;font-style:normal">/目标 ${t.aim}</em>` : ''}<em style="opacity:.55;font-style:normal">${t.num}人</em></span>`).join('')}</span></div>` : ''; })()}
       ${r.detail.missing.filter(Boolean).length ? `<div class="row"><span class="k">还需要</span><span class="v">${r.detail.missing.map((u) => `<span class="tchip">${esc(u.name)} <b>${u.cost}费</b></span>`).join('')}</span></div>` : ''}
       ${r.detail.ownedOutside.length ? `<div class="row"><span class="k">你还有</span><span class="v"><span class="note">${esc(r.detail.ownedOutside.join('、'))} 不在这套里，可作为转型筹码</span></span></div>` : ''}
@@ -256,12 +291,12 @@ function renderResults() {
       ].filter(Boolean).join(' · '))}</span></span></div>` : ''}
       ${c.notes ? `<div class="row"><span class="k">说明</span><span class="v"><span class="note">${esc(c.notes)}</span></span></div>` : ''}
       ${!r.viable ? '<div class="row"><span class="k">判定</span><span class="v warnline">核心件一个都没有：这套只能当「之后爬到牌再转型」的参考</span></div>' : ''}
-    </div>`;
+    </div>` : '';
     return `<article class="comp ${state.open.has(c.id) ? 'open' : ''} ${r.viable ? '' : 'cold'}" data-comp="${c.id}">
       <header class="comp-head"><span class="rank">${i + 1}</span><span class="nm">${esc(c.name)}${c.rank?.tier ? ` <small class="board-stat">${esc(c.rank.tier)} 级</small>` : ''}</span>
         <span class="tags">${tags}</span>
         <span class="score"><span class="meter"><i style="width:${Math.min(100, r.score)}%"></i></span><span class="num c${r.score >= 70 ? 2 : r.score >= 40 ? 4 : 1}">${r.score}</span></span>
-      </header>${state.open.has(c.id) ? body : ''}
+      </header>${body}
     </article>`;
   }).join('') + coldNote;
   renderSide();

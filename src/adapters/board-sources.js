@@ -27,7 +27,8 @@ export function adaptBoard(raw, { source, setData, items, ratings }) {
     const entries = (row.heroes || row.heros || []).filter((hero) => !hero.summon).map((hero) => {
       const unit = hero.key ? byId.get(hero.key) : unitByName.get(normalize(hero.name));
       const gear = hero.tftEquips || (hero.items || []).map((name) => itemByName.get(normalize(itemAliases[name] || name)));
-      return { unit, gear: [...new Set(gear.filter((id) => itemIds.has(id)))], core: hero.core, carry: hero.carry };
+      const stars = Number.isInteger(hero.stars) && hero.stars >= 1 && hero.stars <= 4 ? hero.stars : null;
+      return { unit, gear: gear.filter(id => itemIds.has(id)), core: hero.core, carry: hero.carry, stars };
     });
     if (!entries.length || entries.some(({ unit }) => !unit)) {
       skipped.push(row.title);
@@ -40,7 +41,9 @@ export function adaptBoard(raw, { source, setData, items, ratings }) {
       if (lead && units.includes(lead)) carry.push(lead);
     }
     const core = entries.filter((entry) => entry.core).map(({ unit }) => unit.id);
-    const gear = Object.fromEntries(entries.filter((entry) => entry.gear.length).map(({ unit, gear: ids }) => [unit.id, ids]));
+    const itemBuilds = Object.fromEntries(entries.filter(entry => entry.gear.length).map(({ unit, gear }) => [unit.id, gear]));
+    const gear = Object.fromEntries(Object.entries(itemBuilds).map(([id, build]) => [id, [...new Set(build)]]));
+    const stars = Object.fromEntries(entries.filter(entry => entry.stars).map(({ unit, stars }) => [unit.id, stars]));
     const counts = new Map();
     for (const id of units) for (const trait of byId.get(id).traits || []) counts.set(trait, (counts.get(trait) || 0) + 1);
     const aimTraits = {};
@@ -53,7 +56,7 @@ export function adaptBoard(raw, { source, setData, items, ratings }) {
     const geared = Object.keys(gear);
     const main = core.length ? core : [...carry, ...geared].slice(0, 4);
     comps.push({
-      id: `${config.id}-${row.id}`, name: row.title, units, items: gear, aimTraits, traits: Object.keys(aimTraits),
+      id: `${config.id}-${row.id}`, name: row.title, units, items: gear, itemBuilds, stars, aimTraits, traits: Object.keys(aimTraits),
       core: [...new Set(main.length ? main : units.slice(0, 2))],
       carry: [...new Set(carry)], level: Math.min(10, units.length),
       strength: top4 == null ? 0.7 : Math.max(0.55, Math.min(0.85, 0.7 + (top4 - 55) * 0.012)),
