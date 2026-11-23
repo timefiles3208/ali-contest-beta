@@ -1,0 +1,68 @@
+import { recommend } from './recommend.js';
+import { rankAugments } from './augments.js';
+
+const TIERS = { 'S+': 7, S: 6, A: 5, B: 4, C: 3, D: 2, E: 1 };
+
+function compareStrength(a, b) {
+  const ar = a.comp.rank, br = b.comp.rank;
+  return (TIERS[br?.tier] || 0) - (TIERS[ar?.tier] || 0)
+    || (br?.top4 ?? 0) - (ar?.top4 ?? 0)
+    || (ar?.avg ?? 9) - (br?.avg ?? 9)
+    || (b.comp.strength || 0) - (a.comp.strength || 0);
+}
+
+function equipmentFit(comp, itemById, owned, ownedItems) {
+  const wanted = new Set(Object.values(comp.items || {}).flat());
+  const held = [...ownedItems].filter(id => wanted.has(id));
+  const components = new Set([...wanted].filter(id => !ownedItems.has(id)).flatMap(id => itemById.get(id)?.from || []));
+  const parts = [...owned].filter(([id, count]) => count > 0 && components.has(id)).map(([id]) => id);
+  return { held, parts, points: Math.min(36, held.length * 12 + parts.length * 5) };
+}
+
+function cityFit(city, comp, itemPoints, unitById) {
+  const high = Math.max(0, (comp.level || 0) - 7);
+  const core = comp.core?.length ? comp.core : comp.units;
+  const lowCost = core.filter(id => (unitById.get(id)?.cost ?? 9) <= 3).length / Math.max(core.length, 1);
+  switch (city?.effect) {
+    case 'level': return high * 5;
+    case 'gold': return high * 3;
+    case 'rerolls': return Math.round(lowCost * 8);
+    case 'early': return Math.round(lowCost * 4);
+    case 'items': return Math.min(8, Math.round(itemPoints / 3));
+    case 'emblems': return Math.min(8, Math.max(0, ...Object.values(comp.aimTraits || {})));
+    default: return 0;
+  }
+}
+
+export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [] }) {
+  const itemById = new Map((itemsData?.items || []).map(row => [row.id, row]));
+  const unitById = new Map(setData.units.map(row => [row.id, row]));
+  const augmentTraits = new Set(chosenAugments.flatMap(aug => [...(aug.traits || []), ...(aug.grantTraits || [])]));
+  const baseline = recommend({ setData, comps, selected, level });
+  const ranked = baseline.map(row => {
+    const { comp } = row;
+    const current = comp.units.filter(id => selected.has(id));
+    const units = Math.min(38, current.length * 5 + row.detail.coreHit.length * 5);
+    const gear = equipmentFit(comp, itemById, owned, ownedItems);
+    const cityPoints = cityFit(city, comp, gear.points, unitById);
+    const econ = economy === 'high' ? Math.max(0, (comp.level || 0) - 7) * 4 : 0;
+    const aug = Math.min(14, Object.keys(comp.aimTraits || {}).filter(id => augmentTraits.has(id)).length * 7);
+    const viable = Boolean(units || gear.points || city || economy === 'high' || aug);
+    const fit = units + gear.points + cityPoints + econ + aug;
+    const reasons = [
+      units && `持有 ${current.length} 名阵容棋子`,
+      gear.held.length && `${gear.held.length} 件成装匹配`,
+      gear.parts.length && `${gear.parts.length} 种散件可用`,
+      cityPoints && `契合${city.name}`,
+      econ && '经济支持高人口',
+      aug && '已选海克斯匹配目标羁绊',
+    ].filter(Boolean);
+    return { ...row, score: Math.min(100, fit), fit, viable, reasons };
+  });
+  return ranked.sort((a, b) => Number(b.viable) - Number(a.viable) || b.fit - a.fit || compareStrength(a, b));
+}
+
+export function rankOpeningAugments({ setData, augments, ranked, selected, offered }) {
+  const accepted = new Set(offered);
+  return rankAugments({ setData, ranked, selected, augments: augments.filter(aug => accepted.has(aug.id)), limit: 3 });
+}

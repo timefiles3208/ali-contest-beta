@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css" />
+<link rel="stylesheet" href="./styles.css?v=opening-advice" />
 </head>
 <body>
 <header class="bar">
@@ -25,9 +25,10 @@
 <main><aside class="panel" aria-label="公网测试版"><strong>公网测试版</strong><p class="fine">屏幕与截图中的文字都在浏览器内识别。</p><p><a href="./samples/demo-model.glb" download>下载示例 GLB</a></p></aside>
   <section class="panel snapshot" aria-labelledby="screenTitle">
     <h2 id="screenTitle">屏幕识别 · 2-1 阵容方向</h2>
-    <p class="fine">共享游戏窗口后，画面文字在浏览器内识别。2-1 选完海克斯后点击生成方向，同时结束共享。手机可导入该阶段的截图。</p>
+    <p class="fine">识别到 2-1 时打开开局推荐。选择海克斯后结束共享。也可手动打开推荐或导入这一阶段的截图。</p>
     <div class="snap-actions">
       <button id="screenStart" class="primary" type="button">共享游戏窗口</button>
+      <button id="openingOpen" class="ghost" type="button" disabled>开局推荐</button>
       <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
       <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
     </div>
@@ -37,6 +38,31 @@
     <p id="screenDirection" class="snap-status ok" role="status" hidden></p>
     <video id="screenVideo" class="screen-video" muted playsinline hidden aria-label="共享画面预览"></video>
   </section>
+  <dialog id="openingDialog" aria-labelledby="openingTitle">
+    <header class="opening-header">
+      <h2 id="openingTitle">2-1 阵容与海克斯</h2>
+      <form method="dialog"><button type="submit" class="ghost">关闭</button></form>
+    </header>
+    <div class="opening-fields">
+      <label>开局城邦 <select id="openingCity"></select></label>
+      <label>当前经济
+        <select id="openingEconomy"><option value="">未确认</option><option value="normal">普通</option><option value="high">充足</option></select>
+      </label>
+      <label>手上成装 <select id="openingItem"></select></label>
+      <button id="openingAddItem" class="ghost" type="button">登记或移除成装</button>
+    </div>
+    <p id="openingOwned" class="fine" role="status"></p>
+    <fieldset id="openingCandidates" hidden></fieldset>
+    <section id="openingDirection" aria-live="polite"></section>
+    <fieldset class="opening-hex">
+      <legend>本轮提供的海克斯</legend>
+      <label>选项一 <input id="openingHex1" list="openingHexList" /></label>
+      <label>选项二 <input id="openingHex2" list="openingHexList" /></label>
+      <label>选项三 <input id="openingHex3" list="openingHexList" /></label>
+      <datalist id="openingHexList"></datalist>
+    </fieldset>
+    <ol id="openingPicks" aria-live="polite"></ol>
+  </dialog>
   <section class="panel snapshot">
     <h2>1 · 导入对局截图（可选）</h2>
     <div class="snap-grid">
@@ -135,6 +161,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=ocr-regions"></script>
+<script type="module" src="./src/main.js?v=opening-advice"></script>
 </body>
 </html>

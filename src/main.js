@@ -2,18 +2,21 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=ocr-regions';
+import { bindScreenReader } from './ui/screen-reader.js?v=opening-advice';
+import { bindOpeningAdvice } from './ui/opening-advice.js';
+import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js';
+import { rankOpening } from './engine/opening.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
 import { planItems } from './engine/items.js';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-regions';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=opening-advice';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let modelReference, screenReader;
+let modelReference, screenReader, openingAdvice;
 let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
@@ -40,11 +43,16 @@ const state = {
   owned: new Map(),
   ownedItems: new Set(),
   chosen: new Set(),
+  openingCity: '',
+  economy: '',
+  openingAugment: '',
   snap: { file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false },
 };
 
 async function loadBoard() {
   screenReader?.reset();
+  openingAdvice?.reset();
+  state.openingCity = state.economy = '';
   const generation = ++boardLoad;
   const source = sourceFor(state.sourceId);
   const badge = el('sourceBadge');
@@ -97,6 +105,7 @@ async function loadSet(setNum) {
   state.owned.clear();
   state.ownedItems.clear();
   state.chosen.clear();
+  state.openingAugment = '';
   state.snap.mapped = null;
   state.snap.applied = false;
   state.snap.error = null;
@@ -179,6 +188,17 @@ function miniUnit(unit, lack) {
   return `<span class="unit mini ${lack ? 'lack' : ''}" title="${esc(unit.id)}">${iconHtml(unit, version, 34)}<span class="nm">${esc(unit.name)}${lack ? ' 缺' : ''}</span></span>`;
 }
 
+function openingContext() {
+  if (!state.setData) return null;
+  const cities = state.sourceId === 'datatft' && state.setData.set === 18 ? S18_OPENINGS : OPENING_EFFECTS;
+  const augments = state.augs?.augments || [];
+  return {
+    ...state, itemsData: state.items, cities, augments, ranked: state.ranked || [],
+    city: cities.find(row => row.id === state.openingCity),
+    chosenAugments: augments.filter(row => state.chosen.has(row.id)),
+  };
+}
+
 function renderResults() {
   const sel = state.selected;
   const box = el('comps');
@@ -199,24 +219,17 @@ function renderResults() {
     box.innerHTML = `<div class="empty">${esc(state.issues.join('；') || '阵容库为空')}</div>`;
     return;
   }
-  if (!sel.size) {
-    box.innerHTML = '<div class="empty">先勾出你场上 + 备战席的棋子（3–8 个最有意义），右侧按成型可能性排序。</div>';
-    return;
-  }
-
-  const ranked = recommend({ setData: state.setData, comps: state.comps, selected: sel, level: state.level });
+  const ranked = rankOpening(openingContext());
   state.ranked = ranked;
-  const hot = ranked.filter((r) => r.score > 0).slice(0, 8);
-  const cold = ranked.filter((r) => r.score === 0);
+  const hot = ranked.filter((r) => r.viable).slice(0, 8);
+  const cold = ranked.filter((r) => !r.viable);
   if (!hot.length) {
-    box.innerHTML = `<div class="empty">所选棋子撑不起库里任何一套的核心件。<br />
-      当前羁绊：${bd.filter((t) => t.tier > 0).map((t) => esc(t.name) + ' ' + t.tier + '档').join(' / ') || '无'}<br />
-      库里的 ${cold.length} 套全部判定为「之后再转型」。</div>`;
+    box.innerHTML = '<div class="empty">确认城邦、现有棋子或装备后查看阵容排序。</div>';
     renderSide();
     return;
   }
   const coldNote = cold.length
-    ? `<p class="fine" style="margin:10px 2px 0;color:#5f7284;font-size:12px">另有 ${cold.length} 套核心件未命中：${cold.map((r) => esc(r.comp.name)).join('、')}（等爬到关键牌再考虑转型）</p>`
+    ? `<p class="fine" style="margin:10px 2px 0;color:#5f7284;font-size:12px">另有 ${cold.length} 套暂未匹配开局条件。</p>`
     : '';
   box.innerHTML =
     hot.map((r, i) => {
@@ -226,6 +239,7 @@ function renderResults() {
     const tags = [c.level ? `${c.level} 人口成型` : null, c.diff ? `难度 ${c.diff}` : null, c.carry?.length ? `主C ${c.carry.map((id) => unitOf(id)?.name).filter(Boolean).join('/')}` : null]
       .filter(Boolean).map(esc).join('<span>·</span>');
     const body = `<div class="rows">
+      ${r.reasons.length ? `<div class="row"><span class="k">开局契合</span><span class="v">${esc(r.reasons.join(' · '))}</span></div>` : ''}
       ${r.detail.coreHit.length ? `<div class="row"><span class="k">已命中核心</span><span class="v">${r.detail.coreHit.map((n) => `<span class="tchip">${esc(n)}</span>`).join('')}</span></div>` : ''}
       ${coreMissing.length ? `<div class="row"><span class="k">核心缺口</span><span class="v warnline">${coreMissing.map(esc).join('、')}</span></div>` : ''}
       <div class="row"><span class="k">成型阵容</span><span class="v">${c.units.map((id) => { const u = unitOf(id); return u ? miniUnit(u, !sel.has(id)) : ''; }).join('')}</span></div>
@@ -259,6 +273,7 @@ function renderSide() {
   renderPaths(top);
   renderHexes(top);
   renderGear(top);
+  openingAdvice?.draw();
 }
 
 function renderCompStrip() {
@@ -593,13 +608,22 @@ async function runRecognize() {
   state.snap.applied = false;
   renderSnapshot();
   try {
-    const result = await recognizeSnapshot(state.snap.file, state.snap.rotation, state.setData, current);
+    const ctx = openingContext();
+    const result = await recognizeSnapshot(state.snap.file, state.snap.rotation, state.setData, current, {
+      cities: ctx.cities, augments: ctx.augments,
+    });
     if (!result || !current()) return;
     if (!result.stage && !result.candidates.length && !result.traits.length) {
       state.snap.error = { message: '没有读到当前赛季的棋子名或羁绊名。请核对游戏与赛季，并使用原始截图或裁出名称较清晰的区域。' };
       return;
     }
     state.snap.mapped = matchSnapshot(result, { setData: state.setData, itemsData: state.items });
+    if (result.stage === '2-1') {
+      openingAdvice.receive({
+        units: state.snap.mapped.candidates.map(row => row.id).filter(Boolean), opening: result.opening,
+      });
+      openingAdvice.show();
+    }
   } catch (error) {
     if (current()) state.snap.error = { message: error?.message || '识别失败了。' };
   } finally {
@@ -621,12 +645,44 @@ function clearSnapshot() {
 }
 
 function bind() {
+  openingAdvice = bindOpeningAdvice({
+    dialog: el('openingDialog'), open: el('openingOpen'), city: el('openingCity'), economy: el('openingEconomy'),
+    item: el('openingItem'), addItem: el('openingAddItem'), ownedSummary: el('openingOwned'), candidates: el('openingCandidates'),
+    inputs: ['openingHex1', 'openingHex2', 'openingHex3'].map(el), list: el('openingHexList'),
+    direction: el('openingDirection'), picks: el('openingPicks'), getContext: openingContext,
+    onChange({ city, economy, item, unit, selected }) {
+      if (city != null) state.openingCity = city;
+      if (economy != null) state.economy = economy;
+      if (item) state.ownedItems.has(item) ? state.ownedItems.delete(item) : state.ownedItems.add(item);
+      if (unit) {
+        if (selected) state.selected.add(unit);
+        else state.selected.delete(unit);
+        renderUnits();
+      }
+      if (state.setData) renderResults();
+    },
+    onPick(id) {
+      if (state.openingAugment) state.chosen.delete(state.openingAugment);
+      state.openingAugment = id;
+      state.chosen.add(id);
+      renderResults();
+      if (!el('screenFinish').disabled) el('screenFinish').click();
+    },
+  });
   screenReader = bindScreenReader({
     start: el('screenStart'), finish: el('screenFinish'), stop: el('screenStop'), photo: el('screenPhoto'),
     video: el('screenVideo'), status: el('screenStatus'), result: el('screenDirection'),
-    getContext: () => state.comps.length ? {
-      setData: state.setData, comps: state.comps, level: state.level, selected: [...state.selected],
-    } : null,
+    getContext: () => {
+      const context = openingContext();
+      if (!context?.comps.length) return null;
+      return {
+        setData: context.setData,
+        opening: { cities: context.cities, augments: context.augments },
+        direction: () => state.ranked?.find(row => row.viable)?.comp,
+      };
+    },
+    onEvidence: openingAdvice.receive,
+    onOpening: openingAdvice.show,
   });
   modelReference = bindModelReference({
     file: el('modelFile'), unit: el('modelUnit'), display: el('modelDisplay'),
@@ -681,12 +737,12 @@ function bind() {
     // 散件按 0→1→2→3→4 循环：一件最多同时握 4 个也是常见情况(打野/野怪轮)。
     const next = ((state.owned.get(id) || 0) + 1) % 5;
     next ? state.owned.set(id, next) : state.owned.delete(id);
-    renderSide();
+    renderResults();
   };
   el('clearComps').onclick = () => {
     state.owned.clear();
     state.ownedItems.clear();
-    renderSide();
+    renderResults();
   };
   el('paths').onclick = (e) => {
     const b = e.target.closest('.cand');
@@ -699,13 +755,13 @@ function bind() {
     const b = e.target.closest('.hex');
     if (!b) return;
     state.chosen.has(b.dataset.hex) ? state.chosen.delete(b.dataset.hex) : state.chosen.add(b.dataset.hex);
-    renderSide();
+    renderResults();
   };
   el('gear').onclick = (e) => {
     const b = e.target.closest('.gi');
     if (!b) return;
     state.ownedItems.has(b.dataset.item) ? state.ownedItems.delete(b.dataset.item) : state.ownedItems.add(b.dataset.item);
-    renderSide();
+    renderResults();
   };
   // 快照导入：文件选择 / 拖拽 / 粘贴三种入口，识别结果只做「勾选」，推荐仍由本地引擎出。
   el('snapFile').onchange = (e) => {

@@ -1,4 +1,4 @@
-import { mergeScreenEvidence, screenEvidence } from '../engine/screen-insights.js?v=ocr-regions';
+import { mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=opening-advice';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 let worker;
@@ -57,7 +57,7 @@ function cropForOcr(image, [left, top, right, bottom]) {
   return crop;
 }
 
-export async function recognizeBoardText(canvas, setData, isCurrent = () => true, { detailed = false } = {}) {
+export async function recognizeBoardText(canvas, setData, isCurrent = () => true, { detailed = false, opening } = {}) {
   const text = await readOcr(canvas, isCurrent);
   if (text === null || !isCurrent()) return null;
   const initial = screenEvidence(text, setData);
@@ -82,5 +82,7 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     if (shop === null || !isCurrent()) return null;
     reads.push({ stage: null, units: screenEvidence(shop, setData).units, traits: [] });
   }
-  return mergeScreenEvidence(...reads);
+  const evidence = mergeScreenEvidence(...reads);
+  if (opening) evidence.opening = openingNamesInText(text, opening);
+  return evidence;
 }

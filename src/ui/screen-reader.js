@@ -1,5 +1,5 @@
-import { screenDirection, stageAfterOpening } from '../engine/screen-insights.js?v=ocr-regions';
-import { recognizeBoardText } from '../adapters/local-ocr.js?v=ocr-regions';
+import { stageAfterOpening } from '../engine/screen-insights.js?v=opening-advice';
+import { recognizeBoardText } from '../adapters/local-ocr.js?v=opening-advice';
 const FRAME_INTERVAL_MS = 3500;
 const CAPTURE_LIMIT_MS = 180_000;
 
@@ -12,7 +12,7 @@ function toCanvas(image, width, height) {
   return canvas;
 }
 
-export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext }) {
+export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening }) {
   const supported = Boolean(navigator.mediaDevices?.getDisplayMedia);
   let active, finishedJob;
   const say = (message) => { status.textContent = message; };
@@ -44,16 +44,15 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       ? toCanvas(video, video.videoWidth, video.videoHeight) : null;
   }
 
-  function showDirection(context, evidence) {
-    const units = [...new Set([...context.selected, ...evidence.units])];
-    const comp = screenDirection(context.setData, context.comps, { units, traits: evidence.traits }, context.level);
+  function showDirection(context) {
+    const comp = context.direction();
     if (!comp) {
-      say('没有读到足够的棋子或羁绊文字。可试试清晰截图，或手选已有棋子后再试。');
+      say('请确认手上棋子、装备或城邦效果后查看阵容方向。');
       return;
     }
     result.textContent = `阵容方向 · ${comp.name}`;
     result.hidden = false;
-    say('已根据可见文字匹配当前阵容库。');
+    say('已按确认的开局条件匹配当前阵容库。');
   }
 
   async function scan(session) {
@@ -61,19 +60,22 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     const canvas = frame();
     if (canvas) {
       try {
-        const evidence = await recognizeBoardText(canvas, session.context.setData, () => active === session);
+        const evidence = await recognizeBoardText(canvas, session.context.setData, () => active === session, { opening: session.context.opening });
         if (!evidence || active !== session) return;
         if (stageAfterOpening(evidence.stage)) {
           release(session);
-          if (session.evidence) showDirection(session.context, session.evidence);
+          if (session.atOpening) showDirection(session.context);
           else say('已读到 2-1 之后的阶段，屏幕读取已停止。');
           return;
         }
-        if (evidence.units.length || evidence.traits.length) session.evidence = evidence;
-        if (evidence.stage === '2-1') session.atOpening = true;
+        onEvidence(evidence);
+        if (evidence.stage === '2-1' && !session.atOpening) {
+          session.atOpening = true;
+          onOpening();
+        }
         say(session.atOpening
-          ? '检测到 2-1，选完强化符文后，点击「已选海克斯，生成方向」。'
-          : '正在读取画面文字。到 2-1 并选完强化符文后，点击「已选海克斯，生成方向」。');
+          ? '检测到 2-1，可查看开局推荐。选完海克斯后结束共享。'
+          : '正在读取画面文字，到 2-1 时会打开开局推荐。');
       } catch {
         if (active !== session) return;
         release(session);
@@ -84,18 +86,21 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     if (active === session) session.tick = setTimeout(() => void scan(session), FRAME_INTERVAL_MS);
   }
 
-  async function recognizeFinal(context, canvas, earlier) {
+  async function recognizeFinal(context, canvas, fromScreenshot = false) {
     const job = {};
     finishedJob = job;
     render();
     say('正在读取最后一帧的文字…');
     try {
-      const evidence = await recognizeBoardText(canvas, context.setData, () => finishedJob === job, { detailed: true });
+      const evidence = await recognizeBoardText(canvas, context.setData, () => finishedJob === job, { detailed: true, opening: context.opening });
       if (!evidence || finishedJob !== job) return;
-      const usable = stageAfterOpening(evidence.stage)
-        ? earlier : evidence.units.length || evidence.traits.length ? evidence : earlier || evidence;
-      if (usable) showDirection(context, usable);
-      else say('截图显示已过 2-1。请导入 2-1 选完海克斯时的截图。');
+      if (stageAfterOpening(evidence.stage) && fromScreenshot) {
+        say('截图显示已过 2-1。请导入 2-1 的海克斯选择画面。');
+        return;
+      }
+      if (!stageAfterOpening(evidence.stage)) onEvidence(evidence);
+      if (fromScreenshot) onOpening();
+      showDirection(context);
     } catch {
       if (finishedJob === job) say('无法识别这张画面，请重试或选一张清晰截图。');
     } finally {
@@ -149,9 +154,9 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     if (!active?.stream) return;
     const canvas = frame();
     if (!canvas) return;
-    const { context, evidence } = active;
+    const { context } = active;
     release(active);
-    void recognizeFinal(context, canvas, evidence);
+    void recognizeFinal(context, canvas);
   };
   stop.onclick = () => {
     if (active) release(active);
@@ -172,7 +177,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       const bitmap = await createImageBitmap(file);
       try {
         if (finishedJob !== job) return;
-        await recognizeFinal(context, toCanvas(bitmap, bitmap.width, bitmap.height));
+        await recognizeFinal(context, toCanvas(bitmap, bitmap.width, bitmap.height), true);
       } finally { bitmap.close(); }
     } catch {
       if (finishedJob === job) say('无法读取图片，请选择清晰的 PNG 或 JPG 截图。');

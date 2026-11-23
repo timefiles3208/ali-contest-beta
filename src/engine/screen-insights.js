@@ -52,6 +52,11 @@ export function mergeScreenEvidence(...reads) {
   };
 }
 
+export function openingNamesInText(text, { cities, augments }) {
+  const lines = text.split(/\r?\n/).map(labelText);
+  return { cities: visibleMatches(lines, cities), offered: visibleMatches(lines, augments) };
+}
+
 export function stageAfterOpening(stage) {
   return Boolean(stage && stage !== '2-1' && Number(stage[0]) >= 2);
 }
