@@ -142,6 +142,15 @@
 
   <section class="panel result">
     <h2>4 · 成型路线</h2>
+    <details id="matchSamples" class="snap-model" hidden>
+      <summary>赛前阵容参考 · 导入对局记录</summary>
+      <p class="fine">导入云顶 S18 18.7 的 Riot 对局 JSON。终局棋盘统计仅供赛前参考，文件在浏览器内处理。</p>
+      <label for="matchSampleFiles">对局 JSON</label>
+      <input id="matchSampleFiles" type="file" accept=".json,application/json" multiple />
+      <button id="clearMatchSamples" type="button" class="ghost" disabled>清除样本</button>
+      <p id="matchSampleStatus" class="snap-status" role="status">可以导入同版本的已结束排位记录。</p>
+      <div id="matchSampleOutput"></div>
+    </details>
     <div id="traitsNow" class="traits-now"></div>
     <div id="comps" class="comps"></div>
 
@@ -161,6 +170,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=opening-advice"></script>
+<script type="module" src="./src/main.js?v=match-samples"></script>
 </body>
 </html>

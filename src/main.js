@@ -4,6 +4,7 @@ import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=opening-advice';
 import { bindOpeningAdvice } from './ui/opening-advice.js';
+import { bindMatchSamples } from './ui/match-samples.js';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js';
 import { rankOpening } from './engine/opening.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
@@ -16,7 +17,7 @@ import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let modelReference, screenReader, openingAdvice;
+let modelReference, screenReader, openingAdvice, matchSamples;
 let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
@@ -274,6 +275,7 @@ function renderSide() {
   renderHexes(top);
   renderGear(top);
   openingAdvice?.draw();
+  matchSamples?.refresh();
 }
 
 function renderCompStrip() {
@@ -645,6 +647,12 @@ function clearSnapshot() {
 }
 
 function bind() {
+  matchSamples = bindMatchSamples({
+    panel: el('matchSamples'), input: el('matchSampleFiles'), clear: el('clearMatchSamples'),
+    status: el('matchSampleStatus'), output: el('matchSampleOutput'),
+    getContext: () => state.sourceId === 'datatft' && state.board?.version === '18.7' && state.comps.length
+      ? { comps: state.comps, setData: state.setData } : null,
+  });
   openingAdvice = bindOpeningAdvice({
     dialog: el('openingDialog'), open: el('openingOpen'), city: el('openingCity'), economy: el('openingEconomy'),
     item: el('openingItem'), addItem: el('openingAddItem'), ownedSummary: el('openingOwned'), candidates: el('openingCandidates'),
