@@ -1,5 +1,5 @@
 import { recommend } from './recommend.js';
-import { rankAugments } from './augments.js';
+import { rankAugments } from './augments.js?v=city-augments';
 import { augmentTier } from '../data/augment-tiers.js';
 
 const TIERS = { 'S+': 7, S: 6, A: 5, B: 4, C: 3, D: 2, E: 1 };
@@ -63,8 +63,8 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
   return ranked.sort((a, b) => Number(b.viable) - Number(a.viable) || b.fit - a.fit || compareStrength(a, b));
 }
 
-export function rankOpeningAugments({ setData, augments, ranked, selected, offered, tier }) {
+export function rankOpeningAugments({ setData, augments, ranked, selected, offered, tier, city }) {
   const accepted = new Set(offered);
   const eligible = augments.filter(aug => accepted.has(aug.id) && (!tier || augmentTier(aug.id) === tier));
-  return rankAugments({ setData, ranked, selected, augments: eligible, limit: 3 });
+  return rankAugments({ setData, ranked, selected, augments: eligible, limit: 3, city });
 }

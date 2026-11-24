@@ -1,4 +1,4 @@
-import { rankOpeningAugments } from '../engine/opening.js?v=augment-tier';
+import { rankOpeningAugments } from '../engine/opening.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
 export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, getContext, onChange, onPick, onTier }) {
@@ -35,9 +35,12 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     }
     city.value = ctx.city?.id || '';
     economy.value = ctx.economy || '';
-    const offered = offeredIds(augments);
+    const chosenTier = tier.value || ctx.city?.firstAugmentTier;
+    const offered = offeredIds(augments, chosenTier);
     const inferred = inferAugmentTier(offered);
-    const effective = tier.value || inferred;
+    const effective = chosenTier || inferred;
+    const tierSource = tier.value ? '手动选择' : ctx.city?.firstAugmentTier
+      ? `由「${ctx.city.name}」城邦确定` : '根据候选名称识别';
     const mismatch = offered.some(id => augmentTier(id) !== effective);
     const available = effective ? offered.filter(id => augmentTier(id) === effective) : [];
     if (effective !== listTier) {
@@ -47,7 +50,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     }
     onTier(effective || '');
     tierStatus.textContent = effective
-      ? `${AUGMENT_TIER_LABELS[effective]}${tier.value ? ' · 手动选择' : ' · 根据候选名称识别'}${mismatch ? '。其余档位的候选已排除。' : '。'}`
+      ? `${AUGMENT_TIER_LABELS[effective]} · ${tierSource}${mismatch ? '。其余档位的候选已排除。' : '。'}`
       : offered.length ? '候选档位不一致，请核对名称或手动选择当轮颜色。'
         : '填入本轮选项后可判断颜色，也可以手动选择。';
     const effects = cities.find(row => row.id === city.value);
@@ -80,7 +83,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       : '选择城邦、确认当前持有的棋子或登记装备。';
     direction.replaceChildren(title, evidence);
 
-    const chosen = rankOpeningAugments({ setData, augments, ranked, selected, offered: available, tier: effective });
+    const chosen = rankOpeningAugments({ setData, augments, ranked, selected, offered: available, tier: effective, city: ctx.city });
     const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
     if (nextKey === picksKey) return;
     picksKey = nextKey;
@@ -100,10 +103,10 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     }));
   }
 
-  function offeredIds(augments) {
+  function offeredIds(augments, chosenTier) {
     return inputs.flatMap(input => {
       const matches = augments.filter(row => row.name === input.value.trim());
-      const preferred = tier.value ? matches.filter(row => augmentTier(row.id) === tier.value) : matches;
+      const preferred = chosenTier ? matches.filter(row => augmentTier(row.id) === chosenTier) : matches;
       const resolved = preferred.length ? preferred : matches;
       return resolved.length === 1 ? [resolved[0].id] : [];
     });

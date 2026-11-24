@@ -3,15 +3,15 @@ import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=ocr-scale';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=augment-tier';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=city-augments';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
-import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js';
+import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=augment-tier';
+import { rankOpening } from './engine/opening.js?v=city-augments';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
-import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
+import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=city-augments';
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=planning-tools';
 import { validateComps } from './adapters/provider.js';
@@ -407,6 +407,7 @@ function renderHexes(top) {
     ranked: state.ranked || [],
     selected: state.selected,
     chosen: state.chosen,
+    city: openingContext()?.city,
     limit: 10,
   }).filter((x) => !curatedSet.has(x.aug.id));
 

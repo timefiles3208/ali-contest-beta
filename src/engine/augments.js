@@ -29,7 +29,39 @@ export function categorize(aug, linkedCount = 0) {
 
 export const CATEGORY_LABEL = { trait: '羁绊', core: '强化', item: '装备', econ: '经济', combat: '战力', other: '通用' };
 
-export function rankAugments({ setData, augments = [], ranked = [], selected, chosen = new Set(), limit = 6 }) {
+function citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore }) {
+  if (!city || city.effect === 'neutral') return null;
+  const text = aug.desc || '';
+  const grantsXP = /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,14}经验|(?:升级|购买经验)[^。；，！\n]{0,8}(?:更便宜|少花|减少)/.test(text);
+  const grantsGold = /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,16}(?:金币|利息)/.test(text);
+  const grantsRolls = /(?<!无法|不能|不会|不再)免费(?:的)?(?:商店)?刷新|刷新(?:的)?(?:价格|花费|费用)[^。；，！\n]{0,6}(?:减少|降低)/.test(text);
+  const high = (comp?.level || 0) >= 8;
+  switch (city.effect) {
+    case 'level':
+      return grantsXP ? { points: high ? 0.19 : 0.16, reason: '补经验，配合较低的升级成本' } : null;
+    case 'gold':
+      if (high && grantsXP) return { points: 0.18, reason: '用额外经济配合升人口' };
+      if (grantsGold) return { points: 0.14, reason: '增加可用于升级和搜牌的金币' };
+      return grantsRolls ? { points: 0.1, reason: '节省刷新金币，保留城邦给的经济' } : null;
+    case 'rerolls':
+      return grantsRolls ? { points: high ? 0.12 : 0.18, reason: '叠加免费刷新，帮助搜到目标棋子' } : null;
+    case 'early':
+      if (hitCore.length || aug.grantUnits?.length) return { points: 0.16, reason: '补充开局棋子，帮助过渡或升星' };
+      return hitTraits.length ? { points: 0.09, reason: '利用开局棋子更早凑目标羁绊' } : null;
+    case 'items':
+      if (hitItems.length) return { points: 0.14, reason: '补目标阵容装备，能和开局装备搭配' };
+      if (/装备的(?:弈子|棋子|英雄)|携带[^。；，！\n]{0,8}装备|每有一件装备|重铸|装备拆卸/.test(text)) {
+        return { points: 0.14, reason: '利用城邦提供的装备，或调整装备归属' };
+      }
+      return aug.grantItems?.length ? { points: 0.08, reason: '补充开局装备选择' } : null;
+    case 'emblems':
+      return hitTraits.some(trait => (aug.grantTraits || []).includes(trait.id)) && /纹章|冠冕/.test(text)
+        ? { points: 0.16, reason: '补目标羁绊纹章，提高成型档位的机会' } : null;
+    default: return null;
+  }
+}
+
+export function rankAugments({ setData, augments = [], ranked = [], selected, chosen = new Set(), limit = 6, city }) {
   const traitIdByName = new Map((setData.traits || []).map((t) => [t.name, t.id]));
   const top = ranked.find((r) => r.viable) || null;
   const comp = top?.comp;
@@ -58,19 +90,24 @@ export function rankAugments({ setData, augments = [], ranked = [], selected, ch
     const hitAny = (aug.grantUnits || []).length ? [] : (aug.mentionsUnits || []).filter((n) => missingCore.has(n));
     const hitItems = (aug.grantItems || []).filter((n) => wantItems.has(n));
     const cat = categorize(aug, ids.size);
+    const synergy = citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore });
 
-    const score = Math.max(0, Math.min(1, 0.5 * traitScore + 0.3 * Math.min(1, (hitCore.length + hitAny.length) / 2) + 0.18 * Math.min(1, hitItems.length) + cat.prior));
+    const total = 0.5 * traitScore + 0.3 * Math.min(1, (hitCore.length + hitAny.length) / 2)
+      + 0.18 * Math.min(1, hitItems.length) + cat.prior + (synergy?.points || 0);
+    const score = Math.min(1, total);
     const reasons = [];
+    if (synergy) reasons.push(`${city.name} · ${synergy.reason}`);
     if (hitTraits.length) reasons.push(`贴${hitTraits[0].name}${comp?.aimTraits?.[hitTraits[0].id] ? `(目标 ${comp.aimTraits[hitTraits[0].id]} 人)` : ''}`);
     if (hitCore.length) reasons.push(`给出缺的核心件：${hitCore.join('/')}`);
     else if (hitAny.length) reasons.push(`提到 ${hitAny.join('/')}`);
     if (hitItems.length) reasons.push(`给出成装：${hitItems.join('/')}`);
     if (!reasons.length) reasons.push(`${aug.desc.split('\n')[0].slice(0, 30)}${aug.desc.length > 30 ? '…' : ''}`);
 
-    scored.push({ aug, score, category: cat.id, reasons });
+    scored.push({ aug, score, total, category: cat.id, reasons });
   }
 
   return scored
-    .sort((a, b) => b.score - a.score || a.aug.name.localeCompare(b.aug.name, 'zh'))
-    .slice(0, limit);
+    .sort((a, b) => b.total - a.total || a.aug.name.localeCompare(b.aug.name, 'zh'))
+    .slice(0, limit)
+    .map(({ total, ...row }) => row);
 }
