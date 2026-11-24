@@ -143,7 +143,10 @@ button.ghost { background: transparent; }
 .guide-transition p { margin: 0 0 4px; font-size: 12px; }
 .guide-transition a { color: var(--accent); }
 .guide-transition-stages { display: grid; gap: 8px; list-style: none; padding: 0; margin: 8px 0 0; }
-.guide-transition-stages li { padding: 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; }
+.guide-transition h4 { margin: 10px 0 4px; font-size: 12px; }
+.guide-transition-stages > li { padding: 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; }
+.guide-transition-units [data-held="true"] { color: var(--accent); }
+.transition-gear { display: grid; gap: 3px; padding-left: 16px; margin: 6px 0 0; font-size: 12px; }
 .guide-transition-stages p.fine { margin: 4px 0 0; }
 .guide-transition-units { display: flex; flex-wrap: wrap; gap: 5px 10px; margin-top: 4px; }
 .guide-transition-units > span { display: inline-flex; align-items: center; gap: 4px; }

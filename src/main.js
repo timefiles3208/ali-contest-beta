@@ -13,7 +13,7 @@ import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
 import { planItems } from './engine/items.js';
-import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=transition-guides';
+import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-scale';
@@ -194,9 +194,12 @@ function renderSelected() {
 }
 
 function renderCompGuide(comp) {
-  const { board, units, rolls, transition, transitionStages } = buildCompGuide(comp, state.setData, state.board?.version);
+  const { board, units, rolls, transition, transitionStages, adaptiveTransitions } = buildCompGuide(
+    comp, state.setData, state.board?.version,
+    { selected: state.selected, owned: state.owned, ownedItems: state.ownedItems, itemsData: state.items },
+  );
   const version = state.setData.source?.ddragonVersion;
-  const items = new Map((state.items?.items || []).map(item => [item.id, item.name]));
+  const items = new Map([...(state.items?.items || []), ...(state.items?.components || [])].map(item => [item.id, item.name]));
   const rows = board.map((row, i) => `<div class="guide-rank" aria-label="第 ${i + 1} 排">
     ${row.map(unit => unit
       ? `<span class="guide-cell occupied" title="${esc(unit.name)} · ${unit.stars} 星">${iconHtml(unit, version, 26)}<span>${esc(unit.name)}</span></span>`
@@ -220,9 +223,26 @@ function renderCompGuide(comp) {
     </div>
     <p class="fine">${traitLine(stage.traits) || '暂无激活羁绊'}</p>
   </li>`).join('');
+  const adaptiveBoards = adaptiveTransitions.map(stage => `<li>
+    <strong>${stage.level} 人口</strong> <span class="fine">已持有 ${stage.held.length}/${stage.level}</span>
+    <div class="guide-transition-units">
+      ${stage.units.map(unit => `<span data-held="${stage.held.includes(unit.id)}">${iconHtml(unit, version, 22)}${esc(unit.name)}</span>`).join('')}
+    </div>
+    <p class="fine">${traitLine(stage.traits) || '暂无激活羁绊'}</p>
+    ${stage.units.length < stage.level ? `<p class="fine">还有 ${stage.level - stage.units.length} 个位置可补</p>` : ''}
+    ${stage.gear.length ? `<ul class="transition-gear">
+      ${stage.gear.map(row => `<li>${esc(row.item.name)} → ${esc(row.unit.name)} · ${row.state === 'done' ? '已持有' : row.state === 'ready' ? '散件可合成' : `还缺 ${esc(items.get(row.missing) || '1 件散件')}`}${row.target.id !== row.unit.id ? ` · 可过渡给 ${esc(row.target.name)}` : ''}</li>`).join('')}
+    </ul>` : ''}
+  </li>`).join('');
   return `<section class="comp-guide" aria-label="阵容攻略">
     <section class="guide-transition">
       <h3>过渡阵容</h3>
+      ${adaptiveBoards ? `
+        <h4>按当前来牌和装备调整</h4>
+        <ul class="guide-transition-stages adaptive-transition-stages">${adaptiveBoards}</ul>
+        <h4>原始参考</h4>
+      ` : ''}
+
       ${source ? `
         <p class="fine">攻略推演 · <a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)} ${esc(source.patch)}</a></p>
         <ul class="guide-transition-stages">${transitionBoards}</ul>

@@ -75,3 +75,55 @@ test('transition boards fall back for a missing version, different game or misma
   assert.deepEqual(buildCompGuide({ ...comp, rank: { source: 'dataj.cc' } }, set18, '18.7').transitionStages, []);
   assert.deepEqual(buildCompGuide({ ...comp, units: comp.units.filter(id => id !== 'DA_18_Aphelios') }, set18, '18.7').transitionStages, []);
 });
+
+
+const adaptiveSet = {
+  units: [
+    { id: 'tank', name: '坦克', cost: 1, traits: ['DA_18_Defender', 'family'] },
+    { id: 'carry', name: '主C', cost: 4, traits: ['DA_18_Rapidfire', 'family'] },
+    { id: 'holder', name: '打工棋子', cost: 1, traits: ['DA_18_Rapidfire', 'family'] },
+    { id: 'guard', name: '护卫', cost: 2, traits: ['DA_18_Defender', 'family'] },
+    { id: 'filler', name: '低费目标', cost: 2, traits: ['family'] },
+    { id: 'other', name: '其他开局牌', cost: 1, traits: ['DA_18_Defender'] },
+    { id: 'fast', name: '射手', cost: 2, traits: ['DA_18_Rapidfire'] },
+    { id: 'late', name: '高费挂件', cost: 5, traits: ['family'] },
+  ],
+  traits: [{ id: 'family', name: '同族', tiers: [{ min: 2 }, { min: 4 }] }],
+};
+const adaptiveComp = {
+  units: ['tank', 'carry', 'guard', 'filler', 'fast', 'late'], level: 6, carry: ['carry'],
+  aimTraits: { family: 4 }, items: { carry: ['rapid','rapid2','double'] },
+};
+const itemsData = { items: [
+  { id: 'rapid', name: '攻速装', kind: 'completed', from: ['bow','sword'] },
+  { id: 'rapid2', name: '其他攻速装', kind: 'completed', from: ['bow','sword'] },
+  { id: 'double', name: '双弓装', kind: 'completed', from: ['bow','bow'] },
+] };
+const adaptOpening = (selected, owned, ownedItems = []) => buildCompGuide(adaptiveComp, adaptiveSet, null, {
+  selected: new Set(selected), owned: new Map(owned), ownedItems: new Set(ownedItems), itemsData,
+}).adaptiveTransitions;
+
+test('adaptive transitions field held substitutes, recompute traits and update after a sale', () => {
+  const [stage] = adaptOpening(['holder', 'other'], []);
+  assert.equal(stage.level, 4);
+  assert.deepEqual([...stage.held].sort(), ['holder', 'other']);
+  assert.ok(stage.units.every(unit => unit.id !== 'late'));
+  assert.equal(stage.traits.find(trait => trait.id === 'family')?.tier, 2);
+  const [afterSale] = adaptOpening(['other'], []);
+  assert.equal(afterSale.held.includes('holder'), false);
+  assert.equal(afterSale.units.some(unit => unit.id === 'holder'), false);
+});
+
+test('equipment-only transitions find a temporary compatible holder without reusing components', () => {
+  const [stage] = adaptOpening([], [['bow', 1], ['sword', 1]]);
+  assert.equal(stage.held.length, 0);
+  assert.equal(stage.gear.length, 1);
+  assert.equal(stage.gear[0].unit.id, 'fast');
+  assert.equal(stage.gear[0].state, 'ready');
+  const partial = adaptOpening([], [['bow', 1]])[0].gear;
+  assert.equal(partial.length, 1);
+  assert.deepEqual([partial[0].state, partial[0].missing], ['partial', 'sword']);
+  const [separate] = adaptOpening(['holder'], [['bow', 1], ['sword', 1]], ['rapid']);
+  assert.deepEqual(separate.gear.map(row => [row.item.id, row.state]), [['rapid', 'done'], ['rapid2', 'ready']]);
+  assert.deepEqual(adaptOpening([], []), []);
+});

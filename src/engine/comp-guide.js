@@ -1,3 +1,4 @@
+import { buildAdaptiveTransitions } from './transition-fit.js';
 import { transitionGuides } from '../data/s18.18.7.transitions.js';
 import { traitBreakdown } from './recommend.js';
 
@@ -41,7 +42,7 @@ function sourcedTransitions(comp, setData, patch, byId) {
   });
 }
 
-export function buildCompGuide(comp, setData, patch) {
+export function buildCompGuide(comp, setData, patch, inventory) {
   const byId = new Map(setData.units.map(unit => [unit.id, unit]));
   const units = comp.units.flatMap(id => {
     const unit = byId.get(id);
@@ -90,5 +91,8 @@ export function buildCompGuide(comp, setData, patch) {
     traits: traitBreakdown(setData, transitionUnits.map(unit => unit.id)).filter(trait => trait.tier > 0),
   };
   const transitionStages = sourcedTransitions(comp, setData, patch, byId);
-  return { board, units, rolls, transition, transitionStages };
+  const adaptiveTransitions = buildAdaptiveTransitions({
+    comp, setData, targets: units, stages: transitionStages, inventory, tankItems: TANK_ITEMS, frontTraits: FRONT_TRAITS,
+  });
+  return { board, units, rolls, transition, transitionStages, adaptiveTransitions };
 }
