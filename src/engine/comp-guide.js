@@ -1,3 +1,4 @@
+import { transitionGuides } from '../data/s18.18.7.transitions.js';
 import { traitBreakdown } from './recommend.js';
 
 const FRONT_TRAITS = new Set([
@@ -20,7 +21,27 @@ export function filterCompPlans(rows, { trait, tier, maxLevel }) {
     (!maxLevel || comp.level <= maxLevel));
 }
 
-export function buildCompGuide(comp, setData) {
+function sourcedTransitions(comp, setData, patch, byId) {
+  const guide = transitionGuides[comp.id];
+  if (setData.set !== 18 || patch !== '18.7' || comp.rank?.source !== 'datatft.com' ||
+      !guide || !guide.anchors.every(id => comp.units.includes(id))) return [];
+
+  const source = {
+    name: 'TFT Codex', patch,
+    url: `https://tftcodex.com/comps/${guide.slug}.html`,
+  };
+  return Object.entries(guide.stages).flatMap(([key, ids]) => {
+    const level = Number(key);
+    if (level >= comp.level || ids.length !== level || new Set(ids).size !== level ||
+        !ids.every(id => byId.has(id))) return [];
+    return [{
+      level, source, units: ids.map(id => byId.get(id)),
+      traits: traitBreakdown(setData, ids).filter(trait => trait.tier > 0),
+    }];
+  });
+}
+
+export function buildCompGuide(comp, setData, patch) {
   const byId = new Map(setData.units.map(unit => [unit.id, unit]));
   const units = comp.units.flatMap(id => {
     const unit = byId.get(id);
@@ -68,5 +89,6 @@ export function buildCompGuide(comp, setData) {
     units: transitionUnits,
     traits: traitBreakdown(setData, transitionUnits.map(unit => unit.id)).filter(trait => trait.tier > 0),
   };
-  return { board, units, rolls, transition };
+  const transitionStages = sourcedTransitions(comp, setData, patch, byId);
+  return { board, units, rolls, transition, transitionStages };
 }

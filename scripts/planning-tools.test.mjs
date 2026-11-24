@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { adaptBoard } from '../src/adapters/board-sources.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildCompGuide, filterCompPlans } from '../src/engine/comp-guide.js';
@@ -39,4 +41,37 @@ test('aligned matching recovers an offset tile and rejects a flat crop', () => {
   const matches = [{ id: 'ref', signature: ref }, { id: 'other', signature: ref.map(value => 255 - value) }];
   assert.equal(matchAlignedIconSignature(shifted, matches)?.id, 'ref');
   assert.equal(matchAlignedIconSignature(new Uint8Array(ref.length).fill(30), matches), null);
+});
+
+const readData = (path) => JSON.parse(readFileSync(new URL('../src/data/' + path, import.meta.url), 'utf8'));
+const set18 = readData('set18.json');
+const raw = readData('datatft/s18.18.7.comps.json');
+const snapshot = adaptBoard(raw, { source: 'datatft', setData: set18 });
+
+test('18.7 transition boards match snapshot comps and contain complete, distinct rosters', () => {
+  const guides = snapshot.comps.map(comp => ({ comp, guide: buildCompGuide(comp, set18, snapshot.version) }));
+  const sourced = guides.filter(({ guide }) => guide.transitionStages?.length);
+  assert.ok(sourced.length >= 10);
+  for (const { guide } of sourced) {
+    let previous = 3;
+    for (const stage of guide.transitionStages) {
+      assert.ok(stage.level > previous && stage.level <= 7);
+      assert.equal(stage.units.length, stage.level);
+      assert.equal(new Set(stage.units.map(unit => unit.id)).size, stage.level);
+      assert.ok(stage.traits.every(trait => trait.tier > 0));
+      assert.match(stage.source.url, /^https:\/\/tftcodex\.com\/comps\//);
+      previous = stage.level;
+    }
+  }
+  const aphelios = sourced.find(({ comp }) => comp.id === 'datatft-16315');
+  assert.deepEqual(aphelios.guide.transitionStages.map(stage => stage.level), [4, 5, 7]);
+  assert.ok(aphelios.guide.transitionStages[2].units.some(unit => unit.id === 'DA_18_Aphelios'));
+});
+
+test('transition boards fall back for a missing version, different game or mismatched core', () => {
+  const comp = snapshot.comps.find(row => row.id === 'datatft-16315');
+  assert.deepEqual(buildCompGuide(comp, set18, '18.8').transitionStages, []);
+  assert.deepEqual(buildCompGuide(comp, set18).transitionStages, []);
+  assert.deepEqual(buildCompGuide({ ...comp, rank: { source: 'dataj.cc' } }, set18, '18.7').transitionStages, []);
+  assert.deepEqual(buildCompGuide({ ...comp, units: comp.units.filter(id => id !== 'DA_18_Aphelios') }, set18, '18.7').transitionStages, []);
 });

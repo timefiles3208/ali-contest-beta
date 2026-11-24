@@ -13,7 +13,7 @@ import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
 import { planItems } from './engine/items.js';
-import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=planning-tools';
+import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=transition-guides';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-scale';
@@ -194,7 +194,7 @@ function renderSelected() {
 }
 
 function renderCompGuide(comp) {
-  const { board, units, rolls, transition } = buildCompGuide(comp, state.setData);
+  const { board, units, rolls, transition, transitionStages } = buildCompGuide(comp, state.setData, state.board?.version);
   const version = state.setData.source?.ddragonVersion;
   const items = new Map((state.items?.items || []).map(item => [item.id, item.name]));
   const rows = board.map((row, i) => `<div class="guide-rank" aria-label="第 ${i + 1} 排">
@@ -211,13 +211,26 @@ function renderCompGuide(comp) {
     `<li><strong>${level} 级</strong> · ${targets.map(unit => `${esc(unit.name)} ${unit.stars} 星`).join('、')}</li>`).join('');
   const riftbeastShop = comp.aimTraits?.DA_Riftbeast18 >= 5
     && rolls.some(({ targets }) => targets.some(unit => unit.traits?.includes('DA_Riftbeast18')));
-  const transitionUnits = transition.units.map(unit => esc(unit.name)).join('、');
-  const transitionTraits = transition.traits.map(trait => `${trait.tier} ${esc(trait.name)}`).join(' · ');
+  const traitLine = (traits) => traits.map(trait => `${trait.tier} ${esc(trait.name)}`).join(' · ');
+  const source = transitionStages[0]?.source;
+  const transitionBoards = transitionStages.map(stage => `<li>
+    <strong>${stage.level} 人口</strong>
+    <div class="guide-transition-units">
+      ${stage.units.map(unit => `<span>${iconHtml(unit, version, 22)}${esc(unit.name)}</span>`).join('')}
+    </div>
+    <p class="fine">${traitLine(stage.traits) || '暂无激活羁绊'}</p>
+  </li>`).join('');
   return `<section class="comp-guide" aria-label="阵容攻略">
     <section class="guide-transition">
-      <h3>前期过渡参考</h3>
-      <p>${transitionUnits || '这套阵容缺少低费棋子，可先用已成型的低费羁绊过渡。'}</p>
-      ${transitionTraits ? `<p class="fine">${transitionTraits}</p>` : ''}
+      <h3>过渡阵容</h3>
+      ${source ? `
+        <p class="fine">攻略推演 · <a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)} ${esc(source.patch)}</a></p>
+        <ul class="guide-transition-stages">${transitionBoards}</ul>
+      ` : `
+        <p class="fine">低费棋子推演</p>
+        <p>${transition.units.map(unit => esc(unit.name)).join('、') || '可先用已成型的低费羁绊过渡。'}</p>
+        ${transition.traits.length ? `<p class="fine">${traitLine(transition.traits)}</p>` : ''}
+      `}
     </section>
     <div class="guide-layout">
       <div class="guide-position">
