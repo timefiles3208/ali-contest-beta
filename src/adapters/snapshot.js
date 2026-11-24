@@ -1,4 +1,4 @@
-import { recognizeBoardText } from './local-ocr.js?v=ocr-scale';
+import { recognizeBoardText } from './local-ocr.js?v=video-ocr';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {

@@ -1,5 +1,5 @@
-import { stageAfterOpening } from '../engine/screen-insights.js?v=ocr-scale';
-import { recognizeBoardText } from '../adapters/local-ocr.js?v=ocr-scale';
+import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
+import { recognizeBoardText } from '../adapters/local-ocr.js?v=video-ocr';
 const FRAME_INTERVAL_MS = 3500;
 const CAPTURE_LIMIT_MS = 180_000;
 
@@ -61,7 +61,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     if (canvas) {
       try {
         const evidence = await recognizeBoardText(canvas, session.context.setData, () => active === session, {
-          opening: session.context.opening, readCards: !session.atOpening,
+          opening: session.context.opening, readCards: !session.cardsRead,
         });
         if (!evidence || active !== session) return;
         if (stageAfterOpening(evidence.stage)) {
@@ -71,6 +71,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
           return;
         }
         onEvidence(evidence);
+        if (evidence.stage === '2-1' && evidence.opening?.offeredSlots?.every(Boolean)) session.cardsRead = true;
         if (evidence.stage === '2-1' && !session.atOpening) {
           session.atOpening = true;
           onOpening();

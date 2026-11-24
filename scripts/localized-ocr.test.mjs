@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { matchRegionLabel, screenEvidence, hasMatchFrame } from '../src/engine/screen-insights.js';
+import { matchRegionLabel, screenEvidence, hasMatchFrame, openingNamesInText } from '../src/engine/screen-insights.js';
 
 const labels = [
   { id: 'bag', name: '英勇福袋' }, { id: 'bagPlus', name: '英勇福袋+' },
@@ -31,4 +31,16 @@ test('bare guide text is a preview and a verified round or actual shop HUD enabl
   assert.equal(hasMatchFrame(null, '六主宰婕拉'), false);
   assert.equal(hasMatchFrame(null, '购买经验值\n4\n刷新'), true);
   assert.equal(hasMatchFrame('2-1', ''), true);
+});
+
+test('opening OCR only accepts complete, unambiguous card titles', () => {
+  const cities = [{ id: 'city', name: '黄金交响曲' }];
+  const augments = [
+    { id: 'investPlus', name: '投资+' }, { id: 'invest', name: '投资策略 I' },
+    { id: 'ticket', name: 'Prismatic Ticket' }, { id: 'ticketVariant', name: 'Prismatic Ticket+' },
+  ];
+  assert.deepEqual(openingNamesInText('欢迎来到黄金交响曲\n投资策略 I\nPrismatic Ticket\n投资更多金币\nPrismatic Ticket grants a reroll', cities, augments),
+    { cities: ['city'], offered: ['invest', 'ticket'] });
+  assert.deepEqual(openingNamesInText('Prismatic Ticket+', [], augments).offered, ['ticketVariant']);
+  assert.deepEqual(openingNamesInText('Prismatic Ticket', [], [...augments, { id: 'duplicate', name: 'Prismatic Ticket' }]).offered, []);
 });

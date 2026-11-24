@@ -1,11 +1,12 @@
-import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=ocr-scale';
+import { fillGoldCardSlots } from './augment-icon-ocr.js';
+import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=video-ocr';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
-const DESKTOP_STAGE = [0.398, 0.0037, 0.423, 0.0278];
+const DESKTOP_STAGE = [0.398, 0.002, 0.420, 0.025];
 const DIM_STAGE = [0.398, 0.004, 0.419, 0.025];
 const DESKTOP_TRAITS = [0.068, 0.242, 0.137, 0.63];
 const COMPACT_TRAITS = [0.095, 0.089, 0.22, 0.51];
-const CARD_TITLES = [0.26, 0.474, 0.688].map(left => [left, 0.487, left + 0.055, 0.516]);
+const CARD_CENTERS = [0.287, 0.501, 0.715];
 const SHOP_LABELS = [0.291, 0.396, 0.501, 0.606, 0.711].map(left => [left, 0.969, left + 0.038, 0.991]);
 const MOBILE_SHOP_LABELS = [0.165, 0.327, 0.492, 0.655].map(left => [left, 0.415, left + 0.043, 0.449]);
 let worker;
@@ -122,10 +123,15 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   }
   let combined = mergeScreenEvidence(...reads);
   if (desktop && !reads.some(read => read.stage)) {
-    const area = cropForOcr(canvas, DESKTOP_STAGE, { zoom: 5, threshold: 145 });
-    const hud = await readOcr(area, isCurrent, '7');
-    if (hud === null || !isCurrent()) return null;
-    reads.push({ stage: screenEvidence(hud, setData).stage, units: [], traits: [] });
+    for (const threshold of [145, 70, 42]) {
+      const area = cropForOcr(canvas, DESKTOP_STAGE, { zoom: 6, threshold });
+      const hud = await readOcr(area, isCurrent, '7', '0123456789-');
+      if (hud === null || !isCurrent()) return null;
+      const stage = screenEvidence(hud, setData).stage;
+      if (!stage) continue;
+      reads.push({ stage, units: [], traits: [] });
+      break;
+    }
   }
   if (desktop && !reads.some(read => read.stage)) {
     const stage = await readDimStage(canvas, setData, isCurrent);
@@ -175,14 +181,18 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   const evidence = mergeScreenEvidence(...reads);
   evidence.matchFrame = landscape && hasMatchFrame(evidence.stage, fullText.join('\n'));
   if (opening) {
-    evidence.opening = openingNamesInText(fullText.join('\n'), opening);
-    if (desktop && readCards && evidence.stage === '2-1' && opening.augments.length) {
-      const passes = canvas.width < 1500
-        ? [{ fixed: true, threshold: 130 }, { fixed: true, threshold: 145 }, { fixed: true, contrast: false }]
-        : [{ threshold: 145 }, { fixed: true, threshold: 130 }];
-      const offeredSlots = await readLabels(canvas, CARD_TITLES, entriesForOcr(opening.augments, setData.set), isCurrent, passes);
+    const entries = entriesForOcr(opening.augments, setData.set);
+    evidence.opening = openingNamesInText(fullText.join('\n'), opening.cities, evidence.stage === '2-1' && readCards ? entries : []);
+    if (desktop && readCards && evidence.stage === '2-1' && entries.length) {
+      const bounds = CARD_CENTERS.map(center => [center - 0.065, 0.485, center + 0.065, 0.516]);
+      const passes = [{ zoom: 4, threshold: 130 }, { zoom: 4, threshold: 150 }, { zoom: 4, threshold: 172 }];
+      const offeredSlots = await readLabels(canvas, bounds, entries, isCurrent, passes);
       if (offeredSlots === null) return null;
-      if (offeredSlots.some(Boolean)) evidence.opening.offeredSlots = offeredSlots;
+      const slots = setData.set === 18
+        ? await fillGoldCardSlots(canvas, CARD_CENTERS, offeredSlots, entries, isCurrent)
+        : offeredSlots;
+      if (!isCurrent()) return null;
+      if (slots.some(Boolean)) evidence.opening.offeredSlots = slots;
     }
   }
   return evidence;

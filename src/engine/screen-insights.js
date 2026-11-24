@@ -95,9 +95,15 @@ export function mergeScreenEvidence(...reads) {
   };
 }
 
-export function openingNamesInText(text, { cities, augments }) {
-  const lines = text.split(/\r?\n/).map(labelText);
-  return { cities: visibleMatches(lines, cities), offered: visibleMatches(lines, augments) };
+export function openingNamesInText(text, cities, augments) {
+  const lines = text.split(/\r?\n/);
+  const titles = new Map();
+  for (const { id, name } of augments) {
+    const label = regionLabel(name);
+    titles.set(label, titles.has(label) && titles.get(label) !== id ? null : id);
+  }
+  const offered = [...new Set(lines.map(line => titles.get(regionLabel(line))).filter(Boolean))];
+  return { cities: visibleMatches(lines.map(labelText), cities), offered };
 }
 
 export function stageAfterOpening(stage) {
