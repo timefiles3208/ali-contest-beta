@@ -29,12 +29,53 @@ export function categorize(aug, linkedCount = 0) {
 
 export const CATEGORY_LABEL = { trait: '羁绊', core: '强化', item: '装备', econ: '经济', combat: '战力', other: '通用' };
 
-function citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore }) {
+function economyBenefits(text) {
+  return {
+    grantsXP: /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,14}经验|(?:升级|购买经验)[^。；，！\n]{0,8}(?:更便宜|少花|减少)/.test(text),
+    grantsGold: /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,16}(?:金币|利息)/.test(text),
+    grantsRolls: /(?<!无法|不能|不会|不再)免费(?:的)?(?:商店)?刷新|刷新(?:的)?(?:价格|花费|费用)[^。；，！\n]{0,6}(?:减少|降低)/.test(text),
+  };
+}
+
+function economyFit(economy, comp, reroll, { grantsXP, grantsGold, grantsRolls }) {
+  if (economy === 'low') {
+    if (grantsGold) return { points: 0.17, reason: '经济紧张 · 补金币' };
+    if (grantsRolls) return { points: 0.13, reason: '经济紧张 · 免费刷新可省金币' };
+  }
+  if (economy === 'high' && !reroll && (comp?.level || 0) >= 8 && grantsXP) {
+    return { points: 0.17, reason: `经济充足 · 补经验，支持 ${comp.level} 人口阵容` };
+  }
+  if (reroll && grantsRolls && economy) return { points: 0.12, reason: '目标追低费棋子 · 免费刷新有助于搜牌' };
+  return null;
+}
+
+const normalizeName = value => String(value ?? '').normalize('NFKC').replace(/\s/g, '');
+
+function equipmentContext(comp, itemsData, owned, ownedItems) {
+  const itemRows = [...(itemsData?.items || []), ...(itemsData?.components || [])];
+  const byId = new Map(itemRows.map(item => [item.id, item]));
+  const byName = new Map(itemRows.map(item => [normalizeName(item.name), item.id]));
+  const wanted = new Set(Object.values(comp?.items || {}).flat());
+  const gaps = [];
+  for (const id of wanted) {
+    if (ownedItems.has(id)) continue;
+    const item = byId.get(id);
+    if (!item?.from?.length) continue;
+    const remaining = new Map(owned);
+    const missing = item.from.filter(part => {
+      const count = remaining.get(part) || 0;
+      if (count) remaining.set(part, count - 1);
+      return !count;
+    });
+    if (missing.length === 1 && item.from.length > 1) gaps.push({ missing: missing[0], item: item.name });
+  }
+  return { byId, byName, wanted, gaps };
+}
+
+function citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore, benefits }) {
   if (!city || city.effect === 'neutral') return null;
   const text = aug.desc || '';
-  const grantsXP = /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,14}经验|(?:升级|购买经验)[^。；，！\n]{0,8}(?:更便宜|少花|减少)/.test(text);
-  const grantsGold = /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,16}(?:金币|利息)/.test(text);
-  const grantsRolls = /(?<!无法|不能|不会|不再)免费(?:的)?(?:商店)?刷新|刷新(?:的)?(?:价格|花费|费用)[^。；，！\n]{0,6}(?:减少|降低)/.test(text);
+  const { grantsXP, grantsGold, grantsRolls } = benefits;
   const high = (comp?.level || 0) >= 8;
   switch (city.effect) {
     case 'level':
@@ -61,16 +102,23 @@ function citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore }) {
   }
 }
 
-export function rankAugments({ setData, augments = [], ranked = [], selected, chosen = new Set(), limit = 6, city }) {
+export function rankAugments({
+  setData, augments = [], ranked = [], selected = new Set(), chosen = new Set(), limit = 6, city, economy,
+  itemsData, owned = new Map(), ownedItems = new Set(),
+}) {
   const traitIdByName = new Map((setData.traits || []).map((t) => [t.name, t.id]));
   const top = ranked.find((r) => r.viable) || null;
   const comp = top?.comp;
+  const selectedIds = selected instanceof Set ? selected : new Set(selected);
+  const heldNames = new Set(setData.units.filter(unit => selectedIds.has(unit.id)).map(unit => unit.name));
+  const reroll = comp && ((comp.level || 0) <= 7 || setData.units.some(unit =>
+    comp.stars?.[unit.id] === 3 && unit.cost <= 3 && comp.units.includes(unit.id)));
+  const gear = equipmentContext(comp, itemsData, owned, ownedItems);
   const wantTraits = new Map();
   for (const t of traitBreakdown(setData, selected)) if (t.tier > 0) wantTraits.set(t.id, Math.min(1, 0.45 + t.tier / 12));
   if (comp) for (const id of Object.keys(comp.aimTraits || {})) wantTraits.set(id, 1);
 
-  const missingCore = new Set(top?.detail.coreMissing || []);
-  const wantItems = new Set(comp && comp.items ? Object.values(comp.items).flat() : []);
+  const missingCore = new Set(top?.detail?.coreMissing || []);
 
   const scored = [];
   for (const aug of augments) {
@@ -88,20 +136,29 @@ export function rankAugments({ setData, augments = [], ranked = [], selected, ch
 
     const hitCore = (aug.grantUnits || []).filter((n) => missingCore.has(n));
     const hitAny = (aug.grantUnits || []).length ? [] : (aug.mentionsUnits || []).filter((n) => missingCore.has(n));
-    const hitItems = (aug.grantItems || []).filter((n) => wantItems.has(n));
+    const grants = new Set((aug.grantItems || []).map(value => gear.byName.get(normalizeName(value)) || value));
+    const hitItems = [...grants].filter(id => gear.wanted.has(id) && !ownedItems.has(id));
+    const gap = gear.gaps.find(row => grants.has(row.missing));
+    const heldGrant = (aug.grantUnits || []).find(name => heldNames.has(name));
     const cat = categorize(aug, ids.size);
-    const synergy = citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore });
+    const benefits = economyBenefits(aug.desc || '');
+    const synergy = citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore, benefits });
+    const economic = economyFit(economy, comp, reroll, benefits);
+    const inventoryFit = Math.min(0.32, (economic?.points || 0) + (gap ? 0.17 : 0) + (heldGrant ? 0.11 : 0));
 
     const total = 0.5 * traitScore + 0.3 * Math.min(1, (hitCore.length + hitAny.length) / 2)
-      + 0.18 * Math.min(1, hitItems.length) + cat.prior + (synergy?.points || 0);
+      + 0.18 * Math.min(1, hitItems.length) + cat.prior + (synergy?.points || 0) + inventoryFit;
     const score = Math.min(1, total);
     const reasons = [];
     if (synergy) reasons.push(`${city.name} · ${synergy.reason}`);
+    if (economic) reasons.push(economic.reason);
+    if (heldGrant) reasons.push(`已有 ${heldGrant} · 补牌有助升星`);
+    if (gap) reasons.push(`现有散件可搭配 · 补齐${gap.item}`);
     if (hitTraits.length) reasons.push(`贴${hitTraits[0].name}${comp?.aimTraits?.[hitTraits[0].id] ? `(目标 ${comp.aimTraits[hitTraits[0].id]} 人)` : ''}`);
     if (hitCore.length) reasons.push(`给出缺的核心件：${hitCore.join('/')}`);
     else if (hitAny.length) reasons.push(`提到 ${hitAny.join('/')}`);
-    if (hitItems.length) reasons.push(`给出成装：${hitItems.join('/')}`);
-    if (!reasons.length) reasons.push(`${aug.desc.split('\n')[0].slice(0, 30)}${aug.desc.length > 30 ? '…' : ''}`);
+    if (hitItems.length) reasons.push(`补缺少的成装：${hitItems.map(id => gear.byId.get(id)?.name || id).join('/')}`);
+    if (!reasons.length && aug.desc) reasons.push(`${aug.desc.split('\n')[0].slice(0, 30)}${aug.desc.length > 30 ? '…' : ''}`);
 
     scored.push({ aug, score, total, category: cat.id, reasons });
   }

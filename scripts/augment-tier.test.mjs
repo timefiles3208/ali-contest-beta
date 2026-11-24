@@ -52,3 +52,43 @@ test('only opening color encounters declare their first-round tier', () => {
   assert.equal(tier('黄金终章'), undefined);
   assert.equal(tier('棱彩终局'), undefined);
 });
+
+test('economy distinguishes saving gold, using an early reroll board, and leveling', () => {
+  const xp = { ...goldOther, desc: '获得4经验值。' };
+  const cash = { ...gold, desc: '获得6金币。' };
+  const context = {
+    setData, augments: [xp, cash], ranked: [{ viable: true, comp: { level: 9, units: [], items: {} } }],
+    selected: new Set(), offered: [xp.id, cash.id], tier: 'gold',
+  };
+  const low = rankOpeningAugments({ ...context, economy: 'low' });
+  const high = rankOpeningAugments({ ...context, economy: 'high' });
+  assert.equal(low[0].aug.id, cash.id);
+  assert.match(low[0].reasons.join(' '), /经济紧张.*金币/);
+  assert.equal(high[0].aug.id, xp.id);
+  assert.match(high[0].reasons.join(' '), /经济充足.*人口/);
+});
+
+test('rewards the held core and the exact equipment gap, with no missing-item credit once crafted', () => {
+  const comp = { level: 8, units: ['u'], core: ['u'], items: { u: ['finished'] } };
+  const unit = { id: 'u', name: '核心棋子', cost: 3, traits: [] };
+  const itemsData = { items: [{ id: 'finished', name: '目标成装', from: ['a', 'b'] }],
+    components: [{ id: 'a', name: '辅散件' }, { id: 'b', name: '缺散件' }] };
+  const gear = { ...gold, desc: '获得缺散件。', grantItems: ['缺散件'] };
+  const copies = { ...goldOther, desc: '获得一个核心棋子。', grantUnits: ['核心棋子'] };
+  const giveFinished = { ...gold, desc: '获得目标成装。', grantItems: ['目标成装'] };
+  const context = {
+    setData: { units: [unit], traits: [] }, itemsData,
+    ranked: [{ viable: true, comp, detail: { coreMissing: [] } }],
+    selected: new Set(['u']), owned: new Map([['a', 1]]), ownedItems: new Set(),
+    augments: [gear, copies], offered: [gear.id, copies.id], tier: 'gold',
+  };
+  const result = rankOpeningAugments(context);
+  assert.match(result.find(row => row.aug.id === gear.id).reasons.join(' '), /补齐.*目标成装/);
+  assert.match(result.find(row => row.aug.id === copies.id).reasons.join(' '), /已有.*核心棋子/);
+  const sold = rankOpeningAugments({ ...context, selected: new Set() });
+  assert.doesNotMatch(sold.find(row => row.aug.id === copies.id).reasons.join(' '), /已有.*核心棋子/);
+  const owned = rankOpeningAugments({
+    ...context, augments: [giveFinished], ownedItems: new Set(['finished']),
+  });
+  assert.doesNotMatch(owned[0].reasons.join(' '), /缺.*目标成装/);
+});

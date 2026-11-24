@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=augment-tier" />
+<link rel="stylesheet" href="./styles.css?v=inventory-augments" />
 </head>
 <body>
 <header class="bar">
@@ -46,10 +46,15 @@
     <div class="opening-fields">
       <label>开局城邦 <select id="openingCity"></select></label>
       <label>当前经济
-        <select id="openingEconomy"><option value="">未确认</option><option value="normal">普通</option><option value="high">充足</option></select>
+        <select id="openingEconomy"><option value="">未确认</option><option value="low">紧张</option><option value="normal">普通</option><option value="high">充足</option></select>
       </label>
-      <label>手上成装 <select id="openingItem"></select></label>
-      <button id="openingAddItem" class="ghost" type="button">登记或移除成装</button>
+      <label>持有棋子 <select id="openingUnit"></select></label>
+      <button id="openingToggleUnit" class="ghost" type="button">登记或移除棋子</button>
+      <label>手上装备 <select id="openingItem"></select></label>
+      <div class="opening-item-actions">
+        <button id="openingAddItem" class="ghost" type="button">登记装备</button>
+        <button id="openingRemoveItem" class="ghost" type="button">移除装备</button>
+      </div>
     </div>
     <p id="openingOwned" class="fine" role="status"></p>
     <fieldset id="openingCandidates" hidden></fieldset>
@@ -205,6 +210,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=city-augments"></script>
+<script type="module" src="./src/main.js?v=inventory-augments"></script>
 </body>
 </html>

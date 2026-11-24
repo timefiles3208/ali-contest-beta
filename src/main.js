@@ -3,15 +3,15 @@ import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=ocr-scale';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=city-augments';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=inventory-augments';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=city-augments';
+import { rankOpening } from './engine/opening.js?v=inventory-augments';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
-import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=city-augments';
+import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=planning-tools';
 import { validateComps } from './adapters/provider.js';
@@ -408,6 +408,7 @@ function renderHexes(top) {
     selected: state.selected,
     chosen: state.chosen,
     city: openingContext()?.city,
+    economy: state.economy, itemsData: state.items, owned: state.owned, ownedItems: state.ownedItems,
     limit: 10,
   }).filter((x) => !curatedSet.has(x.aug.id));
 
@@ -727,14 +728,22 @@ function bind() {
   });
   openingAdvice = bindOpeningAdvice({
     dialog: el('openingDialog'), open: el('openingOpen'), city: el('openingCity'), economy: el('openingEconomy'),
-    item: el('openingItem'), addItem: el('openingAddItem'), ownedSummary: el('openingOwned'), candidates: el('openingCandidates'),
+    item: el('openingItem'), addItem: el('openingAddItem'), removeItem: el('openingRemoveItem'),
+    unitSelect: el('openingUnit'), toggleUnit: el('openingToggleUnit'), ownedSummary: el('openingOwned'), candidates: el('openingCandidates'),
     inputs: ['openingHex1', 'openingHex2', 'openingHex3'].map(el), list: el('openingHexList'),
     tier: el('openingHexTier'), tierStatus: el('openingHexTierStatus'),
     direction: el('openingDirection'), picks: el('openingPicks'), getContext: openingContext,
-    onChange({ city, economy, item, unit, selected }) {
+    onChange({ city, economy, item, delta, unit, selected }) {
       if (city != null) state.openingCity = city;
       if (economy != null) state.economy = economy;
-      if (item) state.ownedItems.has(item) ? state.ownedItems.delete(item) : state.ownedItems.add(item);
+      if (item && state.items?.components.some(component => component.id === item)) {
+        const count = Math.max(0, Math.min(4, (state.owned.get(item) || 0) + delta));
+        count ? state.owned.set(item, count) : state.owned.delete(item);
+      } else if (item && delta > 0) {
+        state.ownedItems.add(item);
+      } else if (item) {
+        state.ownedItems.delete(item);
+      }
       if (unit) {
         if (selected) state.selected.add(unit);
         else state.selected.delete(unit);

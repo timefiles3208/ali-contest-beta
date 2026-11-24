@@ -1,7 +1,7 @@
-import { rankOpeningAugments } from '../engine/opening.js?v=city-augments';
+import { rankOpeningAugments } from '../engine/opening.js?v=inventory-augments';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
-export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, getContext, onChange, onPick, onTier }) {
+export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, getContext, onChange, onPick, onTier }) {
   let detectedUnits = [];
   let catalogIdentity;
   let picksKey;
@@ -16,7 +16,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   function reset() {
     if (dialog.open) dialog.close();
     detectedUnits = [];
-    city.value = economy.value = item.value = '';
+    city.value = economy.value = item.value = unitSelect.value = '';
     tier.value = '';
     inputs.forEach(input => { input.value = ''; });
     catalogIdentity = null;
@@ -30,7 +30,11 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     if (catalogIdentity !== setData) {
       catalogIdentity = setData;
       options(city, cities, '未确认');
-      options(item, itemsData?.items || [], '选择成装');
+      options(item, [
+        ...(itemsData?.components || []).map(row => ({ ...row, name: `${row.name} · 散件` })),
+        ...(itemsData?.items || []),
+      ], '选择散件或成装');
+      options(unitSelect, setData.units, '选择棋子');
       listTier = undefined;
     }
     city.value = ctx.city?.id || '';
@@ -56,9 +60,15 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     const effects = cities.find(row => row.id === city.value);
     const weight = ranked.find(row => row.viable);
     const description = effects?.description ? ` · ${effects.description}` : '';
-    const parts = [...owned.values()].reduce((sum, count) => sum + count, 0);
-    const itemNames = [...ownedItems].map(id => itemsData?.items.find(row => row.id === id)?.name).filter(Boolean);
-    ownedSummary.textContent = `已确认 ${selected.size} 名棋子 · ${parts} 件散件${itemNames.length ? ' · ' + itemNames.join('、') : ''}${description}`;
+    const unitNames = setData.units.filter(unit => selected.has(unit.id)).map(unit => unit.name);
+    const parts = (itemsData?.components || []).filter(row => owned.get(row.id))
+      .map(row => `${row.name}×${owned.get(row.id)}`);
+    const itemNames = (itemsData?.items || []).filter(row => ownedItems.has(row.id)).map(row => row.name);
+    ownedSummary.textContent = [
+      unitNames.length ? `棋子 ${unitNames.join('、')}` : '尚未登记棋子',
+      parts.length && `散件 ${parts.join('、')}`,
+      itemNames.length && `成装 ${itemNames.join('、')}`,
+    ].filter(Boolean).join(' · ') + description;
     const legend = document.createElement('legend');
     legend.textContent = '识别到的棋子名，勾选仍在手上的棋子';
     const checks = detectedUnits.map(id => setData.units.find(row => row.id === id)).filter(Boolean).map(({ id, name }) => {
@@ -83,7 +93,10 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       : '选择城邦、确认当前持有的棋子或登记装备。';
     direction.replaceChildren(title, evidence);
 
-    const chosen = rankOpeningAugments({ setData, augments, ranked, selected, offered: available, tier: effective, city: ctx.city });
+    const chosen = rankOpeningAugments({
+      setData, augments, ranked, selected, owned, ownedItems, itemsData,
+      offered: available, tier: effective, city: ctx.city, economy: ctx.economy,
+    });
     const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
     if (nextKey === picksKey) return;
     picksKey = nextKey;
@@ -142,7 +155,11 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   open.onclick = show;
   city.onchange = () => onChange({ city: city.value });
   economy.onchange = () => onChange({ economy: economy.value });
-  addItem.onclick = () => { if (item.value) onChange({ item: item.value }); };
+  addItem.onclick = () => { if (item.value) onChange({ item: item.value, delta: 1 }); };
+  removeItem.onclick = () => { if (item.value) onChange({ item: item.value, delta: -1 }); };
+  toggleUnit.onclick = () => {
+    if (unitSelect.value) onChange({ unit: unitSelect.value, selected: !getContext()?.selected.has(unitSelect.value) });
+  };
   inputs.forEach(input => { input.oninput = draw; });
   tier.onchange = draw;
   return { draw, show, receive, reset };

@@ -308,6 +308,7 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
   padding: 6px 8px;
 }
 #openingAddItem { align-self: end; }
+.opening-item-actions { display: flex; align-self: end; flex-wrap: wrap; gap: 6px; }
 #openingCandidates { border: 1px solid #334155; border-radius: 6px; margin: 10px 0; }
 #openingCandidates label { display: inline-block; margin: 4px 10px 4px 0; }
 #openingDirection { margin: 13px 0; padding: 12px; background: #1e2b36; border-radius: 8px; }
