@@ -93,6 +93,7 @@
           <button id="snapPaste" class="ghost" type="button">从剪贴板导入</button>
           <button id="snapRotate" class="ghost" type="button" disabled>顺时针旋转 90°</button>
           <button id="snapRun" class="primary" disabled>开始识别</button>
+          <button id="snapAi" class="ghost" type="button" disabled>AI 增强识别</button>
           <button id="snapClear" class="ghost" disabled>清空截图</button>
         </div>
         <form class="snap-actions snap-url" id="snapUrlForm">
@@ -101,7 +102,7 @@
           <button id="snapUrlLoad" class="ghost" type="submit">导入链接</button>
         </form>
         <p id="snapStatus" class="snap-status" role="status">正在准备截图工具…</p>
-        <p class="fine">请用原始截图，或裁出商店、羁绊栏等含清晰名称的区域。识别出的棋子名需核对后应用到推荐。</p>
+        <p class="fine">请用原始截图，或裁出商店、羁绊栏等含清晰名称的区域。识别出的棋子名需核对后应用到推荐。AI 增强首次会加载模型，截图在浏览器内处理。</p>
         <details class="snap-model">
           <summary>识别单个棋子或装备图标</summary>
           <div class="plan-controls">
@@ -210,6 +211,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=video-ocr"></script>
+<script type="module" src="./src/main.js?v=paddle-ocr"></script>
 </body>
 </html>

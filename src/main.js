@@ -16,7 +16,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=video-ocr';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=paddle-ocr';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -572,6 +572,7 @@ function renderSnapshot() {
   thumb.classList.toggle('sideways', snap.rotation % 180 !== 0);
   const locked = snap.busy || snap.importing;
   el('snapRun').disabled = !snap.file || !state.setData?.units.length || locked;
+  el('snapAi').disabled = el('snapRun').disabled;
   el('snapClear').disabled = !snap.file || locked;
   el('snapRotate').disabled = !snap.file || locked;
   el('snapPaste').disabled = locked;
@@ -584,7 +585,7 @@ function renderSnapshot() {
     status.textContent = '正在读取图片…';
   } else if (snap.busy) {
     status.className = 'snap-status wait';
-    status.textContent = '正在读取截图上的文字…';
+    status.textContent = snap.enhancing ? '正在加载或运行 PaddleOCR，本次识别在浏览器内完成…' : '正在读取截图上的文字…';
   } else if (snap.error) {
     status.className = 'snap-status bad';
     status.textContent = snap.error.message;
@@ -602,11 +603,13 @@ function renderSnapshot() {
     status.textContent = snap.mapped ? '已导入一张截图。' : '未导入截图 — 直接手选棋子也能出完整推荐。';
   }
 
+  if (!locked && snap.ai === 'fallback') status.textContent += ' PaddleOCR 未能运行，已使用常规识别。';
+
   const box = el('snapResult');
   const m = snap.mapped;
   if (!m) { box.innerHTML = ''; return; }
   const head = [
-    '本地文字识别',
+    snap.ai === 'used' ? 'PaddleOCR 本地增强' : '本地文字识别',
     m.level ? `人口 ${m.level}` : null,
     m.gold != null ? `金币 ${m.gold}` : null,
     m.hp != null ? `血量 ${m.hp}` : null,
@@ -646,6 +649,7 @@ async function importSnapshot(read) {
   if (snap.busy || snap.importing) return;
   snap.importing = true;
   snap.error = null;
+  snap.ai = null;
   renderSnapshot();
   let thumb;
   try {
@@ -705,12 +709,14 @@ function applySnapshot() {
   renderSnapshot();
 }
 
-async function runRecognize() {
+async function runRecognize(enhanced = false) {
   if (loadingSet || !state.snap.file || state.snap.busy || state.snap.importing || !state.setData?.units.length) return;
   const set = state.meta;
   const generation = boardLoad;
   const current = () => state.meta === set && generation === boardLoad;
   state.snap.busy = true;
+  state.snap.enhancing = enhanced;
+  state.snap.ai = null;
   state.snap.error = null;
   state.snap.mapped = null;
   state.snap.applied = false;
@@ -719,8 +725,9 @@ async function runRecognize() {
     const ctx = openingContext();
     const result = await recognizeSnapshot(state.snap.file, state.snap.rotation, state.setData, current, {
       cities: ctx.cities, augments: ctx.augments,
-    });
+    }, enhanced);
     if (!result || !current()) return;
+    state.snap.ai = result.ai;
     if (!result.stage && !result.candidates.length && !result.traits.length) {
       state.snap.error = { message: '没有读到当前赛季的棋子名或羁绊名。请核对游戏与赛季，并使用原始截图或裁出名称较清晰的区域。' };
       return;
@@ -746,6 +753,7 @@ function clearSnapshot() {
   state.snap.rotation = 0;
   state.snap.thumb = '';
   state.snap.error = null;
+  state.snap.ai = null;
   state.snap.mapped = null;
   state.snap.applied = false;
   el('snapFile').value = '';
@@ -944,7 +952,8 @@ function bind() {
     Object.assign(state.snap, { mapped: null, applied: false, error: null });
     renderSnapshot();
   };
-  el('snapRun').onclick = runRecognize;
+  el('snapRun').onclick = () => runRecognize();
+  el('snapAi').onclick = () => runRecognize(true);
   el('snapClear').onclick = clearSnapshot;
   const drop = el('snapDrop');
   ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));

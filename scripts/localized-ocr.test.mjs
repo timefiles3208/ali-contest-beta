@@ -1,3 +1,4 @@
+import { mergeNeuralEvidence } from '../src/adapters/paddle-ocr.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { matchRegionLabel, screenEvidence, hasMatchFrame, openingNamesInText } from '../src/engine/screen-insights.js';
@@ -43,4 +44,32 @@ test('opening OCR only accepts complete, unambiguous card titles', () => {
     { cities: ['city'], offered: ['invest', 'ticket'] });
   assert.deepEqual(openingNamesInText('Prismatic Ticket+', [], augments).offered, ['ticketVariant']);
   assert.deepEqual(openingNamesInText('Prismatic Ticket', [], [...augments, { id: 'duplicate', name: 'Prismatic Ticket' }]).offered, []);
+});
+
+
+test('AI screenshot text adds validated candidates and keeps the original stage and occupied slots', () => {
+  const board = { set: 18, units: [{ id: 'DA_18_Ornn', name: '奥恩' }], traits: [{ id: 'wood', name: '永恒之森' }] };
+  const opening = { cities: [], augments: [
+    { id: 'DA_PrismaticTicket', name: '棱彩门票' }, { id: 'DA_GoldenGamble', name: '黄金赌约' },
+  ] };
+  const line = (text, x, y, score = 0.95) => ({ text, score, poly: [[x - 15, y - 4], [x + 15, y - 4], [x + 15, y + 4], [x - 15, y + 4]] });
+  const result = mergeNeuralEvidence(
+    { stage: '2-1', matchFrame: true, units: [], traits: [], opening: { cities: [], offered: [], offeredSlots: ['confirmed', null, null] } },
+    [line('2-6', 400, 12), line('Ornn', 500, 740), line('推荐：奥恩', 500, 130), line('永恒之森', 120, 250),
+      line('黄金赌约', 287, 400), line('Prismatic Ticket', 501, 400), line('黄金赌约', 714, 400, 0.4)],
+    { width: 1000, height: 800 }, board, opening,
+  );
+  assert.equal(result.stage, '2-1');
+  assert.deepEqual(result.units, ['DA_18_Ornn']);
+  assert.deepEqual(result.traits, ['wood']);
+  assert.deepEqual(result.opening.offeredSlots, ['confirmed', 'DA_PrismaticTicket', null]);
+});
+
+test('a stage mentioned in a guide does not authorize applying AI results as a match', () => {
+  const board = { set: 18, units: [], traits: [] };
+  const result = mergeNeuralEvidence({ stage: null, matchFrame: false, units: [], traits: [] },
+    [{ text: '2-1', score: 0.99, poly: [[390, 6], [413, 6], [413, 24], [390, 24]] }],
+    { width: 1000, height: 800 }, board);
+  assert.equal(result.stage, '2-1');
+  assert.equal(result.matchFrame, false);
 });

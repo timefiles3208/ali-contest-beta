@@ -1,3 +1,4 @@
+import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=1';
 import { recognizeBoardText } from './local-ocr.js?v=video-ocr';
 
 export class SnapshotError extends Error {
@@ -113,7 +114,7 @@ export function snapshotFromEvidence(evidence, setData) {
   };
 }
 
-export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening) {
+export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening, enhanced = false) {
   const img = await loadImage(await readAsDataUrl(file));
   const scale = Math.min(1, 2160 / Math.max(img.naturalWidth, img.naturalHeight));
   const width = Math.max(1, Math.round(img.naturalWidth * scale));
@@ -128,8 +129,18 @@ export async function recognizeSnapshot(file, rotation, setData, isCurrent, open
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(rotation * Math.PI / 180);
   ctx.drawImage(img, -width / 2, -height / 2, width, height);
-  const evidence = await recognizeBoardText(canvas, setData, isCurrent, { detailed: true, opening });
-  return evidence === null ? null : { ...snapshotFromEvidence(evidence, setData), opening: evidence.opening };
+  const standard = recognizeBoardText(canvas, setData, isCurrent, { detailed: true, opening });
+  if (!enhanced) {
+    const evidence = await standard;
+    return evidence === null ? null : { ...snapshotFromEvidence(evidence, setData), opening: evidence.opening };
+  }
+  const [regular, neural] = await Promise.allSettled([standard, readNeuralText(canvas)]);
+  if (!isCurrent() || (regular.status === 'fulfilled' && regular.value === null)) return null;
+  const items = neural.status === 'fulfilled' ? neural.value : null;
+  if (!items && regular.status === 'rejected') throw regular.reason;
+  const base = regular.value ?? { stage: null, matchFrame: false, units: [], traits: [] };
+  const evidence = items ? mergeNeuralEvidence(base, items, canvas, setData, opening) : base;
+  return { ...snapshotFromEvidence(evidence, setData), opening: evidence.opening, ai: items ? 'used' : 'fallback' };
 }
 
 const norm = (s) => String(s ?? '').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
