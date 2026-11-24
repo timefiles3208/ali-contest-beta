@@ -2,7 +2,7 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=video-ocr';
+import { bindScreenReader } from './ui/screen-reader.js?v=opening-latency';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=inventory-augments';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
@@ -16,7 +16,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=paddle-ocr';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=opening-latency';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -603,7 +603,10 @@ function renderSnapshot() {
     status.textContent = snap.mapped ? '已导入一张截图。' : '未导入截图 — 直接手选棋子也能出完整推荐。';
   }
 
-  if (!locked && snap.ai === 'fallback') status.textContent += ' PaddleOCR 未能运行，已使用常规识别。';
+  if (!locked && snap.mapped && snap.timedOut) status.textContent += ' 已到等待上限，显示当前可用结果。';
+  if (!locked && snap.ai === 'fallback' && !snap.timedOut && !snap.error) {
+    status.textContent += ' PaddleOCR 未能运行，已使用常规识别。';
+  }
 
   const box = el('snapResult');
   const m = snap.mapped;
@@ -728,8 +731,11 @@ async function runRecognize(enhanced = false) {
     }, enhanced);
     if (!result || !current()) return;
     state.snap.ai = result.ai;
+    state.snap.timedOut = result.timedOut;
     if (!result.stage && !result.candidates.length && !result.traits.length) {
-      state.snap.error = { message: '没有读到当前赛季的棋子名或羁绊名。请核对游戏与赛季，并使用原始截图或裁出名称较清晰的区域。' };
+      state.snap.error = { message: result.timedOut
+        ? '识别已到等待上限，可直接核对已登记的棋子和装备，或裁出商店和羁绊区域重试。'
+        : '没有读到当前赛季的棋子名或羁绊名。请核对游戏与赛季，并使用原始截图或裁出名称较清晰的区域。' };
       return;
     }
     state.snap.mapped = matchSnapshot(result, { setData: state.setData, itemsData: state.items });

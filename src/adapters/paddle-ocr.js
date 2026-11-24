@@ -18,9 +18,10 @@ function loadModel() {
   return model;
 }
 
-export async function readNeuralText(canvas) {
+export async function readNeuralText(canvas, isCurrent = () => true) {
   if (active) return null;
   const job = loadModel().then(async ocr => {
+    if (!isCurrent()) return null;
     const [result] = await ocr.predict(canvas, { textRecScoreThresh: 0.65, textDetLimitSideLen: 1280 });
     return result?.items ?? [];
   }).catch(() => null).finally(() => { active = undefined; });

@@ -65,13 +65,13 @@ function closest(shape, refs) {
     ? best.id : null;
 }
 
-export async function fillGoldCardSlots(canvas, centers, slots, entries, isCurrent) {
+export async function fillGoldCardSlots(canvas, centers, slots, entries, isCurrent, heightScale = 1) {
   if (slots.every(Boolean) || slots.some(id => id && augmentTier(id) !== 'gold')) return slots;
   const ctx = canvas.getContext('2d');
   const { width, height } = canvas;
   const shapes = centers.map((center, i) => slots[i] ? null : goldShape(ctx.getImageData(
-    Math.round(width * (center - 0.05)), Math.round(height * 0.312),
-    Math.round(width * 0.1), Math.round(height * 0.145),
+    Math.round(width * (center - 0.05)), Math.round(height * 0.312 * heightScale),
+    Math.round(width * 0.1), Math.round(height * 0.145 * heightScale),
   )));
   if (shapes.filter(Boolean).length + slots.filter(Boolean).length < 2) return slots;
 

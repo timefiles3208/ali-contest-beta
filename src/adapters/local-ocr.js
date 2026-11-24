@@ -1,5 +1,6 @@
-import { fillGoldCardSlots } from './augment-icon-ocr.js';
-import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=video-ocr';
+import { contentFrame } from './game-frame.js';
+import { fillGoldCardSlots } from './augment-icon-ocr.js?v=layout';
+import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 const DESKTOP_STAGE = [0.398, 0.002, 0.420, 0.025];
@@ -37,8 +38,7 @@ async function loadWorker() {
 function readOcr(canvas, isCurrent, mode = '11', whitelist = '') {
   const job = queue.then(async () => {
     if (!isCurrent()) return null;
-    worker ||= loadWorker().catch(error => { worker = null; throw error; });
-    const engine = await worker;
+    const engine = await warmOpeningOcr();
     if (!isCurrent()) return null;
     await engine.setParameters({ tessedit_pageseg_mode: mode, tessedit_char_whitelist: whitelist });
     if (!isCurrent()) return null;
@@ -103,35 +103,102 @@ async function readDimStage(canvas, setData, isCurrent) {
   return null;
 }
 
-export async function recognizeBoardText(canvas, setData, isCurrent = () => true, { detailed = false, opening, readCards = true } = {}) {
-  const text = await readOcr(canvas, isCurrent);
+export function warmOpeningOcr() {
+  worker ||= loadWorker().catch(error => { worker = null; throw error; });
+  return worker;
+}
+
+async function readHudStage(canvas, setData, isCurrent) {
+  for (const threshold of [70, 42, 145]) {
+    const area = cropForOcr(canvas, DESKTOP_STAGE, { zoom: 6, threshold });
+    const text = await readOcr(area, isCurrent, '7', '0123456789-');
+    if (text === null || !isCurrent()) return null;
+    const stage = screenEvidence(text, setData).stage;
+    if (stage) return stage;
+  }
+  return null;
+}
+
+function scaledForText(canvas, maxWidth = 1440) {
+  if (canvas.width <= maxWidth) return canvas;
+  const scaled = document.createElement('canvas');
+  scaled.width = maxWidth;
+  scaled.height = Math.max(1, Math.round(canvas.height * maxWidth / canvas.width));
+  scaled.getContext('2d').drawImage(canvas, 0, 0, scaled.width, scaled.height);
+  return scaled;
+}
+async function openingSlots(canvas, setData, entries, isCurrent) {
+  // A shared viewer may clip a 16:9 surface or letterbox it into a taller window.
+  const scale = (canvas.width * 9 / 16) / canvas.height;
+  const layouts = [1, scale, 0.94, 1.06]
+    .filter((value, i, all) => value >= 0.88 && value <= 1.13 && all.findIndex(other => Math.abs(other - value) < 0.02) === i);
+  let best = [];
+  for (const heightScale of layouts) {
+    const bounds = CARD_CENTERS.map(center => [center - 0.065, 0.485 * heightScale, center + 0.065, 0.516 * heightScale]);
+    const passes = heightScale === 1 ? [130, 150, 172] : [130, 150];
+    let slots = await readLabels(canvas, bounds, entries, isCurrent, passes.map(threshold => ({ zoom: 4, threshold })));
+    if (!slots) return null;
+    if (setData.set === 18) slots = await fillGoldCardSlots(canvas, CARD_CENTERS, slots, entries, isCurrent, heightScale);
+    if (!isCurrent()) return null;
+    const matches = slots.filter(Boolean);
+    if (new Set(matches).size !== matches.length) continue;
+    if (matches.length > best.filter(Boolean).length) best = slots;
+    if (matches.length === 3) break;
+  }
+  return best;
+}
+export async function recognizeBoardText(canvas, setData, isCurrent = () => true, {
+  detailed = false, opening, readCards = true, fastOpening = false, onStage, onProgress,
+} = {}) {
+  if (fastOpening) canvas = contentFrame(canvas);
+  const landscape = canvas.width >= canvas.height;
+  const ratio = canvas.width / canvas.height;
+  const desktop = ratio >= 1.65 && ratio <= 1.95;
+  const canReadCards = ratio >= 1.52 && ratio <= 2.12;
+  const hint = (fastOpening || detailed) && canReadCards ? await readHudStage(canvas, setData, isCurrent) : null;
+  if (!isCurrent()) return null;
+  let slots;
+  if (hint && fastOpening) {
+    onStage?.(hint);
+    const evidence = { stage: hint, units: [], traits: [], matchFrame: true };
+    if (stageAfterOpening(hint) || (hint === '2-1' && !readCards)) return evidence;
+    if (hint === '2-1' && opening && readCards) {
+      slots = await openingSlots(canvas, setData, entriesForOcr(opening.augments, setData.set), isCurrent);
+      if (!slots || !isCurrent()) return null;
+      if (slots.every(Boolean) && slots.length === 3) {
+        return { ...evidence, opening: { cities: [], offered: [], offeredSlots: slots } };
+      }
+    }
+  }
+  let earlyShop;
+  if (detailed && desktop && hint && hint !== '2-1') {
+    onProgress?.({ stage: hint, matchFrame: true, units: [], traits: [] });
+    earlyShop = await readLabels(canvas, SHOP_LABELS, entriesForOcr(setData.units, setData.set), isCurrent, [{ threshold: 200 }]);
+    if (!earlyShop || !isCurrent()) return null;
+    earlyShop = earlyShop.filter(Boolean);
+    onProgress?.({ stage: hint, matchFrame: true, units: earlyShop, traits: [] });
+  }
+  const textCanvas = detailed ? scaledForText(canvas) : canvas;
+  const text = await readOcr(textCanvas, isCurrent);
   if (text === null || !isCurrent()) return null;
   const initial = screenEvidence(text, setData);
   const reads = [initial];
   const fullText = [text];
-  const landscape = canvas.width >= canvas.height;
-  const ratio = canvas.width / canvas.height;
-  const desktop = ratio >= 1.65 && ratio <= 1.95;
+  if (hint) reads.push({ stage: hint, units: earlyShop || [], traits: [] });
 
-  if (detailed) {
+  if (detailed && (!earlyShop || earlyShop.length < 2)) {
     // Sparse text finds scattered labels. Block mode also finds short Chinese
     // names in rows that sparse mode can fragment into unrelated glyphs.
-    const block = await readOcr(canvas, isCurrent, '6');
+    const block = await readOcr(textCanvas, isCurrent, '6');
     if (block === null || !isCurrent()) return null;
     fullText.push(block);
     reads.push(screenEvidence(block, setData));
   }
   let combined = mergeScreenEvidence(...reads);
   if (desktop && !reads.some(read => read.stage)) {
-    for (const threshold of [145, 70, 42]) {
-      const area = cropForOcr(canvas, DESKTOP_STAGE, { zoom: 6, threshold });
-      const hud = await readOcr(area, isCurrent, '7', '0123456789-');
-      if (hud === null || !isCurrent()) return null;
-      const stage = screenEvidence(hud, setData).stage;
-      if (!stage) continue;
-      reads.push({ stage, units: [], traits: [] });
-      break;
-    }
+    const stage = await readHudStage(canvas, setData, isCurrent);
+    if (!isCurrent()) return null;
+    if (stage) reads.push({ stage, units: [], traits: [] });
   }
   if (desktop && !reads.some(read => read.stage)) {
     const stage = await readDimStage(canvas, setData, isCurrent);
@@ -144,6 +211,10 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     if (hud === null || !isCurrent()) return null;
     reads.push({ stage: screenEvidence(hud, setData, { hud: true }).stage, units: [], traits: [] });
   }
+  if (onProgress) {
+    const evidence = mergeScreenEvidence(...reads);
+    onProgress({ ...evidence, matchFrame: landscape && hasMatchFrame(evidence.stage, text) });
+  }
   if (detailed && combined.traits.length === 0) {
     const area = cropForOcr(canvas, [0, 0.09, 0.42, 0.78]);
     const side = await readOcr(area, isCurrent, '6');
@@ -152,7 +223,7 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     reads.push({ stage: null, units, traits });
     combined = mergeScreenEvidence(...reads);
   }
-  if (detailed && combined.units.length < 2) {
+  if (detailed && (combined.units.length < 2 || (earlyShop && earlyShop.length < 4))) {
     const area = cropForOcr(canvas, [0, 0.66, 1, 1]);
     const shop = await readOcr(area, isCurrent);
     if (shop === null || !isCurrent()) return null;
@@ -165,7 +236,7 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     reads.push({ stage: null, units: [], traits: screenEvidence(side, setData).traits });
   }
   const stage = mergeScreenEvidence(...reads).stage;
-  if (detailed && desktop && stage && stage !== '2-1' &&
+  if (detailed && !earlyShop && desktop && stage && stage !== '2-1' &&
     (combined.units.length > 0 || /刷新|购买经验值/.test(fullText.join('')))) {
     const shop = await readLabels(canvas, SHOP_LABELS, entriesForOcr(setData.units, setData.set), isCurrent, [{ threshold: 200 }]);
     if (shop === null) return null;
@@ -179,19 +250,14 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     reads.push({ stage: null, units: shop.filter(Boolean), traits: [] });
   }
   const evidence = mergeScreenEvidence(...reads);
+  if ((!hint || !fastOpening) && evidence.stage) onStage?.(evidence.stage);
   evidence.matchFrame = landscape && hasMatchFrame(evidence.stage, fullText.join('\n'));
   if (opening) {
     const entries = entriesForOcr(opening.augments, setData.set);
     evidence.opening = openingNamesInText(fullText.join('\n'), opening.cities, evidence.stage === '2-1' && readCards ? entries : []);
-    if (desktop && readCards && evidence.stage === '2-1' && entries.length) {
-      const bounds = CARD_CENTERS.map(center => [center - 0.065, 0.485, center + 0.065, 0.516]);
-      const passes = [{ zoom: 4, threshold: 130 }, { zoom: 4, threshold: 150 }, { zoom: 4, threshold: 172 }];
-      const offeredSlots = await readLabels(canvas, bounds, entries, isCurrent, passes);
-      if (offeredSlots === null) return null;
-      const slots = setData.set === 18
-        ? await fillGoldCardSlots(canvas, CARD_CENTERS, offeredSlots, entries, isCurrent)
-        : offeredSlots;
-      if (!isCurrent()) return null;
+    if (canReadCards && readCards && evidence.stage === '2-1' && entries.length) {
+      slots ??= await openingSlots(canvas, setData, entries, isCurrent);
+      if (!slots || !isCurrent()) return null;
       if (slots.some(Boolean)) evidence.opening.offeredSlots = slots;
     }
   }

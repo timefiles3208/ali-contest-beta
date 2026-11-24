@@ -1,5 +1,6 @@
-import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=1';
-import { recognizeBoardText } from './local-ocr.js?v=video-ocr';
+import { withinRecognitionBudget } from '../engine/recognition-budget.js';
+import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=2';
+import { recognizeBoardText } from './local-ocr.js?v=opening-latency';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
@@ -115,6 +116,35 @@ export function snapshotFromEvidence(evidence, setData) {
 }
 
 export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening, enhanced = false) {
+  let base, items, size;
+  const timed = await withinRecognitionBudget(async (current) => {
+    const active = () => isCurrent() && current();
+    const canvas = await snapshotCanvas(file, rotation);
+    if (!active()) return;
+    size = canvas;
+    const standard = recognizeBoardText(canvas, setData, active, {
+      detailed: true, opening,
+      onProgress(evidence) { if (active()) base = evidence; },
+    }).then(evidence => {
+      if (active()) base = evidence;
+    });
+    if (!enhanced) return standard;
+    const neural = readNeuralText(canvas, active).then(rows => {
+      if (active()) items = rows;
+    });
+    const [regular] = await Promise.allSettled([standard, neural]);
+    if (regular.status === 'rejected' && !items) throw regular.reason;
+  }, enhanced ? 16_000 : undefined);
+  if (!isCurrent() || (!timed.timedOut && base === null)) return null;
+  const empty = { stage: null, matchFrame: false, units: [], traits: [] };
+  const evidence = items ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : base || empty;
+  return {
+    ...snapshotFromEvidence(evidence, setData), opening: evidence.opening,
+    ai: enhanced ? (items ? 'used' : 'fallback') : null, timedOut: timed.timedOut,
+  };
+}
+
+async function snapshotCanvas(file, rotation) {
   const img = await loadImage(await readAsDataUrl(file));
   const scale = Math.min(1, 2160 / Math.max(img.naturalWidth, img.naturalHeight));
   const width = Math.max(1, Math.round(img.naturalWidth * scale));
@@ -129,18 +159,7 @@ export async function recognizeSnapshot(file, rotation, setData, isCurrent, open
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(rotation * Math.PI / 180);
   ctx.drawImage(img, -width / 2, -height / 2, width, height);
-  const standard = recognizeBoardText(canvas, setData, isCurrent, { detailed: true, opening });
-  if (!enhanced) {
-    const evidence = await standard;
-    return evidence === null ? null : { ...snapshotFromEvidence(evidence, setData), opening: evidence.opening };
-  }
-  const [regular, neural] = await Promise.allSettled([standard, readNeuralText(canvas)]);
-  if (!isCurrent() || (regular.status === 'fulfilled' && regular.value === null)) return null;
-  const items = neural.status === 'fulfilled' ? neural.value : null;
-  if (!items && regular.status === 'rejected') throw regular.reason;
-  const base = regular.value ?? { stage: null, matchFrame: false, units: [], traits: [] };
-  const evidence = items ? mergeNeuralEvidence(base, items, canvas, setData, opening) : base;
-  return { ...snapshotFromEvidence(evidence, setData), opening: evidence.opening, ai: items ? 'used' : 'fallback' };
+  return canvas;
 }
 
 const norm = (s) => String(s ?? '').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
