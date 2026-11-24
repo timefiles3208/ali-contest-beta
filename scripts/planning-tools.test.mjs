@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildCompGuide, filterCompPlans } from '../src/engine/comp-guide.js';
-import { matchIconSignature } from '../src/adapters/icon-match.js';
+import { matchAlignedIconSignature, matchIconSignature } from '../src/adapters/icon-match.js';
 
 test('planning filters require an activated trait tier and cap finished level', () => {
   const a = { comp: { id: 'a', level: 7, aimTraits: { t: 4 } } };
@@ -29,4 +29,14 @@ test('icon matching rejects unrelated and ambiguous signatures', () => {
   assert.deepEqual(matchIconSignature(icon, samples).map(row => row.id), ['a']);
   assert.deepEqual(matchIconSignature(icon, [...samples, { id: 'c', signature: icon }]), []);
   assert.deepEqual(matchIconSignature(new Uint8Array(6).fill(115), samples), []);
+});
+
+test('aligned matching recovers an offset tile and rejects a flat crop', () => {
+  const side = 12;
+  const ref = Uint8Array.from({ length: side * side * 3 }, (_, i) => (i * 73 + Math.floor(i / 17) * 21) % 256);
+  const shifted = new Uint8Array(ref.length);
+  for (let y = 0; y < side; y++) shifted.set(ref.slice((y * side + 3) * 3, (y + 1) * side * 3), y * side * 3);
+  const matches = [{ id: 'ref', signature: ref }, { id: 'other', signature: ref.map(value => 255 - value) }];
+  assert.equal(matchAlignedIconSignature(shifted, matches)?.id, 'ref');
+  assert.equal(matchAlignedIconSignature(new Uint8Array(ref.length).fill(30), matches), null);
 });

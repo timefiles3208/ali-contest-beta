@@ -1,11 +1,13 @@
-import { matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=hud-regions';
+import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=ocr-scale';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 const DESKTOP_STAGE = [0.398, 0.0037, 0.423, 0.0278];
+const DIM_STAGE = [0.398, 0.004, 0.419, 0.025];
 const DESKTOP_TRAITS = [0.068, 0.242, 0.137, 0.63];
 const COMPACT_TRAITS = [0.095, 0.089, 0.22, 0.51];
 const CARD_TITLES = [0.26, 0.474, 0.688].map(left => [left, 0.487, left + 0.055, 0.516]);
 const SHOP_LABELS = [0.291, 0.396, 0.501, 0.606, 0.711].map(left => [left, 0.969, left + 0.038, 0.991]);
+const MOBILE_SHOP_LABELS = [0.165, 0.327, 0.492, 0.655].map(left => [left, 0.415, left + 0.043, 0.449]);
 let worker;
 let queue = Promise.resolve();
 
@@ -31,13 +33,13 @@ async function loadWorker() {
   return worker;
 }
 
-function readOcr(canvas, isCurrent, mode = '11') {
+function readOcr(canvas, isCurrent, mode = '11', whitelist = '') {
   const job = queue.then(async () => {
     if (!isCurrent()) return null;
     worker ||= loadWorker().catch(error => { worker = null; throw error; });
     const engine = await worker;
     if (!isCurrent()) return null;
-    await engine.setParameters({ tessedit_pageseg_mode: mode });
+    await engine.setParameters({ tessedit_pageseg_mode: mode, tessedit_char_whitelist: whitelist });
     if (!isCurrent()) return null;
     const { data } = await engine.recognize(canvas);
     return data.text;
@@ -46,19 +48,20 @@ function readOcr(canvas, isCurrent, mode = '11') {
   return job;
 }
 
-function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0, contrast = true } = {}) {
-  const w = Math.max(1, Math.round(image.width * (right - left)));
-  const h = Math.max(1, Math.round(image.height * (bottom - top)));
+function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0, contrast = true, fixed = false } = {}) {
+  const pixel = fixed ? v => v : Math.round;
+  const w = Math.max(1, pixel(image.width * (right - left)));
+  const h = Math.max(1, pixel(image.height * (bottom - top)));
   const scale = Math.min(zoom, 1800 / Math.max(w, h));
   const crop = document.createElement('canvas');
-  const border = 12;
-  crop.width = Math.round(w * scale) + border * 2;
-  crop.height = Math.round(h * scale) + border * 2;
+  const border = fixed ? 16 : 12;
+  crop.width = (fixed ? 260 : Math.round(w * scale)) + border * 2;
+  crop.height = (fixed ? Math.max(70, Math.round(260 * h / w)) : Math.round(h * scale)) + border * 2;
   const ctx = crop.getContext('2d');
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, crop.width, crop.height);
   if (contrast && !threshold) ctx.filter = 'grayscale(1) contrast(1.35)';
-  ctx.drawImage(image, Math.round(image.width * left), Math.round(image.height * top), w, h,
+  ctx.drawImage(image, pixel(image.width * left), pixel(image.height * top), w, h,
     border, border, crop.width - border * 2, crop.height - border * 2);
   if (threshold) {
     const pixels = ctx.getImageData(border, border, crop.width - border * 2, crop.height - border * 2);
@@ -72,15 +75,31 @@ function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0
   return crop;
 }
 
-async function readLabels(canvas, regions, entries, isCurrent, threshold) {
+async function readLabels(canvas, regions, entries, isCurrent, passes) {
   const ids = [];
   for (const bounds of regions) {
-    const area = cropForOcr(canvas, bounds, { zoom: 5, threshold });
-    const text = await readOcr(area, isCurrent, '7');
-    if (text === null || !isCurrent()) return null;
-    ids.push(matchRegionLabel(text, entries));
+    let id = null;
+    for (const pass of passes) {
+      const area = cropForOcr(canvas, bounds, { zoom: 5, ...pass });
+      const text = await readOcr(area, isCurrent, '7');
+      if (text === null || !isCurrent()) return null;
+      id = matchRegionLabel(text, entries);
+      if (id) break;
+    }
+    ids.push(id);
   }
   return ids;
+}
+
+async function readDimStage(canvas, setData, isCurrent) {
+  for (const threshold of [0, 45]) {
+    const area = cropForOcr(canvas, DIM_STAGE, { fixed: true, contrast: false, threshold });
+    const text = await readOcr(area, isCurrent, '13', '0123456789-');
+    if (text === null || !isCurrent()) return null;
+    const stage = screenEvidence(text, setData).stage;
+    if (stage) return stage;
+  }
+  return null;
 }
 
 export async function recognizeBoardText(canvas, setData, isCurrent = () => true, { detailed = false, opening, readCards = true } = {}) {
@@ -107,6 +126,11 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     const hud = await readOcr(area, isCurrent, '7');
     if (hud === null || !isCurrent()) return null;
     reads.push({ stage: screenEvidence(hud, setData).stage, units: [], traits: [] });
+  }
+  if (desktop && !reads.some(read => read.stage)) {
+    const stage = await readDimStage(canvas, setData, isCurrent);
+    if (!isCurrent()) return null;
+    reads.push({ stage, units: [], traits: [] });
   }
   if (!reads.some(read => read.stage)) {
     const area = cropForOcr(canvas, landscape ? [0.10, 0, 0.92, 0.20] : [0, 0, 1, 0.24]);
@@ -137,15 +161,26 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   const stage = mergeScreenEvidence(...reads).stage;
   if (detailed && desktop && stage && stage !== '2-1' &&
     (combined.units.length > 0 || /刷新|购买经验值/.test(fullText.join('')))) {
-    const shop = await readLabels(canvas, SHOP_LABELS, setData.units, isCurrent, 200);
+    const shop = await readLabels(canvas, SHOP_LABELS, entriesForOcr(setData.units, setData.set), isCurrent, [{ threshold: 200 }]);
+    if (shop === null) return null;
+    reads.push({ stage: null, units: shop.filter(Boolean), traits: [] });
+  }
+  if (detailed && ratio >= 2 && ratio <= 2.35 && stage && stage !== '2-1') {
+    const regions = entriesForOcr(setData.units, setData.set);
+    const shop = await readLabels(canvas, MOBILE_SHOP_LABELS, regions, isCurrent,
+      [{ threshold: 125 }, { threshold: 195 }]);
     if (shop === null) return null;
     reads.push({ stage: null, units: shop.filter(Boolean), traits: [] });
   }
   const evidence = mergeScreenEvidence(...reads);
+  evidence.matchFrame = landscape && hasMatchFrame(evidence.stage, fullText.join('\n'));
   if (opening) {
     evidence.opening = openingNamesInText(fullText.join('\n'), opening);
     if (desktop && readCards && evidence.stage === '2-1' && opening.augments.length) {
-      const offeredSlots = await readLabels(canvas, CARD_TITLES, opening.augments, isCurrent, 145);
+      const passes = canvas.width < 1500
+        ? [{ fixed: true, threshold: 130 }, { fixed: true, threshold: 145 }, { fixed: true, contrast: false }]
+        : [{ threshold: 145 }, { fixed: true, threshold: 130 }];
+      const offeredSlots = await readLabels(canvas, CARD_TITLES, entriesForOcr(opening.augments, setData.set), isCurrent, passes);
       if (offeredSlots === null) return null;
       if (offeredSlots.some(Boolean)) evidence.opening.offeredSlots = offeredSlots;
     }

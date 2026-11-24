@@ -1,4 +1,4 @@
-import { recognizeBoardText } from './local-ocr.js?v=hud-regions';
+import { recognizeBoardText } from './local-ocr.js?v=ocr-scale';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
@@ -107,6 +107,7 @@ export function snapshotFromEvidence(evidence, setData) {
   const names = (entries, ids) => entries.filter(({ id }) => ids.includes(id)).map(({ name }) => ({ name }));
   return {
     stage: evidence.stage,
+    matchFrame: evidence.matchFrame,
     candidates: names(setData.units, evidence.units),
     traits: names(setData.traits || [], evidence.traits),
   };
@@ -204,6 +205,7 @@ export function matchSnapshot(snapshot, { setData, itemsData }) {
     gold: Number.isInteger(snapshot?.gold) ? snapshot.gold : null,
     hp: Number.isInteger(snapshot?.hp) ? snapshot.hp : null,
     stage: snapshot?.stage || null,
+    matchFrame: snapshot?.matchFrame !== false,
     notes: snapshot?.notes || null,
   };
   const all = [...mapped.candidates, ...mapped.board, ...mapped.bench, ...mapped.shop];

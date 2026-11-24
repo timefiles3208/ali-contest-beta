@@ -2,10 +2,10 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=hud-regions';
+import { bindScreenReader } from './ui/screen-reader.js?v=ocr-scale';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=hud-regions';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
-import { bindIconMatch } from './ui/icon-match.js';
+import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js';
 import { rankOpening } from './engine/opening.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
@@ -15,7 +15,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=planning-tools';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=hud-regions';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-scale';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -498,6 +498,9 @@ function snapRow(key) {
 function snapChip(u, key) {
   const version = state.setData.source?.ddragonVersion;
   const unit = u.id ? unitById(u.id) : null;
+  if (!state.snap.mapped.matchFrame) {
+    return `<span class="unit mini">${unit ? iconHtml(unit, version, 34) : ''}<span class="nm">${esc(u.name)}</span></span>`;
+  }
   if (unit) {
     const reviewing = !state.snap.applied && !key.startsWith('shop:');
     const on = reviewing ? !u.excluded : state.selected.has(unit.id);
@@ -547,7 +550,8 @@ function renderSnapshot() {
     status.textContent = snap.error.message;
   } else if (snap.mapped) {
     status.className = 'snap-status ok';
-    status.textContent = snap.applied ? '识别结果已应用。' : snap.mapped.candidates.length
+    status.textContent = !snap.mapped.matchFrame ? '未确认对局画面。以下是文字预览，请在棋子栏手动核对。'
+      : snap.applied ? '识别结果已应用。' : snap.mapped.candidates.length
       ? '已读取截图文字，请勾选确认拥有的棋子。'
       : '已读出部分画面信息。棋子名未读到，可在下方手选。';
   } else if (snap.file) {
@@ -592,7 +596,7 @@ function renderSnapshot() {
     row('待核对棋子', m.candidates, 'candidates') + row('场上', m.board, 'board') + row('备战席', m.bench, 'bench') + row('商店', m.shop, 'shop') +
     traitRow('截图羁绊', m.traits, '未读到') + (board.length ? traitRow('场上复算', calculated, '按已确认棋子暂无激活羁绊') : '') +
     inventory('散件', m.components) + inventory('未装备成装', m.items) +
-    (!snap.applied && m.candidates.length ? `<div class="snap-actions snap-load-actions"><button class="primary" data-snap-apply ${locked || !autoSelect(m).ids.length ? 'disabled' : ''}>应用到推荐</button></div>` : '') +
+    (m.matchFrame && !snap.applied && m.candidates.length ? `<div class="snap-actions snap-load-actions"><button class="primary" data-snap-apply ${locked || !autoSelect(m).ids.length ? 'disabled' : ''}>应用到推荐</button></div>` : '') +
     (m.notes ? `<p class="fine">补充：${esc(m.notes)}</p>` : '') +
     (need.length ? `<p class="snap-miss">${need.join('<br />')}</p>` : '');
 }
@@ -644,7 +648,7 @@ async function readClipboardImage() {
 
 function applySnapshot() {
   const snap = state.snap;
-  if (!snap.mapped || snap.applied || snap.busy || snap.importing) return;
+  if (!snap.mapped?.matchFrame || snap.applied || snap.busy || snap.importing) return;
   const { ids } = autoSelect(snap.mapped);
   if (!ids.length) return;
   ids.forEach((id) => state.selected.add(id));
@@ -682,7 +686,7 @@ async function runRecognize() {
       return;
     }
     state.snap.mapped = matchSnapshot(result, { setData: state.setData, itemsData: state.items });
-    if (result.stage === '2-1') {
+    if (result.stage === '2-1' && result.matchFrame) {
       openingAdvice.receive({
         units: state.snap.mapped.candidates.map(row => row.id).filter(Boolean), opening: result.opening,
       });
@@ -901,7 +905,7 @@ function bind() {
   });
   el('snapResult').onclick = (e) => {
     if (e.target.closest('[data-snap-apply]')) { applySnapshot(); return; }
-    if (state.snap.busy || state.snap.importing) return;
+    if (!state.snap.mapped?.matchFrame || state.snap.busy || state.snap.importing) return;
     const chip = e.target.closest('[data-snap],[data-var]');
     if (chip) {
       const id = chip.dataset.id;

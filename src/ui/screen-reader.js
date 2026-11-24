@@ -1,5 +1,5 @@
-import { stageAfterOpening } from '../engine/screen-insights.js?v=hud-regions';
-import { recognizeBoardText } from '../adapters/local-ocr.js?v=hud-regions';
+import { stageAfterOpening } from '../engine/screen-insights.js?v=ocr-scale';
+import { recognizeBoardText } from '../adapters/local-ocr.js?v=ocr-scale';
 const FRAME_INTERVAL_MS = 3500;
 const CAPTURE_LIMIT_MS = 180_000;
 
@@ -96,8 +96,10 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     try {
       const evidence = await recognizeBoardText(canvas, context.setData, () => finishedJob === job, { detailed: true, opening: context.opening });
       if (!evidence || finishedJob !== job) return;
-      if (stageAfterOpening(evidence.stage) && fromScreenshot) {
-        say('截图显示已过 2-1。请导入 2-1 的海克斯选择画面。');
+      if (fromScreenshot && evidence.stage !== '2-1') {
+        say(evidence.stage
+          ? `截图读到 ${evidence.stage}。请导入 2-1 的海克斯选择画面。`
+          : '未确认 2-1 回合。请使用包含完整回合栏的原图，或手动打开开局推荐。');
         return;
       }
       if (!stageAfterOpening(evidence.stage)) onEvidence(evidence);

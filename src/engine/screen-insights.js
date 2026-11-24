@@ -1,14 +1,41 @@
 import { recommend } from './recommend.js';
+import { SET18_ENGLISH } from '../data/set18-ocr-en.js';
 
 const labelText = text => text.normalize('NFKC').replace(/[^\p{L}\p{N}]/gu, '');
-const regionLabel = text => text.normalize('NFKC').replace(/[^\p{L}\p{N}+]/gu, '');
+const regionLabel = text => text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}+]/gu, '');
+
+export function entriesForOcr(entries, season) {
+  if (season !== 18) return entries;
+  return entries.flatMap(entry => {
+    const alias = SET18_ENGLISH[entry.id];
+    return alias ? [entry, { id: entry.id, name: alias }] : [entry];
+  });
+}
+
+function visibleEnglish(text, entries, season) {
+  if (season !== 18) return [];
+  const aliases = new Map();
+  for (const { id } of entries) {
+    const name = SET18_ENGLISH[id]?.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    if (!name || name.length < 3) continue;
+    aliases.set(name, aliases.has(name) ? null : id);
+  }
+  const lines = text.toLowerCase().split(/\r?\n/).map(line => ` ${line.replace(/[^a-z0-9]+/g, ' ').trim()} `);
+  return [...aliases].flatMap(([name, id]) => id && lines.some(line => line.includes(` ${name} `)) ? [id] : []);
+}
+
+export function hasMatchFrame(stage, text) {
+  if (stage) return true;
+  const compact = text.replace(/\s/g, '');
+  return /购买经验|BuyXP/i.test(compact) && /刷新|Reroll/i.test(compact);
+}
 
 export function matchRegionLabel(text, entries) {
   const label = regionLabel(text);
   if (!label) return null;
   const labels = entries.map(({ id, name }) => ({ id, name: regionLabel(name) }));
-  const exact = labels.filter(row => row.name === label);
-  if (exact.length) return exact.length === 1 ? exact[0].id : null;
+  const exact = [...new Set(labels.filter(row => row.name === label).map(row => row.id))];
+  if (exact.length) return exact.length === 1 ? exact[0] : null;
   if (!/^\p{Script=Han}{3,}[+]*$/u.test(label)) return null;
   const suffix = label.match(/\+*$/)[0];
   const near = labels.filter(({ name }) => name.length === label.length &&
@@ -54,8 +81,8 @@ export function screenEvidence(text, setData, { hud = false } = {}) {
   const labels = lines.map(labelText);
   return {
     stage: visibleStage(lines, hud),
-    units: visibleMatches(labels, setData.units),
-    traits: visibleMatches(labels, setData.traits || []),
+    units: [...new Set([...visibleMatches(labels, setData.units), ...visibleEnglish(text, setData.units, setData.set)])],
+    traits: [...new Set([...visibleMatches(labels, setData.traits || []), ...visibleEnglish(text, setData.traits || [], setData.set)])],
   };
 }
 

@@ -1,4 +1,4 @@
-import { recognizeCroppedIcon } from '../adapters/icon-match.js';
+import { recognizeCroppedIcon } from '../adapters/icon-match.js?v=ocr-scale';
 
 export function bindIconMatch({ kind, input, status, apply, getContext, onApply }) {
   let candidate, revision = 0;

@@ -4,6 +4,7 @@ const MAX_DISTANCE = 0.105;
 const MIN_MARGIN = 0.014;
 const sheets = new Map();
 const templates = new Map();
+let alignmentOffsets;
 
 export function matchIconSignature(sample, candidates) {
   const scored = candidates.map(candidate => {
@@ -14,6 +15,54 @@ export function matchIconSignature(sample, candidates) {
   const [best, runnerUp] = scored;
   return best && best.distance <= MAX_DISTANCE &&
     (!runnerUp || runnerUp.distance - best.distance >= MIN_MARGIN) ? [best] : [];
+}
+
+function buildAlignmentOffsets() {
+  const shifts = Math.floor(SAMPLE_SIZE / 4);
+  const offsets = [];
+  for (let dy = -shifts; dy <= shifts; dy += 0.5) {
+    for (let dx = -shifts; dx <= shifts; dx += 0.5) {
+      if ((SAMPLE_SIZE - Math.abs(dx)) * (SAMPLE_SIZE - Math.abs(dy)) < SAMPLE_SIZE ** 2 * 0.65) continue;
+      const pairs = [];
+      for (let y = Math.max(0, Math.ceil(-dy)); y <= Math.min(SAMPLE_SIZE - 1, Math.floor(SAMPLE_SIZE - 1 - dy)); y++) {
+        for (let x = Math.max(0, Math.ceil(-dx)); x <= Math.min(SAMPLE_SIZE - 1, Math.floor(SAMPLE_SIZE - 1 - dx)); x++) {
+          const left = Math.floor(x + dx);
+          const top = Math.floor(y + dy);
+          const right = Math.min(left + 1, SAMPLE_SIZE - 1);
+          const bottom = Math.min(top + 1, SAMPLE_SIZE - 1);
+          pairs.push([3 * (y * SAMPLE_SIZE + x), 3 * (top * SAMPLE_SIZE + left),
+            3 * (top * SAMPLE_SIZE + right), 3 * (bottom * SAMPLE_SIZE + left), 3 * (bottom * SAMPLE_SIZE + right)]);
+        }
+      }
+      const fx = dx - Math.floor(dx);
+      const fy = dy - Math.floor(dy);
+      offsets.push({ pairs, fx, fy, penalty: 0.002 * (Math.abs(dx) + Math.abs(dy)) });
+    }
+  }
+  return offsets;
+}
+
+export function matchAlignedIconSignature(sample, candidates) {
+  alignmentOffsets ??= buildAlignmentOffsets();
+  const scored = candidates.map(candidate => {
+    let distance = Infinity;
+    const data = candidate.signature;
+    for (const { pairs, fx, fy, penalty } of alignmentOffsets) {
+      let sum = 0;
+      for (const [a, tl, tr, bl, br] of pairs) {
+        for (let c = 0; c < 3; c++) {
+          const top = data[tl + c] * (1 - fx) + data[tr + c] * fx;
+          const bottom = data[bl + c] * (1 - fx) + data[br + c] * fx;
+          sum += Math.abs(sample[a + c] - (top * (1 - fy) + bottom * fy));
+        }
+      }
+      distance = Math.min(distance, sum / (pairs.length * 3 * 255) + penalty);
+    }
+    return { id: candidate.id, distance };
+  }).sort((a, b) => a.distance - b.distance);
+  const [best, runnerUp] = scored;
+  return best && best.distance <= MAX_DISTANCE &&
+    (!runnerUp || runnerUp.distance - best.distance >= MIN_MARGIN) ? best : null;
 }
 
 function signature(image, sx, sy, width, height) {
@@ -61,7 +110,8 @@ export async function recognizeCroppedIcon(file, entries, version) {
       }
       return { id, signature: templates.get(key) };
     }));
-    const [result] = matchIconSignature(signature(image, 0, 0, image.width, image.height), refs);
+    const sample = signature(image, 0, 0, image.width, image.height);
+    const result = matchIconSignature(sample, refs)[0] || matchAlignedIconSignature(sample, refs);
     return catalog.find(entry => entry.id === result?.id) || null;
   } finally {
     image.close();
