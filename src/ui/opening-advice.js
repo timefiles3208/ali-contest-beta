@@ -1,9 +1,11 @@
-import { rankOpeningAugments } from '../engine/opening.js';
+import { rankOpeningAugments } from '../engine/opening.js?v=augment-tier';
+import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
-export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, ownedSummary, candidates, inputs, list, direction, picks, getContext, onChange, onPick }) {
+export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, getContext, onChange, onPick, onTier }) {
   let detectedUnits = [];
   let catalogIdentity;
   let picksKey;
+  let listTier;
 
   function options(select, entries, label) {
     const previous = select.value;
@@ -15,6 +17,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     if (dialog.open) dialog.close();
     detectedUnits = [];
     city.value = economy.value = item.value = '';
+    tier.value = '';
     inputs.forEach(input => { input.value = ''; });
     catalogIdentity = null;
   }
@@ -28,11 +31,25 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       catalogIdentity = setData;
       options(city, cities, '未确认');
       options(item, itemsData?.items || [], '选择成装');
-      list.replaceChildren(...[...new Set(augments.map(row => row.name))].map(name => new Option(name, name)));
+      listTier = undefined;
     }
     city.value = ctx.city?.id || '';
     economy.value = ctx.economy || '';
-    const offered = offeredIds();
+    const offered = offeredIds(augments);
+    const inferred = inferAugmentTier(offered);
+    const effective = tier.value || inferred;
+    const mismatch = offered.some(id => augmentTier(id) !== effective);
+    const available = effective ? offered.filter(id => augmentTier(id) === effective) : [];
+    if (effective !== listTier) {
+      const names = augments.filter(aug => !effective || augmentTier(aug.id) === effective).map(aug => aug.name);
+      list.replaceChildren(...[...new Set(names)].map(name => new Option(name, name)));
+      listTier = effective;
+    }
+    onTier(effective || '');
+    tierStatus.textContent = effective
+      ? `${AUGMENT_TIER_LABELS[effective]}${tier.value ? ' · 手动选择' : ' · 根据候选名称识别'}${mismatch ? '。其余档位的候选已排除。' : '。'}`
+      : offered.length ? '候选档位不一致，请核对名称或手动选择当轮颜色。'
+        : '填入本轮选项后可判断颜色，也可以手动选择。';
     const effects = cities.find(row => row.id === city.value);
     const weight = ranked.find(row => row.viable);
     const description = effects?.description ? ` · ${effects.description}` : '';
@@ -63,7 +80,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       : '选择城邦、确认当前持有的棋子或登记装备。';
     direction.replaceChildren(title, evidence);
 
-    const chosen = rankOpeningAugments({ setData, augments, ranked, selected, offered });
+    const chosen = rankOpeningAugments({ setData, augments, ranked, selected, offered: available, tier: effective });
     const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
     if (nextKey === picksKey) return;
     picksKey = nextKey;
@@ -72,6 +89,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'ghost';
+      button.dataset.tier = augmentTier(aug.id);
       button.textContent = `选 ${aug.name}`;
       button.onclick = () => { onPick(aug.id); dialog.close(); };
       const note = document.createElement('span');
@@ -82,9 +100,13 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     }));
   }
 
-  function offeredIds() {
-    const rows = getContext()?.augments || [];
-    return inputs.map(input => rows.find(row => row.name === input.value.trim())?.id).filter(Boolean);
+  function offeredIds(augments) {
+    return inputs.flatMap(input => {
+      const matches = augments.filter(row => row.name === input.value.trim());
+      const preferred = tier.value ? matches.filter(row => augmentTier(row.id) === tier.value) : matches;
+      const resolved = preferred.length ? preferred : matches;
+      return resolved.length === 1 ? [resolved[0].id] : [];
+    });
   }
 
   function show() {
@@ -119,5 +141,6 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   economy.onchange = () => onChange({ economy: economy.value });
   addItem.onclick = () => { if (item.value) onChange({ item: item.value }); };
   inputs.forEach(input => { input.oninput = draw; });
+  tier.onchange = draw;
   return { draw, show, receive, reset };
 }

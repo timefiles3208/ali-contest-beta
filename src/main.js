@@ -3,11 +3,12 @@ import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=ocr-scale';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=hud-regions';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=augment-tier';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js';
-import { rankOpening } from './engine/opening.js';
+import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
+import { rankOpening } from './engine/opening.js?v=augment-tier';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js';
@@ -55,6 +56,7 @@ const state = {
 async function loadBoard() {
   screenReader?.reset();
   openingAdvice?.reset();
+  el('augmentTierFilter').value = '';
   state.openingCity = state.economy = '';
   const generation = ++boardLoad;
   const source = sourceFor(state.sourceId);
@@ -394,12 +396,14 @@ function renderHexes(top) {
     return;
   }
   const byId = new Map(state.augs.augments.map((a) => [a.id, a]));
+  const tier = el('augmentTierFilter').value;
+  const inTier = id => !tier || augmentTier(id) === tier;
   const curatedAll = top?.comp.hexes || [];
   const curatedSet = new Set(curatedAll);
-  const curated = curatedAll.filter((id) => !state.chosen.has(id));
+  const curated = curatedAll.filter(id => inTier(id) && !state.chosen.has(id));
   const list = rankAugments({
     setData: state.setData,
-    augments: state.augs.augments,
+    augments: state.augs.augments.filter(aug => inTier(aug.id)),
     ranked: state.ranked || [],
     selected: state.selected,
     chosen: state.chosen,
@@ -408,7 +412,8 @@ function renderHexes(top) {
 
   const chip = (a, kind) => {
     const stat = boardStat(state.board?.augments, a.name);
-    return `<button class="hex ${kind || ''}" data-hex="${a.id}" title="${esc(a.desc)}"><b>${esc(a.name)}</b>${stat ? `<small class="board-stat">${esc(stat)}</small>` : ''}${kind === 'lib' ? '<em class="tag">库里推荐</em>' : ''}</button>`;
+    const color = augmentTier(a.id);
+    return `<button class="hex ${kind || ''}" data-hex="${a.id}" title="${esc(a.desc)}"><b>${esc(a.name)}</b>${color ? `<span class="augment-tier" data-tier="${color}">${AUGMENT_TIER_LABELS[color]}</span>` : ''}${stat ? `<small class="board-stat">${esc(stat)}</small>` : ''}${kind === 'lib' ? '<em class="tag">库里推荐</em>' : ''}</button>`;
   };
 
   const chosenRow = [...state.chosen].map((id) => byId.get(id)).filter(Boolean);
@@ -723,6 +728,7 @@ function bind() {
     dialog: el('openingDialog'), open: el('openingOpen'), city: el('openingCity'), economy: el('openingEconomy'),
     item: el('openingItem'), addItem: el('openingAddItem'), ownedSummary: el('openingOwned'), candidates: el('openingCandidates'),
     inputs: ['openingHex1', 'openingHex2', 'openingHex3'].map(el), list: el('openingHexList'),
+    tier: el('openingHexTier'), tierStatus: el('openingHexTierStatus'),
     direction: el('openingDirection'), picks: el('openingPicks'), getContext: openingContext,
     onChange({ city, economy, item, unit, selected }) {
       if (city != null) state.openingCity = city;
@@ -741,6 +747,12 @@ function bind() {
       state.chosen.add(id);
       renderResults();
       if (!el('screenFinish').disabled) el('screenFinish').click();
+    },
+    onTier(tier) {
+      const filter = el('augmentTierFilter');
+      if (filter.value === tier) return;
+      filter.value = tier;
+      renderHexes((state.ranked || []).find(row => row.viable));
     },
   });
   screenReader = bindScreenReader({
@@ -795,6 +807,7 @@ function bind() {
   el('planTrait').onchange = () => { refreshPlanTiers(); renderResults(); };
   el('planTier').onchange = renderResults;
   el('planCap').onchange = renderResults;
+  el('augmentTierFilter').onchange = () => renderHexes((state.ranked || []).find(row => row.viable));
   el('search').oninput = (e) => { state.query = e.target.value.trim(); renderUnits(); };
   el('clearSel').onclick = () => { state.selected.clear(); renderUnits(); renderResults(); };
   el('costTabs').onclick = (e) => {

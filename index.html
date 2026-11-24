@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=planning-tools" />
+<link rel="stylesheet" href="./styles.css?v=augment-tier" />
 </head>
 <body>
 <header class="bar">
@@ -56,6 +56,15 @@
     <section id="openingDirection" aria-live="polite"></section>
     <fieldset class="opening-hex">
       <legend>本轮提供的海克斯</legend>
+      <div class="opening-tier">
+        <label>本轮颜色
+          <select id="openingHexTier">
+            <option value="">自动判断</option><option value="silver">白银</option>
+            <option value="gold">黄金</option><option value="prismatic">棱彩</option>
+          </select>
+        </label>
+        <p id="openingHexTierStatus" class="fine" role="status"></p>
+      </div>
       <label>选项一 <input id="openingHex1" list="openingHexList" /></label>
       <label>选项二 <input id="openingHex2" list="openingHexList" /></label>
       <label>选项三 <input id="openingHex3" list="openingHexList" /></label>
@@ -178,6 +187,12 @@
     <div id="paths" class="paths"></div>
 
     <h2 class="mt">6 · 海克斯（点一下算已拿，会从推荐里剔除）</h2>
+    <label class="augment-filter">推荐颜色
+      <select id="augmentTierFilter">
+        <option value="">全部颜色</option><option value="silver">白银</option>
+        <option value="gold">黄金</option><option value="prismatic">棱彩</option>
+      </select>
+    </label>
     <div id="hexes" class="hexes"></div>
 
     <h2 class="mt">7 · 成装规划</h2>
@@ -190,6 +205,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=ocr-scale"></script>
+<script type="module" src="./src/main.js?v=augment-tier"></script>
 </body>
 </html>

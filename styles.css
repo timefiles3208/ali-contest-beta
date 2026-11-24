@@ -196,6 +196,11 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 .hex .tag { font-style: normal; font-size: 10px; color: var(--accent); }
 .hex.lib { border-color: #2e5a62; }
 .hex.taken { border-color: #5a4a22; background: #241b12; color: var(--warn); }
+.augment-filter { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+.augment-tier { font-size: 11px; font-weight: 600; }
+.augment-tier[data-tier="silver"], #openingPicks button[data-tier="silver"] { color: #d1deea; }
+.augment-tier[data-tier="gold"], #openingPicks button[data-tier="gold"] { color: #f5cd76; }
+.augment-tier[data-tier="prismatic"], #openingPicks button[data-tier="prismatic"] { color: #e3b9ff; }
 .why { color: #7f96a8; font-size: 11px; }
 
 .gear { display: flex; flex-direction: column; gap: 8px; }
@@ -308,5 +313,7 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 #openingDirection { margin: 13px 0; padding: 12px; background: #1e2b36; border-radius: 8px; }
 #openingDirection .fine { margin: 4px 0 0; }
 .opening-hex { border: 1px solid #334155; border-radius: 6px; padding: 10px; }
+.opening-tier { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: end; gap: 8px 12px; }
+.opening-tier .fine { margin: 0 0 5px; }
 #openingPicks { display: grid; gap: 8px; padding-inline-start: 1.6em; margin-bottom: 0; }
 #openingPicks span { display: inline-block; margin-inline-start: 8px; }
