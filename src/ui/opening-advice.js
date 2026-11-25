@@ -1,3 +1,4 @@
+import { renderLineupList } from './lineup-list.js';
 import { rankOpeningAugments } from '../engine/opening.js?v=trained-ranker';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
@@ -58,7 +59,6 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       : offered.length ? '候选档位不一致，请核对名称或手动选择当轮颜色。'
         : '填入本轮选项后可判断颜色，也可以手动选择。';
     const effects = cities.find(row => row.id === city.value);
-    const weight = ranked.find(row => row.viable);
     const description = effects?.description ? ` · ${effects.description}` : '';
     const unitNames = setData.units.filter(unit => selected.has(unit.id)).map(unit => unit.name);
     const parts = (itemsData?.components || []).filter(row => owned.get(row.id))
@@ -82,17 +82,9 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     });
     candidates.replaceChildren(legend, ...checks);
     candidates.hidden = !checks.length;
-    const outcome = weight?.comp;
-    const headline = outcome ? `${outcome.name} · ${outcome.level} 人口` : '先确认开局信息';
-    const title = document.createElement('strong');
-    title.textContent = headline;
-    const evidence = document.createElement('p');
-    evidence.className = 'fine';
-    evidence.textContent = outcome
-      ? [...weight.reasons, outcome.rank?.tier && `榜单 ${outcome.rank.tier} 级`].filter(Boolean).join(' · ') || '当前按数据站强度排序。'
-      : '选择城邦、确认当前持有的棋子或登记装备。';
-    direction.replaceChildren(title, evidence);
-
+    renderLineupList(direction, ranked, {
+      emptyHint: '选择城邦、确认当前持有的棋子或登记装备。',
+    });
     const chosen = rankOpeningAugments({
       setData, augments, ranked, selected, owned, ownedItems, itemsData,
       offered: available, tier: effective, city: ctx.city, economy: ctx.economy,

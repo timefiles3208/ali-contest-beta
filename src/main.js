@@ -1,10 +1,11 @@
+import { recommendedLineups, renderLineupList } from './ui/lineup-list.js';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=opening-latency';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=trained-ranker';
+import { bindScreenReader } from './ui/screen-reader.js?v=lineup-list';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=lineup-list';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
@@ -317,9 +318,11 @@ function renderResults() {
   state.ranked = ranked;
   const filters = { trait: el('planTrait').value, tier: Number(el('planTier').value), maxLevel: Number(el('planCap').value) };
   const exploring = Boolean(filters.trait || filters.maxLevel);
-  const plans = exploring ? filterCompPlans(ranked, filters) : ranked.filter(r => r.viable);
+  const matched = ranked.filter(row => row.viable);
+  const plans = exploring ? filterCompPlans(ranked, filters)
+    : matched.length < 3 ? recommendedLineups(ranked) : matched;
   const hot = plans.slice(0, 8);
-  const cold = ranked.filter((r) => !r.viable);
+  const coldCount = ranked.length - matched.length - hot.filter(row => !row.viable).length;
   if (!hot.length) {
     box.innerHTML = exploring
       ? '<div class="empty">没有符合筛选条件的阵容。</div>'
@@ -327,8 +330,8 @@ function renderResults() {
     renderSide();
     return;
   }
-  const coldNote = exploring ? `<p class="fine">符合条件 ${plans.length} 套，显示前 ${hot.length} 套。</p>` : cold.length
-    ? `<p class="fine" style="margin:10px 2px 0;color:#5f7284;font-size:12px">另有 ${cold.length} 套暂未匹配开局条件。</p>`
+  const coldNote = exploring ? `<p class="fine">符合条件 ${plans.length} 套，显示前 ${hot.length} 套。</p>` : coldCount
+    ? `<p class="fine" style="margin:10px 2px 0;color:#5f7284;font-size:12px">另有 ${coldCount} 套暂未匹配开局条件。</p>`
     : '';
   box.innerHTML =
     hot.map((r, i) => {
@@ -372,7 +375,7 @@ function renderSide() {
   renderPaths(top);
   renderHexes(top);
   renderGear(top);
-  renderSnapshotLineup(top);
+  renderSnapshotLineups();
   openingAdvice?.draw();
   matchSamples?.refresh();
 }
@@ -564,24 +567,16 @@ function snapshotUnitDetails(unit, isBoard) {
     .map((label) => `<small class="snap-unit-items">${esc(label)}</small>`).join('');
 }
 
-function renderSnapshotLineup(top) {
+function renderSnapshotLineups() {
   const output = el('snapLineup');
   const snap = state.snap;
-  if (!top || !snap.ai || !snap.mapped?.matchFrame || !snap.applied) {
+  if (!snap.ai || !snap.mapped?.matchFrame || !snap.applied) {
     output.hidden = true;
     output.replaceChildren();
     return;
   }
-  const { comp, reasons } = top;
-  const title = document.createElement('strong');
-  title.textContent = `推荐阵容 · ${comp.name} · ${comp.level} 人口`;
-  const link = document.createElement('a');
-  link.href = '#comps';
-  link.textContent = '查看阵容攻略';
-  output.replaceChildren(title, document.createTextNode(reasons.length ? ` · ${reasons.join('、')} · ` : ' · '), link);
-  output.hidden = false;
+  output.hidden = !renderLineupList(output, state.ranked || [], { link: true });
 }
-
 function renderSnapshot() {
   const snap = state.snap;
   const thumb = el('snapThumb');
@@ -628,7 +623,7 @@ function renderSnapshot() {
     status.textContent += ' PaddleOCR 未能运行，已使用常规识别。';
   }
 
-  renderSnapshotLineup(state.ranked?.find(row => row.viable));
+  renderSnapshotLineups();
   const box = el('snapResult');
   const m = snap.mapped;
   if (!m) { box.innerHTML = ''; return; }
@@ -842,7 +837,7 @@ function bind() {
       return {
         setData: context.setData,
         opening: { cities: context.cities, augments: context.augments },
-        direction: () => state.ranked?.find(row => row.viable)?.comp,
+        ranked: () => state.ranked || [],
       };
     },
     onEvidence: openingAdvice.receive,

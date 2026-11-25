@@ -1,3 +1,4 @@
+import { renderLineupList } from './lineup-list.js';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
 import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=opening-latency';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
@@ -46,13 +47,13 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   }
 
   function showDirection(context, note = '已按确认的开局条件匹配当前阵容库。') {
-    const comp = context.direction();
-    if (!comp) {
+    const hasLineups = renderLineupList(result, context.ranked(), { label: '阵容方向', link: true });
+    result.hidden = !hasLineups;
+    if (!hasLineups) {
       say('请确认手上棋子、装备或城邦效果后查看阵容方向。');
       return;
     }
-    result.textContent = `阵容方向 · ${comp.name}`;
-    result.hidden = false;
+
     say(note);
   }
 

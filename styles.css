@@ -276,6 +276,9 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 .snap-status.bad { color: var(--bad); }
 .snap-status.wait { color: var(--warn); }
 .snap-status a { color: var(--accent); }
+.ranked-lineups { display: grid; gap: 8px; margin: 6px 0; padding-inline-start: 1.6em; }
+.ranked-lineups > li { display: list-item; overflow-wrap: anywhere; }
+.ranked-lineups .fine { margin: 2px 0 0; }
 .snap-result { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .snap-row { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
 .snap-k { flex: 0 0 66px; color: #7f96a8; font-size: 12px; padding-top: 5px; }
