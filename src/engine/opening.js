@@ -1,3 +1,4 @@
+import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
 import { rankAugments } from './augments.js?v=inventory-augments';
 import { augmentTier } from '../data/augment-tiers.js';
@@ -35,11 +36,12 @@ function cityFit(city, comp, itemPoints, unitById) {
   }
 }
 
-export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [] }) {
+export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model }) {
   const itemById = new Map((itemsData?.items || []).map(row => [row.id, row]));
   const unitById = new Map(setData.units.map(row => [row.id, row]));
   const augmentTraits = new Set(chosenAugments.flatMap(aug => [...(aug.traits || []), ...(aug.grantTraits || [])]));
   const baseline = recommend({ setData, comps, selected, level });
+  const isTrained = supportsOpeningModel(setData.set, patch, model);
   const ranked = baseline.map(row => {
     const { comp } = row;
     const current = comp.units.filter(id => selected.has(id));
@@ -48,8 +50,9 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
     const cityPoints = cityFit(city, comp, gear.points, unitById);
     const econ = economy === 'high' ? Math.max(0, (comp.level || 0) - 7) * 4 : 0;
     const aug = Math.min(14, Object.keys(comp.aimTraits || {}).filter(id => augmentTraits.has(id)).length * 7);
-    const viable = Boolean(units || gear.points || city || economy === 'high' || aug);
-    const fit = units + gear.points + cityPoints + econ + aug;
+    const learned = isTrained ? openingModelBonus(openingModelFeatures(comp, selected, gear.points), model.weights) : 0;
+    const viable = Boolean(units || gear.points || city || economy === 'high' || aug || learned);
+    const fit = units + gear.points + cityPoints + econ + aug + learned;
     const reasons = [
       units && `持有 ${current.length} 名阵容棋子`,
       gear.held.length && `${gear.held.length} 件成装匹配`,
@@ -57,8 +60,9 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       cityPoints && `契合${city.name}`,
       econ && '经济支持高人口',
       aug && '已选海克斯匹配目标羁绊',
+      learned > 0 && '来牌符合已知过渡棋盘',
     ].filter(Boolean);
-    return { ...row, score: Math.min(100, fit), fit, viable, reasons };
+    return { ...row, score: Math.min(100, Math.round(fit)), fit, viable, reasons, gearPoints: gear.points };
   });
   return ranked.sort((a, b) => Number(b.viable) - Number(a.viable) || b.fit - a.fit || compareStrength(a, b));
 }

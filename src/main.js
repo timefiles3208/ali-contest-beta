@@ -1,14 +1,15 @@
+import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=opening-latency';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=inventory-augments';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=trained-ranker';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=inventory-augments';
+import { rankOpening } from './engine/opening.js?v=trained-ranker';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
@@ -312,7 +313,7 @@ function renderResults() {
     box.innerHTML = `<div class="empty">${esc(state.issues.join('；') || '阵容库为空')}</div>`;
     return;
   }
-  const ranked = rankOpening(openingContext());
+  const ranked = rankOpening({ ...openingContext(), patch: state.board?.version, model: openingModel });
   state.ranked = ranked;
   const filters = { trait: el('planTrait').value, tier: Number(el('planTier').value), maxLevel: Number(el('planCap').value) };
   const exploring = Boolean(filters.trait || filters.maxLevel);
