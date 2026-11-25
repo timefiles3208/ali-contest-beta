@@ -16,7 +16,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=opening-latency';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=lineup-only';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -371,6 +371,7 @@ function renderSide() {
   renderPaths(top);
   renderHexes(top);
   renderGear(top);
+  renderSnapshotLineup(top);
   openingAdvice?.draw();
   matchSamples?.refresh();
 }
@@ -562,6 +563,24 @@ function snapshotUnitDetails(unit, isBoard) {
     .map((label) => `<small class="snap-unit-items">${esc(label)}</small>`).join('');
 }
 
+function renderSnapshotLineup(top) {
+  const output = el('snapLineup');
+  const snap = state.snap;
+  if (!top || !snap.ai || !snap.mapped?.matchFrame || !snap.applied) {
+    output.hidden = true;
+    output.replaceChildren();
+    return;
+  }
+  const { comp, reasons } = top;
+  const title = document.createElement('strong');
+  title.textContent = `推荐阵容 · ${comp.name} · ${comp.level} 人口`;
+  const link = document.createElement('a');
+  link.href = '#comps';
+  link.textContent = '查看阵容攻略';
+  output.replaceChildren(title, document.createTextNode(reasons.length ? ` · ${reasons.join('、')} · ` : ' · '), link);
+  output.hidden = false;
+}
+
 function renderSnapshot() {
   const snap = state.snap;
   const thumb = el('snapThumb');
@@ -608,6 +627,7 @@ function renderSnapshot() {
     status.textContent += ' PaddleOCR 未能运行，已使用常规识别。';
   }
 
+  renderSnapshotLineup(state.ranked?.find(row => row.viable));
   const box = el('snapResult');
   const m = snap.mapped;
   if (!m) { box.innerHTML = ''; return; }

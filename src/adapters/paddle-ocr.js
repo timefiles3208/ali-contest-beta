@@ -51,7 +51,7 @@ export function mergeNeuralEvidence(base, items, size, setData, opening) {
   const join = rows => rows.map(row => row.text).join('\n');
   const labels = join(lines.filter(line => line.y > 0.12 && line.x < 0.88));
   const units = openingNamesInText(labels, [], names(setData.units)).offered;
-  const traits = screenEvidence(labels, { set: setData.set, units: [], traits: setData.traits }).traits;
+  const traits = openingNamesInText(labels, [], names(setData.traits || [])).offered;
   const hud = lines.filter(line => line.y <= 0.12 && line.x >= 0.28 && line.x <= 0.65);
   const stage = base.stage || screenEvidence(join(hud), { units: [] }, { hud: true }).stage;
   const output = {

@@ -1,5 +1,5 @@
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
-import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=2';
+import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=lineup-only';
 import { recognizeBoardText } from './local-ocr.js?v=opening-latency';
 
 export class SnapshotError extends Error {
@@ -105,14 +105,36 @@ export async function importImageUrl(value) {
   }
 }
 
-export function snapshotFromEvidence(evidence, setData) {
-  const names = (entries, ids) => entries.filter(({ id }) => ids.includes(id)).map(({ name }) => ({ name }));
-  return {
-    stage: evidence.stage,
-    matchFrame: evidence.matchFrame,
+export function snapshotFromEvidence(evidence, setData, opening) {
+  const allowedIds = (rows, ids) => {
+    if (!Array.isArray(ids)) return [];
+    const catalog = new Set(rows.map(row => row.id));
+    return [...new Set(ids.filter(id => catalog.has(id)))];
+  };
+  const names = (rows, ids) => {
+    const allowed = new Set(allowedIds(rows, ids));
+    return rows.filter(row => allowed.has(row.id)).map(({ name }) => ({ name }));
+  };
+  const stage = typeof evidence.stage === 'string' && /^[1-9]-[1-7]$/.test(evidence.stage) ? evidence.stage : null;
+  const result = {
+    stage,
+    matchFrame: evidence.matchFrame === true,
     candidates: names(setData.units, evidence.units),
     traits: names(setData.traits || [], evidence.traits),
   };
+  if (!result.matchFrame || stage !== '2-1' || !evidence.opening || !opening) return result;
+
+  const { cities, offered, offeredSlots } = evidence.opening;
+  result.opening = {
+    cities: allowedIds(opening.cities || [], cities),
+    offered: allowedIds(opening.augments || [], offered),
+  };
+  if (Array.isArray(offeredSlots)) {
+    const allowed = new Set(allowedIds(opening.augments || [], offeredSlots));
+    const slots = [0, 1, 2].map(index => allowed.delete(offeredSlots[index]) ? offeredSlots[index] : null);
+    if (slots.some(Boolean)) result.opening.offeredSlots = slots;
+  }
+  return result;
 }
 
 export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening, enhanced = false) {
@@ -139,7 +161,7 @@ export async function recognizeSnapshot(file, rotation, setData, isCurrent, open
   const empty = { stage: null, matchFrame: false, units: [], traits: [] };
   const evidence = items ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : base || empty;
   return {
-    ...snapshotFromEvidence(evidence, setData), opening: evidence.opening,
+    ...snapshotFromEvidence(evidence, setData, opening),
     ai: enhanced ? (items ? 'used' : 'fallback') : null, timedOut: timed.timedOut,
   };
 }
