@@ -55,10 +55,11 @@ test('opponent HUD needs ownership labels and exact selected augment titles', ()
   assert.deepEqual(readOpponentProfile('对手金币 0\n对手金币 20\n已选海克斯：森林冠冕+', [augment]), { gold: null, augmentIds: [] });
 });
 test('economy breaks close route ties and an aligned selected augment can resolve sparse boards', () => {
-  const cheap = { ...first, aimTraits: { t: 3 }, level: 6 };
-  const costly = { ...first, id: 'costly', level: 9 };
+  const late = { id: 'late', name: 'late', cost: 5, traits: [] };
+  const cheap = { ...first, units: ['a','b','c'], carry: ['c'], aimTraits: { t: 3 }, level: 9 };
+  const costly = { ...first, id: 'costly', units: ['a','b','late'], carry: ['late'], level: 9 };
   const set = [cheap, costly];
-  const options = { setData: context.setData };
+  const options = { setData: { ...context.setData, units: [...context.setData.units, late] } };
   assert.equal(predictOpponentRoutes(set, { units: ['a','b'], gold: 23 }, '', options)[0].comp.id, costly.id);
   assert.equal(predictOpponentRoutes(set, { units: ['a','b'], gold: 2 }, '', options)[0].comp.id, cheap.id);
   assert.deepEqual(predictOpponentRoutes(set, { gold: 23 }, '', options), []);

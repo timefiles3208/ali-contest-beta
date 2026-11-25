@@ -1,6 +1,7 @@
 // 海克斯打分：官方数据只给了描述文本，没有强度分层，所以这里只做「跟你现在这局有多贴」的匹配，
 // 外加一层按关键词分类的通用先验(人工标注，不是实时胜率)。
 import { traitBreakdown } from './recommend.js';
+import { formationPlan } from './formation.js';
 
 const CATEGORY_RULES = [
   ['item', /装备|组件|散件|成品|锻造|器械|冠冕/, 0.12],
@@ -37,13 +38,13 @@ export function economyBenefits(text) {
   };
 }
 
-function economyFit(economy, comp, reroll, { grantsXP, grantsGold, grantsRolls }) {
+function economyFit(economy, reroll, high, { grantsXP, grantsGold, grantsRolls }) {
   if (economy === 'low') {
     if (grantsGold) return { points: 0.17, reason: '经济紧张 · 补金币' };
     if (grantsRolls) return { points: 0.13, reason: '经济紧张 · 免费刷新可省金币' };
   }
-  if (economy === 'high' && !reroll && (comp?.level || 0) >= 8 && grantsXP) {
-    return { points: 0.17, reason: `经济充足 · 补经验，支持 ${comp.level} 人口阵容` };
+  if (economy === 'high' && high && grantsXP) {
+    return { points: 0.17, reason: '经济充足 · 补经验，帮助搜高费核心' };
   }
   if (reroll && grantsRolls && economy) return { points: 0.12, reason: '目标追低费棋子 · 免费刷新有助于搜牌' };
   return null;
@@ -72,11 +73,10 @@ function equipmentContext(comp, itemsData, owned, ownedItems) {
   return { byId, byName, wanted, gaps };
 }
 
-function citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore, benefits }) {
+function citySynergy(aug, city, high, { hitItems, hitTraits, hitCore, benefits }) {
   if (!city || city.effect === 'neutral') return null;
   const text = aug.desc || '';
   const { grantsXP, grantsGold, grantsRolls } = benefits;
-  const high = (comp?.level || 0) >= 8;
   switch (city.effect) {
     case 'level':
       return grantsXP ? { points: high ? 0.19 : 0.16, reason: '补经验，配合较低的升级成本' } : null;
@@ -111,8 +111,9 @@ export function rankAugments({
   const comp = top?.comp;
   const selectedIds = selected instanceof Set ? selected : new Set(selected);
   const heldNames = new Set(setData.units.filter(unit => selectedIds.has(unit.id)).map(unit => unit.name));
-  const reroll = comp && ((comp.level || 0) <= 7 || setData.units.some(unit =>
-    comp.stars?.[unit.id] === 3 && unit.cost <= 3 && comp.units.includes(unit.id)));
+  const formation = top?.formation || (comp && formationPlan(comp, new Map(setData.units.map(unit => [unit.id, unit]))));
+  const reroll = formation?.chase.some(unit => unit.cost <= 3);
+  const high = formation?.levelingDemand > 0 && !reroll;
   const gear = equipmentContext(comp, itemsData, owned, ownedItems);
   const wantTraits = new Map();
   for (const t of traitBreakdown(setData, selected)) if (t.tier > 0) wantTraits.set(t.id, Math.min(1, 0.45 + t.tier / 12));
@@ -142,8 +143,8 @@ export function rankAugments({
     const heldGrant = (aug.grantUnits || []).find(name => heldNames.has(name));
     const cat = categorize(aug, ids.size);
     const benefits = economyBenefits(aug.desc || '');
-    const synergy = citySynergy(aug, city, comp, { hitItems, hitTraits, hitCore, benefits });
-    const economic = economyFit(economy, comp, reroll, benefits);
+    const synergy = citySynergy(aug, city, high, { hitItems, hitTraits, hitCore, benefits });
+    const economic = economyFit(economy, reroll, high, benefits);
     const inventoryFit = Math.min(0.32, (economic?.points || 0) + (gap ? 0.17 : 0) + (heldGrant ? 0.11 : 0));
 
     const total = 0.5 * traitScore + 0.3 * Math.min(1, (hitCore.length + hitAny.length) / 2)

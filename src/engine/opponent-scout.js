@@ -1,4 +1,5 @@
-import { economyBenefits } from './augments.js?v=opponent-profile';
+import { economyBenefits } from './augments.js?v=formation-plan';
+import { formationPlan } from './formation.js';
 import { transitionGuides } from '../data/s18.18.7.transitions.js';
 
 const RISK = [12, 8, 5];
@@ -10,7 +11,7 @@ export function opponentEconomy(gold) {
   return gold < 10 ? 'low' : 'normal';
 }
 
-function routeEvidence(comp, units, traits, profile, patch, lowCostUnits) {
+function routeEvidence(comp, units, traits, profile, patch, unitById) {
   const guide = patch === '18.7' && comp.rank?.source === 'datatft.com' ? transitionGuides[comp.id] : null;
   const opener = guide?.anchors.every(id => comp.units.includes(id)) ? guide.stages[4] : null;
   const opening = (opener || []).filter(id => units.has(id));
@@ -26,9 +27,11 @@ function routeEvidence(comp, units, traits, profile, patch, lowCostUnits) {
   if (boardHits < 2 && !(linkedAugments.length && (boardHits || dedicated))) return 0;
   if (!core && !carries && opening.length < 2 && !traitMatches.length && !linkedAugments.length) return 0;
 
-  const reroll = comp.level <= 7 || lowCostUnits.some(id => comp.stars?.[id] === 3);
-  const leveling = comp.level >= 8 && !reroll;
-  const economy = (profile.economy === 'high' && leveling) || (profile.economy === 'low' && reroll) ? 3 : 0;
+  const formation = formationPlan(comp, unitById);
+  const reroll = formation.chase.some(unit => unit.cost <= 3);
+  const leveling = formation.levelingDemand > 0 && !reroll;
+  const cheap = formation.carries.length && formation.carries.every(unit => unit.cost <= 3);
+  const economy = (profile.economy === 'high' && leveling) || (profile.economy === 'low' && (reroll || (cheap && !leveling))) ? 3 : 0;
   const economicAugment = (leveling && (profile.benefits.grantsGold || profile.benefits.grantsXP))
     || (reroll && profile.benefits.grantsRolls) ? 2 : 0;
   return final.length * 2 + core * 4 + carries * 3 + opening.length * 2
@@ -51,8 +54,8 @@ export function predictOpponentRoutes(comps, { units = [], traits = [], gold, ec
       units: (aug.grantUnits || []).map(name => unitsByName.get(name) || name),
     })),
   };
-  const lowCostUnits = roster.filter(unit => unit.cost <= 3).map(unit => unit.id);
-  return comps.map(comp => ({ comp, evidence: routeEvidence(comp, knownUnits, knownTraits, profile, patch, lowCostUnits) }))
+  const unitById = new Map(roster.map(unit => [unit.id, unit]));
+  return comps.map(comp => ({ comp, evidence: routeEvidence(comp, knownUnits, knownTraits, profile, patch, unitById) }))
     .filter(row => row.evidence > 0)
     .sort((a, b) => b.evidence - a.evidence
       || TIERS.indexOf(b.comp.rank?.tier) - TIERS.indexOf(a.comp.rank?.tier)

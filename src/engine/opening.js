@@ -1,7 +1,8 @@
-import { opponentPressure } from './opponent-scout.js';
+import { formationPlan } from './formation.js';
+import { opponentPressure } from './opponent-scout.js?v=formation-plan';
 import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
-import { rankAugments } from './augments.js?v=inventory-augments';
+import { rankAugments } from './augments.js?v=formation-plan';
 import { augmentTier } from '../data/augment-tiers.js';
 
 const TIERS = { 'S+': 7, S: 6, A: 5, B: 4, C: 3, D: 2, E: 1 };
@@ -22,14 +23,14 @@ function equipmentFit(comp, itemById, owned, ownedItems) {
   return { held, parts, points: Math.min(36, held.length * 12 + parts.length * 5) };
 }
 
-function cityFit(city, comp, itemPoints, unitById) {
-  const high = Math.max(0, (comp.level || 0) - 7);
+function cityFit(city, comp, itemPoints, unitById, plan) {
+  const high = plan.chase.length ? Math.min(1, plan.levelingDemand) : plan.levelingDemand;
   const core = comp.core?.length ? comp.core : comp.units;
   const lowCost = core.filter(id => (unitById.get(id)?.cost ?? 9) <= 3).length / Math.max(core.length, 1);
   switch (city?.effect) {
     case 'level': return high * 5;
     case 'gold': return high * 3;
-    case 'rerolls': return Math.round(lowCost * 8);
+    case 'rerolls': return plan.chase.length ? 8 : Math.round(lowCost * 4);
     case 'early': return Math.round(lowCost * 4);
     case 'items': return Math.min(8, Math.round(itemPoints / 3));
     case 'emblems': return Math.min(8, Math.max(0, ...Object.values(comp.aimTraits || {})));
@@ -49,25 +50,31 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
     const current = comp.units.filter(id => selected.has(id));
     const units = Math.min(38, current.length * 5 + row.detail.coreHit.length * 5);
     const gear = equipmentFit(comp, itemById, owned, ownedItems);
-    const cityPoints = cityFit(city, comp, gear.points, unitById);
-    const econ = economy === 'high' ? Math.max(0, (comp.level || 0) - 7) * 4 : 0;
+    const formation = formationPlan(comp, unitById);
+    const cityPoints = cityFit(city, comp, gear.points, unitById, formation);
+    const chaseHeld = formation.chase.filter(unit => unit.cost <= 3 && selected.has(unit.id));
+    const chasePoints = Math.min(6, chaseHeld.length * 3);
+    const econ = economy === 'high' && !formation.chase.length ? formation.levelingDemand * 4
+      : economy === 'low' && !formation.chase.length ? -formation.levelingDemand * 2 : 0;
     const aug = Math.min(14, Object.keys(comp.aimTraits || {}).filter(id => augmentTraits.has(id)).length * 7);
     const learned = isTrained ? openingModelBonus(openingModelFeatures(comp, selected, gear.points), model.weights) : 0;
     const viable = Boolean(units || gear.points || city || economy === 'high' || aug || learned);
     const { opponents: opponentCount, discount } = opponentPressure(comp, opponentBoards);
-    const fit = units + gear.points + cityPoints + econ + aug + learned - discount;
+    const fit = units + gear.points + cityPoints + econ + aug + learned + chasePoints - discount;
     const reasons = [
       units && `持有 ${current.length} 名阵容棋子`,
       gear.held.length && `${gear.held.length} 件成装匹配`,
       gear.parts.length && `${gear.parts.length} 种散件可用`,
       cityPoints && `契合${city.name}`,
-      econ && '经济支持高人口',
+      econ > 0 && '经济支持搜高费核心',
+      econ < 0 && '经济偏紧，较难搜高费核心',
+      chasePoints > 0 && `已持有 ${chaseHeld.length} 名低费追星目标`,
       aug && '已选海克斯匹配目标羁绊',
       learned > 0 && '来牌符合已知过渡棋盘',
       opponentCount ? `可能有 ${opponentCount} 家同行，适配扣 ${discount} 分`
         : hasOpponentEvidence && '已分析路线中未发现同行',
     ].filter(Boolean);
-    return { ...row, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints: gear.points, opponentCount, hasOpponentEvidence };
+    return { ...row, formation, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints: gear.points, opponentCount, hasOpponentEvidence };
   });
   return ranked.sort((a, b) => Number(b.viable) - Number(a.viable) || b.fit - a.fit || compareStrength(a, b));
 }

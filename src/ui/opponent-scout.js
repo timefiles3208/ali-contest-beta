@@ -1,7 +1,7 @@
 import { recognizeOpponentLabels, warmOpeningOcr } from '../adapters/local-ocr.js?v=selected-augment-icons';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
-import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js';
+import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=formation-plan';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 
 const SCOUT_BUDGET_MS = 5_000;

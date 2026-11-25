@@ -1,22 +1,22 @@
-import { recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=selected-augment-icons';
+import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=formation-plan';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=selected-augment-icons';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=selected-augment-icons';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=selected-augment-icons';
+import { bindScreenReader } from './ui/screen-reader.js?v=formation-plan';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=formation-plan';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=formation-plan';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=selected-augment-icons';
+import { rankOpening } from './engine/opening.js?v=formation-plan';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
-import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
+import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=formation-plan';
 import { planItems } from './engine/items.js';
-import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
+import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=formation-plan';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=selected-augment-icons';
@@ -214,12 +214,12 @@ function renderCompGuide(comp) {
       : '<span class="guide-cell" aria-hidden="true"></span>').join('')}
   </div>`).join('');
   const targets = units.map(unit => `<tr>
-    <th scope="row">${esc(unit.name)}</th>
+    <th scope="row">${esc(unit.name)} <small>${unit.cost}费</small></th>
     <td><span class="guide-stars">${unit.stars} 星</span><small>${unit.sourceStars ? '来源标注' : '参考'}</small></td>
     <td>${unit.items.map(id => items.get(id)).filter(Boolean).map(esc).join('、') || '—'}</td>
   </tr>`).join('');
   const levels = rolls.map(({ level, targets }) =>
-    `<li><strong>${level} 级</strong> · ${targets.map(unit => `${esc(unit.name)} ${unit.stars} 星`).join('、')}</li>`).join('');
+    `<li><strong>${level} 级</strong> · ${targets.map(unit => `${unit.stars >= 3 ? '追' : unit.cost >= 4 ? '搜' : '顺手补'} ${esc(unit.name)} ${unit.cost}费 ${unit.stars}星${unit.sourceStars ? '' : '参考'}`).join('、')}</li>`).join('');
   const riftbeastShop = comp.aimTraits?.DA_Riftbeast18 >= 5
     && rolls.some(({ targets }) => targets.some(unit => unit.traits?.includes('DA_Riftbeast18')));
   const traitLine = (traits) => traits.map(trait => `${trait.tier} ${esc(trait.name)}`).join(' · ');
@@ -268,7 +268,7 @@ function renderCompGuide(comp) {
       </div>
       <div class="guide-roll">
         <h3>推荐搜牌等级</h3>
-        <p class="fine">按目标棋子的费用和星级估算。</p>
+        <p class="fine">按核心棋子的费用和目标星级估算，最终阵容人口单独列出。</p>
         ${levels ? `<ul>${levels}</ul>` : '<p class="fine">缺少可用于估算的棋子费用。</p>'}
         ${riftbeastShop ? '<p class="fine">开启 5 峡谷野怪时，也可利用羁绊商店补牌。</p>' : ''}
       </div>
@@ -342,9 +342,8 @@ function renderResults() {
   box.innerHTML =
     hot.map((r, i) => {
     const c = r.comp;
-    const unitOf = (id) => state.setData.units.find((u) => u.id === id);
     const coreMissing = r.detail.coreMissing;
-    const tags = [c.level ? `${c.level} 人口成型` : null, c.diff ? `难度 ${c.diff}` : null, c.carry?.length ? `主C ${c.carry.map((id) => unitOf(id)?.name).filter(Boolean).join('/')}` : null]
+    const tags = [formationRoles(r.formation), c.level ? `最终阵容 ${c.level} 人口` : null, c.diff ? `难度 ${c.diff}` : null]
       .filter(Boolean).map(esc).join('<span>·</span>');
     const body = state.open.has(c.id) ? `<div class="rows">
       ${r.reasons.length ? `<div class="row"><span class="k">开局契合</span><span class="v">${esc(r.reasons.join(' · '))}</span></div>` : ''}
@@ -354,7 +353,7 @@ function renderResults() {
       ${(() => { const act = r.simulatedTraits.filter((t) => t.tier > 0); return act.length ? `<div class="row"><span class="k">当前羁绊</span><span class="v">${act.map((t) => `<span class="tchip ${t.aim && t.tier >= t.aim ? 'hi' : ''}">${esc(t.name)} <b>${t.tier}</b>${t.aim ? `<em style="opacity:.55;font-style:normal">/目标 ${t.aim}</em>` : ''}<em style="opacity:.55;font-style:normal">${t.num}人</em></span>`).join('')}</span></div>` : ''; })()}
       ${r.detail.missing.filter(Boolean).length ? `<div class="row"><span class="k">还需要</span><span class="v">${r.detail.missing.map((u) => `<span class="tchip">${esc(u.name)} <b>${u.cost}费</b></span>`).join('')}</span></div>` : ''}
       ${r.detail.ownedOutside.length ? `<div class="row"><span class="k">你还有</span><span class="v"><span class="note">${esc(r.detail.ownedOutside.join('、'))} 不在这套里，可作为转型筹码</span></span></div>` : ''}
-      ${r.detail.levelGap ? `<div class="row"><span class="k">人口</span><span class="v warnline">还差 ${r.detail.levelGap} 级才到成型人口，先按低配版打</span></div>` : ''}
+      ${r.detail.levelGap ? `<div class="row"><span class="k">人口</span><span class="v warnline">距离最终阵容人口还有 ${r.detail.levelGap} 级</span></div>` : ''}
       ${c.econ ? `<div class="row"><span class="k">运营</span><span class="v"><span class="note">${esc(c.econ)}</span></span></div>` : ''}
       ${c.rank ? `<div class="row"><span class="k">榜单</span><span class="v"><span class="note">${esc([
         c.rank.source, c.rank.tier && `评级 ${c.rank.tier}`, c.rank.appear != null && `出场 ${c.rank.appear}`,

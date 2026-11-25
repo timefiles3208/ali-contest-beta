@@ -57,7 +57,8 @@ test('economy distinguishes saving gold, using an early reroll board, and leveli
   const xp = { ...goldOther, desc: '获得4经验值。' };
   const cash = { ...gold, desc: '获得6金币。' };
   const context = {
-    setData, augments: [xp, cash], ranked: [{ viable: true, comp: { level: 9, units: [], items: {} } }],
+    setData: { ...setData, units: [{ id: 'carry', name: '高费核心', cost: 5, traits: [] }] },
+    augments: [xp, cash], ranked: [{ viable: true, comp: { level: 9, units: ['carry'], carry: ['carry'], items: {} } }],
     selected: new Set(), offered: [xp.id, cash.id], tier: 'gold',
   };
   const low = rankOpeningAugments({ ...context, economy: 'low' });
@@ -65,7 +66,7 @@ test('economy distinguishes saving gold, using an early reroll board, and leveli
   assert.equal(low[0].aug.id, cash.id);
   assert.match(low[0].reasons.join(' '), /经济紧张.*金币/);
   assert.equal(high[0].aug.id, xp.id);
-  assert.match(high[0].reasons.join(' '), /经济充足.*人口/);
+  assert.match(high[0].reasons.join(' '), /经济充足.*高费核心/);
 });
 
 test('rewards the held core and the exact equipment gap, with no missing-item credit once crafted', () => {

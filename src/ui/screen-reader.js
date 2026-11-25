@@ -1,4 +1,4 @@
-import { renderLineupList } from './lineup-list.js?v=selected-augment-icons';
+import { renderLineupList } from './lineup-list.js?v=formation-plan';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
 import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=selected-augment-icons';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
