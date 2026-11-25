@@ -2,7 +2,7 @@ import { renderLineupList } from './lineup-list.js?v=formation-plan';
 import { rankOpeningAugments } from '../engine/opening.js?v=formation-plan';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
-export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, getContext, onChange, onPick, onTier }) {
+export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, getContext, onChange, onPick, onTier }) {
   let detectedUnits = [];
   let catalogIdentity;
   let picksKey;
@@ -28,6 +28,8 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     open.disabled = !ctx?.comps.length;
     if (!ctx || !dialog.open) return;
     const { setData, itemsData, selected, owned, ownedItems, cities, augments, ranked } = ctx;
+    const observed = ctx.opponentBoards.size;
+    opponentCoverage.textContent = `对手已记录 ${observed} 家，${7 - observed} 家未知。2-1 推荐使用已有信息，可直接查看。`;
     if (catalogIdentity !== setData) {
       catalogIdentity = setData;
       options(city, cities, '未确认');

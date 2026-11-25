@@ -6,7 +6,7 @@ import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=trait-strips';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=trait-strips';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=formation-plan';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=optional-scout';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
@@ -810,7 +810,8 @@ function bind() {
     unitSelect: el('openingUnit'), toggleUnit: el('openingToggleUnit'), ownedSummary: el('openingOwned'), candidates: el('openingCandidates'),
     inputs: ['openingHex1', 'openingHex2', 'openingHex3'].map(el), list: el('openingHexList'),
     tier: el('openingHexTier'), tierStatus: el('openingHexTierStatus'),
-    direction: el('openingDirection'), picks: el('openingPicks'), getContext: openingContext,
+    direction: el('openingDirection'), picks: el('openingPicks'),
+    opponentCoverage: el('openingOpponentCoverage'), getContext: openingContext,
     onChange({ city, economy, item, delta, unit, selected }) {
       if (city != null) state.openingCity = city;
       if (economy != null) state.economy = economy;

@@ -40,7 +40,7 @@
     <video id="screenVideo" class="screen-video" muted playsinline hidden aria-label="共享画面预览"></video>
     <details class="snap-model" id="opponentScout">
       <summary>对手视角与同行分析</summary>
-      <p class="fine">切到对手画面后选择编号，网站会等待新的共享帧再读取。同一编号只保留最后一次有效观察，2-1 推荐会参考各家的可能路线。回到自己的画面后请选择「我的视角」。</p>
+      <p class="fine">切到对手画面后选择编号，网站会等到新画面再读取。同一编号只保留最后一次有效观察。对手信息可以跳过，2-1 推荐会直接使用已有记录。回到自己的画面后请选择「我的视角」。</p>
       <div class="snap-actions">
         <label>当前视角
           <select id="scoutView">
@@ -83,6 +83,7 @@
       <h2 id="openingTitle">2-1 阵容与海克斯</h2>
       <form method="dialog"><button type="submit" class="ghost">关闭</button></form>
     </header>
+    <p id="openingOpponentCoverage" class="fine"></p>
     <div class="opening-fields">
       <label>开局城邦 <select id="openingCity"></select></label>
       <label>当前经济
@@ -252,6 +253,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=trait-strips"></script>
+<script type="module" src="./src/main.js?v=optional-scout"></script>
 </body>
 </html>
