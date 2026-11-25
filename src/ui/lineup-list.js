@@ -1,7 +1,7 @@
 import { rolldownSummary } from '../engine/rolldown.js';
 
 export function recommendedLineups(ranked = []) {
-  return ranked.some(row => row.viable || row.hasOpponentEvidence) ? ranked.slice(0, 3) : [];
+  return ranked.some(row => row.viable || row.hasOpponentEvidence || row.planning) ? ranked.slice(0, 3) : [];
 }
 
 export function formationRoles(formation) {
@@ -46,8 +46,14 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
     const name = document.createElement('strong');
     name.textContent = comp.name;
     const stats = document.createElement('span');
-    stats.textContent = ` · 榜单 ${comp.rank?.tier || '未评级'} · 适配 ${score} 分 · 最终阵容 ${comp.level} 人口`;
+    stats.textContent = ` · ${comp.plannedEmblem && comp.rank ? '原榜单' : '榜单'} ${comp.rank?.tier || '未评级'} · 适配 ${score} 分 · 最终阵容 ${comp.level} 人口`;
     row.append(name, stats);
+    if (comp.plannedEmblem) {
+      const note = document.createElement('p');
+      note.className = 'fine';
+      note.textContent = `纹章分配 · ${comp.plannedEmblem.name} → ${comp.plannedEmblem.bearer}`;
+      row.append(note);
+    }
     if (roll) {
       const estimate = document.createElement('p');
       estimate.className = 'fine';

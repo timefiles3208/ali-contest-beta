@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=rolldown-budget" />
+<link rel="stylesheet" href="./styles.css?v=recommendation-tools" />
 </head>
 <body>
 <header class="bar">
@@ -32,11 +32,13 @@
       <button id="openingOpen" class="ghost" type="button" disabled>开局推荐</button>
       <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
       <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
+      <button id="openResultFloat" class="ghost" type="button" aria-expanded="false">推荐浮窗</button>
     </div>
-    <label for="screenPhoto">导入我的 2-1 截图</label>
+    <label for="screenPhoto">导入我的开局或 2-1 截图</label>
     <input id="screenPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" />
     <p id="screenStatus" class="snap-status" role="status">正在检查屏幕共享支持…</p>
     <section id="screenDirection" class="snap-status ok" aria-live="polite" hidden></section>
+    <aside id="resultFloat" class="result-float" aria-label="推荐浮窗" hidden></aside>
     <video id="screenVideo" class="screen-video" muted playsinline hidden aria-label="共享画面预览"></video>
     <details class="snap-model" id="opponentScout">
       <summary>对手视角与同行分析</summary>
@@ -109,6 +111,8 @@
         <label>上方所选棋子的持有张数 <input id="openingUnitCopies" type="number" min="1" max="9" step="1" disabled /></label>
       </div>
       <p class="fine">登记后默认持有 1 张，二星算 3 张、三星算 9 张。概率只覆盖首位主 C，按标准商店和付费刷新估算。已观察到的同名对手棋子按每家 1 张计入。</p>
+      <p id="openingHud" class="fine" hidden></p>
+      <button id="openingApplyHud" class="ghost" type="button" hidden>应用识别数值</button>
     </fieldset>
     <fieldset class="opening-hex">
       <legend>本轮提供的海克斯</legend>
@@ -239,6 +243,14 @@
         </select>
       </label>
     </div>
+    <div class="plan-controls" role="group" aria-label="阵容限制">
+      <label>目标羁绊人数上限 <input id="planMaxTier" type="number" min="1" max="12" placeholder="不限" /></label>
+      <label>必带棋子 <select id="planInclude"></select></label>
+      <label>排除棋子 <select id="planExclude"></select></label>
+      <label>排除费用 <select id="planExcludeCost"><option value="">不限</option><option value="1">1 费</option><option value="2">2 费</option><option value="3">3 费</option><option value="4">4 费</option><option value="5">5 费</option></select></label>
+      <label>已持有纹章 <select id="planEmblem"></select></label>
+      <label>纹章携带者 <select id="planBearer" disabled></select></label>
+    </div>
     <div id="comps" class="comps"></div>
 
     <h2 class="mt">5 · 羁绊接下来往哪走</h2>
@@ -263,6 +275,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=rolldown-budget"></script>
+<script type="module" src="./src/main.js?v=recommendation-tools"></script>
 </body>
 </html>

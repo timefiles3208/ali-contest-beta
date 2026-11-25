@@ -1,6 +1,6 @@
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=lineup-only';
-import { recognizeBoardText } from './local-ocr.js?v=trait-strips';
+import { readOwnShopHud, recognizeBoardText } from './local-ocr.js?v=recommendation-tools';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
@@ -122,6 +122,7 @@ export function snapshotFromEvidence(evidence, setData, opening) {
     candidates: names(setData.units, evidence.units),
     traits: names(setData.traits || [], evidence.traits),
   };
+  if (result.matchFrame && evidence.shop) Object.assign(result, evidence.shop);
   if (!result.matchFrame || stage !== '2-1' || !evidence.opening || !opening) return result;
 
   const { cities, offered, offeredSlots } = evidence.opening;
@@ -138,28 +139,35 @@ export function snapshotFromEvidence(evidence, setData, opening) {
 }
 
 export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening, enhanced = false) {
-  let base, items, size;
+  let base, items, size, shop;
   const timed = await withinRecognitionBudget(async (current) => {
     const active = () => isCurrent() && current();
     const canvas = await snapshotCanvas(file, rotation);
     if (!active()) return;
     size = canvas;
+    const readShop = readOwnShopHud(canvas, active).then(profile => {
+      if (active()) shop = profile;
+    }).catch(() => {});
     const standard = recognizeBoardText(canvas, setData, active, {
       detailed: true, opening,
       onProgress(evidence) { if (active()) base = evidence; },
     }).then(evidence => {
       if (active()) base = evidence;
     });
-    if (!enhanced) return standard;
+    if (!enhanced) {
+      await Promise.all([standard, readShop]);
+      return;
+    }
     const neural = readNeuralText(canvas, active).then(rows => {
       if (active()) items = rows;
     });
-    const [regular] = await Promise.allSettled([standard, neural]);
+    const [regular] = await Promise.allSettled([standard, neural, readShop]);
     if (regular.status === 'rejected' && !items) throw regular.reason;
   }, enhanced ? 16_000 : undefined);
   if (!isCurrent() || (!timed.timedOut && base === null)) return null;
   const empty = { stage: null, matchFrame: false, units: [], traits: [] };
   const evidence = items ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : base || empty;
+  if (evidence.stage && evidence.stage !== '2-1' && shop) evidence.shop = shop;
   return {
     ...snapshotFromEvidence(evidence, setData, opening),
     ai: enhanced ? (items ? 'used' : 'fallback') : null, timedOut: timed.timedOut,
@@ -255,6 +263,7 @@ export function matchSnapshot(snapshot, { setData, itemsData }) {
     }),
     level: Number.isInteger(snapshot?.level) ? snapshot.level : null,
     gold: Number.isInteger(snapshot?.gold) ? snapshot.gold : null,
+    xp: Number.isInteger(snapshot?.xp) ? snapshot.xp : null,
     hp: Number.isInteger(snapshot?.hp) ? snapshot.hp : null,
     stage: snapshot?.stage || null,
     matchFrame: snapshot?.matchFrame !== false,

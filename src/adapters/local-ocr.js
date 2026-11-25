@@ -1,10 +1,11 @@
 import { contentFrame } from './game-frame.js';
 import { createOcrLane } from './ocr-lane.js';
 import { fillGoldCardSlots } from './augment-icon-ocr.js?v=layout';
-import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, opponentTraitLabels, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=trait-strips';
+import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, opponentTraitLabels, parseShopHud, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=recommendation-tools';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 const DESKTOP_STAGE = [0.398, 0.002, 0.420, 0.025];
+const EARLY_STAGE = [0.426, 0.002, 0.449, 0.027];
 const DIM_STAGE = [0.398, 0.004, 0.419, 0.025];
 const DESKTOP_TRAITS = [0.068, 0.242, 0.137, 0.63];
 const COMPACT_TRAITS = [0.095, 0.089, 0.22, 0.51];
@@ -103,8 +104,8 @@ async function readDimStage(canvas, setData, isCurrent) {
 }
 
 async function readHudStage(canvas, setData, isCurrent) {
-  for (const threshold of [70, 42, 145]) {
-    const area = cropForOcr(canvas, DESKTOP_STAGE, { zoom: 6, threshold });
+  for (const [bounds, threshold] of [[DESKTOP_STAGE, 70], [EARLY_STAGE, 100], [DESKTOP_STAGE, 42], [DESKTOP_STAGE, 145]]) {
+    const area = cropForOcr(canvas, bounds, { zoom: 6, threshold });
     const text = await readOcr(area, isCurrent, '7', '0123456789-');
     if (text === null || !isCurrent()) return null;
     const stage = screenEvidence(text, setData).stage;
@@ -121,7 +122,7 @@ function scaledForText(canvas, maxWidth = 1440) {
   scaled.getContext('2d').drawImage(canvas, 0, 0, scaled.width, scaled.height);
   return scaled;
 }
-async function openingSlots(canvas, setData, entries, isCurrent) {
+async function openingSlots(canvas, setData, entries, isCurrent, onSlots) {
   // A shared viewer may clip a 16:9 surface or letterbox it into a taller window.
   const scale = (canvas.width * 9 / 16) / canvas.height;
   const layouts = [1, scale, 0.94, 1.06]
@@ -136,13 +137,29 @@ async function openingSlots(canvas, setData, entries, isCurrent) {
     if (!isCurrent()) return null;
     const matches = slots.filter(Boolean);
     if (new Set(matches).size !== matches.length) continue;
-    if (matches.length > best.filter(Boolean).length) best = slots;
+    if (matches.length > best.filter(Boolean).length) {
+      best = slots;
+      onSlots?.(best);
+    }
     if (matches.length === 3) break;
   }
   return best;
 }
+
+export async function readOwnShopHud(canvas, isCurrent) {
+  if (canvas.width / canvas.height < 1.65 || canvas.width / canvas.height > 1.95) return null;
+  const read = (bounds, characters, threshold = 145, mode = '7') =>
+    readOcr(cropForOcr(canvas, bounds, { zoom: 6, threshold }), isCurrent, mode, characters);
+  const level = await read([0.126, 0.815, 0.153, 0.841], '0123456789');
+  if (!level || !isCurrent()) return null;
+  const gold = await read([0.475, 0.817, 0.502, 0.842], '0123456789');
+  const xp = await read([0.195, 0.819, 0.214, 0.837], '0123456789/', 115, '13');
+  const profile = parseShopHud(gold || '', level, xp || '');
+  return isCurrent() && profile.level != null && profile.gold != null ? profile : null;
+}
+
 export async function recognizeBoardText(canvas, setData, isCurrent = () => true, {
-  detailed = false, opening, readCards = true, fastOpening = false, stageOnly = false, onStage, onProgress,
+  detailed = false, opening, readCards = true, fastOpening = false, stageOnly = false, readShop = false, onStage, onProgress,
 } = {}) {
   if (fastOpening) canvas = contentFrame(canvas);
   const landscape = canvas.width >= canvas.height;
@@ -156,11 +173,16 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     onStage?.(hint);
     const evidence = { stage: hint, units: [], traits: [], matchFrame: true };
     if (stageOnly || stageAfterOpening(hint) || (hint === '2-1' && !readCards)) return evidence;
+    if (hint.startsWith('1-') && readShop) {
+      return { ...evidence, shop: await readOwnShopHud(canvas, isCurrent) };
+    }
     if (hint === '2-1' && opening && readCards) {
-      slots = await openingSlots(canvas, setData, entriesForOcr(opening.augments, setData.set), isCurrent);
+      const withSlots = offeredSlots => ({ ...evidence, opening: { cities: [], offered: [], offeredSlots } });
+      slots = await openingSlots(canvas, setData, entriesForOcr(opening.augments, setData.set), isCurrent,
+        found => onProgress?.(withSlots(found)));
       if (!slots || !isCurrent()) return null;
       if (slots.every(Boolean) && slots.length === 3) {
-        return { ...evidence, opening: { cities: [], offered: [], offeredSlots: slots } };
+        return withSlots(slots);
       }
     }
   }

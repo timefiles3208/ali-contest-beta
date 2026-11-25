@@ -104,7 +104,7 @@ function citySynergy(aug, city, high, { hitItems, hitTraits, hitCore, benefits }
 
 export function rankAugments({
   setData, augments = [], ranked = [], selected = new Set(), chosen = new Set(), limit = 6, city, economy,
-  itemsData, owned = new Map(), ownedItems = new Set(),
+  itemsData, owned = new Map(), ownedItems = new Set(), augmentStats,
 }) {
   const traitIdByName = new Map((setData.traits || []).map((t) => [t.name, t.id]));
   const top = ranked.find((r) => r.viable) || null;
@@ -147,10 +147,16 @@ export function rankAugments({
     const economic = economyFit(economy, reroll, high, benefits);
     const inventoryFit = Math.min(0.32, (economic?.points || 0) + (gap ? 0.17 : 0) + (heldGrant ? 0.11 : 0));
 
+    const stats = augmentStats?.get(aug.name.normalize('NFKC').replace(/\s/g, ''));
+    const tierPoints = { 'S+': 0.1, S: 0.08, A: 0.05, B: 0.03, C: 0.01 };
+    const prior = tierPoints[stats?.rating] ?? (Number.isFinite(stats?.top4) ? Math.max(0, Math.min(0.08, (stats.top4 - 45) / 150)) : 0);
     const total = 0.5 * traitScore + 0.3 * Math.min(1, (hitCore.length + hitAny.length) / 2)
-      + 0.18 * Math.min(1, hitItems.length) + cat.prior + (synergy?.points || 0) + inventoryFit;
+      + 0.18 * Math.min(1, hitItems.length) + cat.prior + (synergy?.points || 0) + inventoryFit + prior;
     const score = Math.min(1, total);
     const reasons = [];
+    if (stats?.rating) reasons.push(`榜单 ${stats.rating}`);
+    if (Number.isFinite(stats?.top4)) reasons.push(`前四率 ${stats.top4}%`);
+    if (Number.isFinite(stats?.avg)) reasons.push(`平均名次 ${stats.avg}`);
     if (synergy) reasons.push(`${city.name} · ${synergy.reason}`);
     if (economic) reasons.push(economic.reason);
     if (heldGrant) reasons.push(`已有 ${heldGrant} · 补牌有助升星`);

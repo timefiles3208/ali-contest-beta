@@ -30,6 +30,17 @@ export function hasMatchFrame(stage, text) {
   return /购买经验|BuyXP/i.test(compact) && /刷新|Reroll/i.test(compact);
 }
 
+export function parseShopHud(goldText, levelText, xpText) {
+  const gold = goldText.normalize('NFKC').trim().match(/^\d{1,3}$/)?.[0];
+  const level = levelText.normalize('NFKC').trim().match(/^(?:Lv\.?\s*)?(10|[1-9])\s*级?$/i)?.[1];
+  const progress = xpText.normalize('NFKC').trim().match(/^(\d{1,2})\s*\/\s*(\d{1,2})$/);
+  return {
+    ...(gold != null && Number(gold) <= 200 && { gold: Number(gold) }),
+    ...(level && { level: Number(level) }),
+    ...(level && progress && +progress[1] < +progress[2] && +progress[2] <= 68 && { xp: +progress[1] }),
+  };
+}
+
 export function matchRegionLabel(text, entries) {
   const label = regionLabel(text);
   if (!label) return null;

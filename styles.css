@@ -331,3 +331,27 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 .opening-tier .fine { margin: 0 0 5px; }
 #openingPicks { display: grid; gap: 8px; padding-inline-start: 1.6em; margin-bottom: 0; }
 #openingPicks span { display: inline-block; margin-inline-start: 8px; }
+.result-float {
+  position: fixed;
+  z-index: 20;
+  right: 12px;
+  bottom: 12px;
+  width: min(410px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: min(480px, 70vh);
+  padding: 12px;
+  overflow: auto;
+  resize: both;
+  color: #e4f0f5;
+  background: #17232d;
+  border: 1px solid #445569;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.float-controls { display: flex; align-items: center; gap: 8px; }
+.float-controls strong { margin-inline-end: auto; }
+.float-folded:not(:hover) .float-result { display: none; }
+.float-window { margin: 0; background: #17232d; }
+.float-window .result-float {
+  position: static; width: 100%; max-width: none; max-height: 100vh; resize: none; border-radius: 0;
+}

@@ -1,6 +1,6 @@
-import { renderLineupList } from './lineup-list.js?v=rolldown-budget';
+import { renderLineupList } from './lineup-list.js?v=recommendation-tools';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=trait-strips';
+import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=recommendation-tools';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { boardFrameStamp, sameBoardFrame, waitForVideoFrame } from '../adapters/video-frame.js';
 const FRAME_INTERVAL_MS = 400;
@@ -117,6 +117,10 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         const read = await withinRecognitionBudget(current => recognizeBoardText(
           canvas, session.context.setData, () => active === session && perspectiveRevision === revision && current(), {
             opening: opponent ? undefined : session.context.opening, fastOpening: true, stageOnly: opponent, readCards: !opponent && !session.cardsRead,
+            readShop: !opponent && session.context.readShop,
+            onProgress(evidence) {
+              if (!opponent && active === session && perspectiveRevision === revision && evidence.opening) onEvidence(evidence);
+            },
             onStage(stage) {
               if (opponent || perspectiveRevision !== revision || stage !== '2-1' || session.atOpening) return;
               session.atOpening = true;
@@ -145,7 +149,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
           retry();
           return;
         }
-        if (evidence?.opening) onEvidence(evidence);
+        if (evidence?.opening || evidence?.shop) onEvidence(evidence);
         if (evidence?.stage === '2-1' && evidence.opening?.offeredSlots?.every(Boolean)) session.cardsRead = true;
         if (read.timedOut) {
           showDirection(session.context, '画面识别暂未完成，已先按确认的开局条件给出方向。');
@@ -171,7 +175,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       try {
         if (finishedJob !== job || !current()) return null;
         return await recognizeBoardText(toCanvas(bitmap, bitmap.width, bitmap.height, 2160), context.setData,
-          () => finishedJob === job && current(), { fastOpening: true, opening: context.opening });
+          () => finishedJob === job && current(), { fastOpening: true, opening: context.opening, readShop: context.readShop });
       } finally {
         bitmap.close();
       }
@@ -182,6 +186,12 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       return;
     }
     const evidence = read.value;
+    if (evidence?.stage?.startsWith('1-') && evidence.shop) {
+      onEvidence(evidence);
+      onOpening();
+      say('已读取开局等级和金币，可在推荐面板核对并应用。');
+      return;
+    }
     if (evidence?.stage !== '2-1') {
       say(evidence?.stage
         ? `截图读到 ${evidence.stage}。请导入 2-1 的海克斯选择画面。`

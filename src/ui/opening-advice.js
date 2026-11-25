@@ -1,9 +1,10 @@
-import { renderLineupList } from './lineup-list.js?v=rolldown-budget';
-import { rankOpeningAugments } from '../engine/opening.js?v=formation-plan';
+import { renderLineupList } from './lineup-list.js?v=recommendation-tools';
+import { rankOpeningAugments } from '../engine/opening.js?v=recommendation-tools';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
-export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, getContext, onChange, onPick, onTier }) {
+export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier }) {
   let detectedUnits = [];
+  let detectedShop;
   let catalogIdentity;
   let picksKey;
   let listTier;
@@ -17,6 +18,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   function reset() {
     if (dialog.open) dialog.close();
     detectedUnits = [];
+    detectedShop = null;
     city.value = economy.value = item.value = unitSelect.value = '';
     tier.value = '';
     inputs.forEach(input => { input.value = ''; });
@@ -46,6 +48,11 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     rollLevel.value = ctx.rollBudget.level ?? '';
     rollGold.value = ctx.rollBudget.gold ?? '';
     rollXp.value = ctx.rollBudget.xp ?? '';
+    hud.hidden = applyHud.hidden = !detectedShop;
+    if (detectedShop) {
+      const { level, gold, xp } = detectedShop;
+      hud.textContent = [`截图识别 ${level} 级`, `${gold} 金`, xp != null && `经验 ${xp}`].filter(Boolean).join(' · ');
+    }
     showCopies(ctx);
     const chosenTier = tier.value || ctx.city?.firstAugmentTier;
     const offered = offeredIds(augments, chosenTier);
@@ -94,7 +101,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     });
     const chosen = rankOpeningAugments({
       setData, augments, ranked, selected, owned, ownedItems, itemsData,
-      offered: available, tier: effective, city: ctx.city, economy: ctx.economy,
+      offered: available, tier: effective, city: ctx.city, economy: ctx.economy, augmentStats: ctx.board?.augments,
     });
     const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
     if (nextKey === picksKey) return;
@@ -142,14 +149,18 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     };
   }
   unitSelect.onchange = () => showCopies(getContext());
+  applyHud.onclick = () => {
+    if (detectedShop) onChange({ rollBudget: { xp: undefined, ...detectedShop } });
+  };
   copies.onchange = () => {
     if (copies.reportValidity()) onChange({ unitCopies: { id: unitSelect.value, count: copies.valueAsNumber || 1 } });
   };
 
-  function receive({ units, opening }) {
+  function receive({ units = [], opening, shop }) {
     const ctx = getContext();
     if (!ctx) return;
-    if (units.length || dialog.open) detectedUnits = units;
+    if (units.length || opening && dialog.open) detectedUnits = units;
+    if (shop) detectedShop = shop;
     const cities = opening?.cities || [];
     if (!ctx.city && cities.length === 1) onChange({ city: cities[0] });
     const slots = opening?.offeredSlots;

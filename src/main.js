@@ -1,30 +1,33 @@
-import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=rolldown-budget';
+import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=recommendation-tools';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=rolldown-budget';
+import { bindScreenReader } from './ui/screen-reader.js?v=recommendation-tools';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=trait-strips';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=rolldown-budget';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=recommendation-tools';
+import { bindRecommendationFloat } from './ui/recommendation-float.js';
+import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=rolldown-budget';
+import { rankOpening } from './engine/opening.js?v=recommendation-tools';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
-import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=formation-plan';
+import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=recommendation-tools';
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=formation-plan';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=trait-strips';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=recommendation-tools';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let modelReference, screenReader, openingAdvice, matchSamples, iconMatch, scout;
+let resultFloat;
 let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
@@ -147,6 +150,14 @@ async function loadSet(setNum) {
   state.setData = setData;
   state.items = items;
   state.augs = augments;
+  for (const [key, label] of [['planInclude', '不限'], ['planExclude', '不限'], ['planBearer', '自动分配']]) {
+    el(key).replaceChildren(new Option(label, ''), ...setData.units.map(unit => new Option(unit.name, unit.id)));
+  }
+  const emblemNames = new Set((items?.items || []).filter(item => /纹章/.test(item.name)).map(item => item.name.replace(/^(.*?)(?:纹章).*$/, '$1')));
+  el('planEmblem').replaceChildren(new Option('无纹章', ''), ...(setData.traits || [])
+    .filter(trait => emblemNames.has(trait.name)).map(trait => new Option(trait.name, trait.id)));
+  el('planBearer').disabled = true;
+  el('planMaxTier').value = el('planExcludeCost').value = '';
   el('planCap').value = '';
   el('planTrait').replaceChildren(new Option('全部羁绊', ''),
     ...(setData.traits || []).map(({ name, id }) => new Option(name, id)));
@@ -336,13 +347,19 @@ function renderResults() {
     renderSide();
     return;
   }
-  const ranked = rankOpening({ ...openingContext(), patch: state.board?.version, model: openingModel });
-  state.ranked = ranked;
-  const filters = { trait: el('planTrait').value, tier: Number(el('planTier').value), maxLevel: Number(el('planCap').value) };
-  const exploring = Boolean(filters.trait || filters.maxLevel);
+  const filters = {
+    trait: el('planTrait').value, tier: Number(el('planTier').value), maxLevel: Number(el('planCap').value),
+    maxTier: Number(el('planMaxTier').value), include: el('planInclude').value, exclude: el('planExclude').value,
+    excludeCost: Number(el('planExcludeCost').value), emblem: el('planEmblem').value, bearer: el('planBearer').value,
+  };
+  const constrained = Boolean(filters.include || filters.exclude || filters.excludeCost || filters.emblem || filters.trait && filters.maxTier);
+  const exploring = Boolean(filters.trait || filters.maxLevel || constrained);
+  const solved = constrained ? solveBoardConstraints(state.comps, state.setData, filters) : null;
+  const ranked = rankOpening({ ...openingContext(), comps: solved?.comps || state.comps, patch: state.board?.version, model: openingModel });
   const matched = ranked.filter(row => row.viable);
-  const plans = exploring ? filterCompPlans(ranked, filters)
+  const plans = exploring ? (solved ? ranked : filterCompPlans(ranked, filters)).map(row => ({ ...row, planning: true }))
     : matched.length < 3 ? recommendedLineups(ranked) : matched;
+  state.ranked = exploring ? plans : ranked;
   const hot = plans.slice(0, 8);
   const coldCount = ranked.length - matched.length - hot.filter(row => !row.viable).length;
   if (!hot.length) {
@@ -352,7 +369,7 @@ function renderResults() {
     renderSide();
     return;
   }
-  const coldNote = exploring ? `<p class="fine">符合条件 ${plans.length} 套，显示前 ${hot.length} 套。</p>` : coldCount
+  const coldNote = exploring ? `<p class="fine">符合条件 ${plans.length} 套，显示前 ${hot.length} 套。${solved?.generated ? '调整方案为榜单阵容换一名棋子的结构估算，暂无对局评级。' : ''}</p>` : coldCount
     ? `<p class="fine" style="margin:10px 2px 0;color:#5f7284;font-size:12px">另有 ${coldCount} 套暂未匹配开局条件。</p>`
     : '';
   box.innerHTML =
@@ -379,11 +396,12 @@ function renderResults() {
       ${c.notes ? `<div class="row"><span class="k">说明</span><span class="v"><span class="note">${esc(c.notes)}</span></span></div>` : ''}
       ${!r.viable ? '<div class="row"><span class="k">判定</span><span class="v warnline">当前开局条件未匹配，可作为赛前参考。</span></div>' : ''}
     </div>` : '';
-    return `<article class="comp ${state.open.has(c.id) ? 'open' : ''} ${r.viable ? '' : 'cold'}" data-comp="${c.id}">
+    const emblem = c.plannedEmblem && `纹章分配 · ${c.plannedEmblem.name} → ${c.plannedEmblem.bearer}${c.rank?.tier ? ' · 评级对应原榜单阵容' : ''}`;
+    return `<article class="comp ${state.open.has(c.id) ? 'open' : ''} ${r.viable ? '' : 'cold'}" data-comp="${esc(c.id)}">
       <header class="comp-head"><span class="rank">${i + 1}</span><span class="nm">${esc(c.name)}${c.rank?.tier ? ` <small class="board-stat">${esc(c.rank.tier)} 级</small>` : ''}</span>
         <span class="tags">${tags}</span>
         <span class="score"><span class="meter"><i style="width:${Math.min(100, r.score)}%"></i></span><span class="num c${r.score >= 70 ? 2 : r.score >= 40 ? 4 : 1}">${r.score}</span></span>
-      </header>${r.roll ? `<p class="fine">${esc(rolldownSummary(r.roll))}</p>` : ''}${body}
+      </header>${emblem ? `<p class="fine">${esc(emblem)}</p>` : ''}${r.roll ? `<p class="fine">${esc(rolldownSummary(r.roll))}</p>` : ''}${body}
     </article>`;
   }).join('') + coldNote;
   renderSide();
@@ -400,6 +418,7 @@ function renderSide() {
   openingAdvice?.draw();
   scout?.render();
   if (state.ranked) screenReader?.refreshDirection();
+  resultFloat?.refresh();
   matchSamples?.refresh();
 }
 
@@ -470,6 +489,7 @@ function renderHexes(top) {
     chosen: state.chosen,
     city: openingContext()?.city,
     economy: state.economy, itemsData: state.items, owned: state.owned, ownedItems: state.ownedItems,
+    augmentStats: state.board?.augments,
     limit: 10,
   }).filter((x) => !curatedSet.has(x.aug.id));
 
@@ -654,6 +674,7 @@ function renderSnapshot() {
     snap.ai === 'used' ? 'PaddleOCR 本地增强' : '本地文字识别',
     m.level ? `人口 ${m.level}` : null,
     m.gold != null ? `金币 ${m.gold}` : null,
+    m.xp != null ? `经验 ${m.xp}` : null,
     m.hp != null ? `血量 ${m.hp}` : null,
     m.stage ? `阶段 ${esc(m.stage)}` : null,
   ].filter(Boolean);
@@ -778,6 +799,9 @@ async function runRecognize(enhanced = false) {
       return;
     }
     state.snap.mapped = matchSnapshot(result, { setData: state.setData, itemsData: state.items });
+    if (result.matchFrame && result.level != null && result.gold != null) {
+      openingAdvice.receive({ shop: { level: result.level, gold: result.gold, xp: result.xp } });
+    }
     if (result.stage === '2-1' && result.matchFrame) {
       openingAdvice.receive({
         units: state.snap.mapped.candidates.map(row => row.id).filter(Boolean), opening: result.opening,
@@ -822,6 +846,7 @@ function bind() {
     opponentCoverage: el('openingOpponentCoverage'), getContext: openingContext,
     rollFields: el('openingRolldown'), rollLevel: el('openingRollLevel'),
     rollGold: el('openingRollGold'), rollXp: el('openingRollXp'), copies: el('openingUnitCopies'),
+    hud: el('openingHud'), applyHud: el('openingApplyHud'),
     onChange({ city, economy, item, delta, unit, selected, rollBudget, unitCopies }) {
       if (city != null) state.openingCity = city;
       if (economy != null) state.economy = economy;
@@ -865,12 +890,17 @@ function bind() {
       return {
         setData: context.setData,
         opening: { cities: context.cities, augments: context.augments },
+        readShop: state.sourceId === 'datatft',
         ranked: () => state.ranked || [],
       };
     },
     isOpponentView: () => Boolean(el('scoutView').value),
     onEvidence: openingAdvice.receive,
     onOpening: openingAdvice.show,
+  });
+  resultFloat = bindRecommendationFloat({
+    toggle: el('openResultFloat'), panel: el('resultFloat'), status: el('screenStatus'),
+    ranked: () => state.ranked || [],
   });
   scout = bindOpponentScout({
     view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'), iconPhoto: el('scoutIconPhoto'),
@@ -927,6 +957,14 @@ function bind() {
   el('planTrait').onchange = () => { refreshPlanTiers(); renderResults(); };
   el('planTier').onchange = renderResults;
   el('planCap').onchange = renderResults;
+  for (const key of ['planMaxTier', 'planInclude', 'planExclude', 'planExcludeCost', 'planEmblem', 'planBearer']) {
+    el(key).onchange = () => {
+      const bearer = el('planBearer');
+      bearer.disabled = !el('planEmblem').value;
+      if (bearer.disabled) bearer.value = '';
+      renderResults();
+    };
+  }
   el('augmentTierFilter').onchange = () => renderHexes((state.ranked || []).find(row => row.viable));
   el('search').oninput = (e) => { state.query = e.target.value.trim(); renderUnits(); };
   el('clearSel').onclick = () => { state.selected.clear(); renderUnits(); renderResults(); };

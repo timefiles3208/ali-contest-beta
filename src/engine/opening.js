@@ -2,7 +2,7 @@ import { formationPlan } from './formation.js';
 import { opponentPressure } from './opponent-scout.js?v=formation-plan';
 import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
-import { rankAugments } from './augments.js?v=formation-plan';
+import { rankAugments } from './augments.js?v=recommendation-tools';
 import { augmentTier } from '../data/augment-tiers.js';
 import { estimateRolldown, validRollBudget } from './rolldown.js';
 
