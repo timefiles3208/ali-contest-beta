@@ -1,17 +1,17 @@
-import { recommendedLineups, renderLineupList } from './ui/lineup-list.js';
+import { recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=scout-2-1';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=opponent-scout';
-import { bindOpponentScout } from './ui/opponent-scout.js';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=opponent-scout';
+import { bindScreenReader } from './ui/screen-reader.js?v=scout-2-1';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=scout-2-1';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=scout-2-1';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=opponent-scout';
+import { rankOpening } from './engine/opening.js?v=scout-2-1';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
@@ -19,7 +19,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=opponent-scout';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=scout-2-1';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -53,12 +53,12 @@ const state = {
   openingCity: '',
   economy: '',
   openingAugment: '',
-  opponents: new Map(),
+  opponentBoards: new Map(),
   snap: { file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false },
 };
 
 async function loadBoard() {
-  state.opponents.clear();
+  state.opponentBoards.clear();
   scout?.reset();
   screenReader?.reset();
   openingAdvice?.reset();
@@ -102,7 +102,7 @@ async function loadBoard() {
 }
 
 async function loadSet(setNum) {
-  state.opponents.clear();
+  state.opponentBoards.clear();
   scout?.reset();
   screenReader?.reset();
   iconMatch?.reset();
@@ -853,18 +853,17 @@ function bind() {
     onOpening: openingAdvice.show,
   });
   scout = bindOpponentScout({
-    view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'), unit: el('scoutUnit'),
-    add: el('scoutAdd'), save: el('scoutSave'), clear: el('scoutClear'), clearAll: el('scoutClearAll'),
-    choices: el('scoutChoices'), status: el('scoutStatus'), summary: el('scoutSummary'),
+    view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'),
+    clear: el('scoutClear'), clearAll: el('scoutClearAll'), status: el('scoutStatus'), summary: el('scoutSummary'),
     getContext: () => !loadingSet && state.setData ? {
-      setData: state.setData, comps: state.comps, opponents: state.opponents, patch: state.board?.version,
+      setData: state.setData, comps: state.comps, boards: state.opponentBoards, patch: state.board?.version,
     } : null,
     getFrame: () => screenReader.getFrame(),
     onViewChange: () => screenReader.perspectiveChanged(),
-    onChange(slot, units) {
-      if (slot === null) state.opponents.clear();
-      else if (units.length) state.opponents.set(slot, units);
-      else state.opponents.delete(slot);
+    onChange(slot, observation) {
+      if (slot === null) state.opponentBoards.clear();
+      else if (observation) state.opponentBoards.set(slot, observation);
+      else state.opponentBoards.delete(slot);
       if (state.setData && !loadingSet) renderResults();
     },
   });

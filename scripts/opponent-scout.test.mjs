@@ -1,41 +1,47 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { predictOpponentRoutes } from '../src/engine/opponent-scout.js';
+import { opponentPressure, predictOpponentRoutes } from '../src/engine/opponent-scout.js';
 import { rankOpening } from '../src/engine/opening.js';
 
-const roster = ['a','b','c','d','e'].map(id => ({ id, name: id, cost: 2, traits: [] }));
-const comp = (id, units, tier) => ({ id, name: id, units, core: units.slice(0, 1), carry: units.slice(0, 1), level: 7, rank: { tier }, aimTraits: {} });
-const first = comp('first', ['a','b'], 'S');
+const roster = ['a','b','c','d','e','f'].map(id => ({ id, name: id, cost: 2, traits: [] }));
+const comp = (id, units, tier, aimTraits = {}) => ({
+  id, name: id, units, core: units.slice(0, 1), carry: units.slice(0, 1), level: 7, rank: { tier }, aimTraits,
+});
+const first = comp('first', ['a','b'], 'S', { t: 3, u: 2 });
 const second = comp('second', ['c','d'], 'A');
+const third = comp('third', ['f','b','e'], 'A');
+const fourth = comp('fourth', ['d','a'], 'B');
+const fifth = comp('fifth', ['e','a'], 'B');
 const context = {
-  setData: { units: roster, traits: [] }, comps: [first, second],
+  setData: { units: roster, traits: [] }, comps: [first, second, third, fourth, fifth],
   selected: new Set(['a','c']), owned: new Map(), ownedItems: new Set(),
 };
+const evidence = { units: ['a','b','d','e'], traits: ['t','u'] };
 
-test('two confirmed units identify an opponent route and move an uncontested comparable route first', () => {
-  const opponents = new Map([['1', new Set(['a','b'])]]);
-  assert.equal(predictOpponentRoutes([first, second], opponents)[0].comp?.id, first.id);
+test('one board returns up to three ranked routes and discounts competing alternatives', () => {
+  const routes = predictOpponentRoutes(context.comps, evidence);
+  assert.deepEqual(routes.map(({ comp }) => comp.id), ['first', 'fourth', 'fifth']);
+  const opponentBoards = new Map([['1', { routes }]]);
   assert.equal(rankOpening(context)[0].comp.id, first.id);
-  const [top, contested] = rankOpening({ ...context, opponents });
-  assert.equal(top.comp.id, second.id);
-  assert.equal(contested.opponentCount, 1);
-  assert.equal(contested.score, 0);
+  const ranked = rankOpening({ ...context, opponentBoards });
+  assert.equal(ranked[0].comp.id, second.id);
+  assert.match(ranked.find(row => row.comp.id === first.id).reasons.join(' '), /同行.*12 分/);
+  assert.deepEqual(opponentPressure(fourth, opponentBoards), { opponents: 1, discount: 8 });
+  assert.deepEqual(opponentPressure(fifth, opponentBoards), { opponents: 1, discount: 8 });
 });
 
-test('a single common unit, ambiguous rosters, and empty opponent slots cause no penalty', () => {
-  const companions = comp('ambiguous', ['a','b','e'], 'B');
-  assert.equal(predictOpponentRoutes([first, companions], new Map([['1', ['a','b']]]))[0].comp, null);
-  assert.equal(predictOpponentRoutes([first, second], new Map([['1', ['a','a']]]))[0].comp, null);
-  assert.deepEqual(predictOpponentRoutes([first, second], new Map([['1', []]])), []);
-  assert.equal(rankOpening({ ...context, opponents: new Map([['1', ['a']]]) })[0].comp.id, first.id);
+test('weak reads yield no guesses while two matching traits can supply useful evidence', () => {
+  assert.deepEqual(predictOpponentRoutes(context.comps, { units: ['a','a'] }), []);
+  assert.deepEqual(predictOpponentRoutes(context.comps, { traits: ['t'] }), []);
+  assert.deepEqual(predictOpponentRoutes(context.comps, { traits: ['t','u'] }).map(row => row.comp.id), ['first']);
 });
 
-test('opponents contest variants with the same carry and the deduction is capped', () => {
-  const variant = comp('variant', ['a','d','e'], 'A');
-  const opponents = new Map([['1', ['a','b']], ['2', ['a','b']], ['3', ['a','b']]]);
-  const ranked = rankOpening({ ...context, comps: [first, second, variant], opponents });
-  assert.equal(ranked.find(row => row.comp.id === variant.id).opponentCount, 3);
-  assert.equal(ranked.find(row => row.comp.id === first.id).opponentCount, 3);
-  assert.equal(ranked.find(row => row.comp.id === second.id).opponentCount, 0);
-  assert.ok(ranked.find(row => row.comp.id === variant.id).reasons.includes('可能有 3 名同行，适配扣 28 分'));
+test('a new observation replaces that slot, and each opponent contributes at most once per lineup', () => {
+  const variant = comp('variant', ['a','b','e'], 'B');
+  const routes = predictOpponentRoutes([...context.comps, variant], evidence);
+  const opponentBoards = new Map([['1', { routes }], ['2', { routes }], ['3', { routes }]]);
+  assert.deepEqual(opponentPressure(first, opponentBoards), { opponents: 3, discount: 28 });
+  opponentBoards.set('1', { routes: predictOpponentRoutes(context.comps, { units: ['c','d'] }) });
+  assert.deepEqual(opponentPressure(first, opponentBoards), { opponents: 2, discount: 24 });
+  assert.deepEqual(opponentPressure(second, opponentBoards), { opponents: 1, discount: 12 });
 });

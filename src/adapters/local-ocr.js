@@ -267,8 +267,11 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
 
 export async function recognizeOpponentLabels(canvas, setData, isCurrent) {
   const board = contentFrame(canvas);
-  const labels = cropForOcr(board, [0.12, 0.12, 0.87, 0.82], { zoom: 1.2, contrast: false });
+  const labels = cropForOcr(board, [0.03, 0.12, 0.87, 0.82], { zoom: 1, contrast: false });
   const text = await readOcr(labels, isCurrent);
   if (text === null || !isCurrent()) return null;
-  return openingNamesInText(text, [], entriesForOcr(setData.units, setData.set)).offered;
+  return {
+    units: openingNamesInText(text, [], entriesForOcr(setData.units, setData.set)).offered,
+    traits: screenEvidence(text, setData).traits,
+  };
 }

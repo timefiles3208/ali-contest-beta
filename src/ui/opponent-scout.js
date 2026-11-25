@@ -1,57 +1,63 @@
-import { recognizeOpponentLabels } from '../adapters/local-ocr.js?v=opponent-scout';
+import { recognizeOpponentLabels, warmOpeningOcr } from '../adapters/local-ocr.js?v=scout-2-1';
 import { predictOpponentRoutes } from '../engine/opponent-scout.js';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 
-export function bindOpponentScout({ view, capture, photo, unit, add, save, clear, clearAll, choices, status, summary, getContext, getFrame, onChange, onViewChange }) {
-  let draft = new Map();
-  let revision = 0;
+const SCOUT_BUDGET_MS = 5_000;
+
+export function bindOpponentScout({ view, capture, photo, clear, clearAll, status, summary, getContext, getFrame, onChange, onViewChange }) {
+  const pending = new Map();
   const signal = text => { status.textContent = text; };
 
   function render() {
     const context = getContext();
     const slot = view.value;
     const available = Boolean(context?.comps.length && slot);
-    capture.disabled = photo.disabled = unit.disabled = add.disabled = !available;
-    const roster = context?.setData?.units || [];
-    if (unit.options.length !== roster.length + 1 || unit.dataset.season !== String(context?.setData?.set)) {
-      unit.dataset.season = String(context?.setData?.set);
-      unit.replaceChildren(new Option('选择棋子', ''), ...roster.map(row => new Option(row.name, row.id)));
-    }
-    save.disabled = !available || ![...draft.values()].some(Boolean);
-    clear.disabled = !available || (!context?.opponents.has(slot) && !draft.size);
-    clearAll.disabled = !context?.opponents.size && !draft.size;
-    choices.replaceChildren(...[...draft].map(([id, checked]) => {
-      const row = document.createElement('label');
-      const name = roster.find(unit => unit.id === id)?.name;
-      const box = document.createElement('input');
-      box.type = 'checkbox';
-      box.checked = checked;
-      box.onchange = () => { draft.set(id, box.checked); save.disabled = ![...draft.values()].some(Boolean); };
-      row.append(box, name || '');
-      return row;
-    }));
-    const predictions = context ? predictOpponentRoutes(context.comps, context.opponents, context.patch) : [];
-    summary.replaceChildren(...predictions.map(({ slot, comp, units }) => {
+    capture.disabled = photo.disabled = !available;
+    clear.disabled = !available || (!context.boards.has(slot) && !pending.has(slot));
+    clearAll.disabled = !context?.boards.size && !pending.size;
+    const names = new Map([...(context?.setData.units || []), ...(context?.setData.traits || [])].map(row => [row.id, row.name]));
+    const records = [...(context?.boards || [])].sort(([a], [b]) => Number(a) - Number(b));
+    summary.replaceChildren(...records.map(([number, { units, traits, routes }]) => {
       const item = document.createElement('li');
-      item.textContent = comp
-        ? `对手 ${slot} · ${units} 种已核对棋子 · 可能走 ${comp.name}`
-        : `对手 ${slot} · ${units} 种已核对棋子 · 暂无明确方向`;
+      const title = document.createElement('strong');
+      title.textContent = '对手 ' + number;
+      const detail = document.createElement('span');
+      const observed = [...units, ...traits].map(id => names.get(id)).filter(Boolean);
+      detail.textContent = ' · 最近识别：' + observed.join('、');
+      item.append(title, detail);
+      if (routes.length) {
+        const list = document.createElement('ol');
+        for (const { comp } of routes) {
+          const route = document.createElement('li');
+          route.textContent = comp.name;
+          list.append(route);
+        }
+        item.append(list);
+      } else {
+        const empty = document.createElement('p');
+        empty.textContent = '暂无符合这次画面的阵容方向。';
+        item.append(empty);
+      }
       return item;
     }));
-    summary.hidden = !predictions.length;
+    summary.hidden = !records.length;
   }
 
   async function read(input) {
     const slot = view.value;
     const context = getContext();
     if (!slot || !context?.comps.length) return;
-    const job = ++revision;
-    signal('正在读取对手棋子名称…');
+    const job = {};
+    pending.set(slot, job);
+    const isLatest = () => pending.get(slot) === job;
+    const report = message => { if (view.value === slot) signal(message); };
+    report('正在分析对手 ' + slot + '…');
+    render();
     try {
       const result = await withinRecognitionBudget(async current => {
         const image = await input();
-        if (!image) return null;
         try {
+          if (!current() || !isLatest()) return null;
           let canvas = image;
           if (!image.getContext) {
             canvas = document.createElement('canvas');
@@ -60,39 +66,48 @@ export function bindOpponentScout({ view, capture, photo, unit, add, save, clear
             canvas.height = Math.max(1, Math.round(image.height * scale));
             canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
           }
-          return await recognizeOpponentLabels(canvas, context.setData, () => current() && revision === job);
+          return await recognizeOpponentLabels(canvas, context.setData, () => current() && isLatest());
         } finally {
           image.close?.();
         }
-      });
-      if (revision !== job) return;
-      const ids = result.value;
-      if (ids?.length) {
-        ids.forEach(id => { if (!draft.has(id)) draft.set(id, false); });
-        signal('请勾选确实在该对手阵容中的棋子。');
+      }, SCOUT_BUDGET_MS);
+      if (!isLatest()) return;
+      const evidence = result.value;
+      if (evidence && evidence.units.length + evidence.traits.length >= 2) {
+        const routes = predictOpponentRoutes(context.comps, evidence, context.patch);
+        onChange(slot, { ...evidence, routes });
+        report(routes.length ? '已更新对手 ' + slot + ' 的可能阵容。' : '已更新画面，暂未匹配到阵容。');
       } else {
-        signal(result.timedOut ? '读取已到等待上限，可手动登记对手棋子。'
-          : '未读到棋子名称。请显示棋子名称或手动登记。');
+        const message = result.timedOut ? '本次识别已到等待上限。' : '本次可辨认的棋子或羁绊不足。';
+        report(message + (context.boards.has(slot) ? '已保留上一次记录。' : '可换一张带有棋子名称或羁绊文字的截图。'));
       }
     } catch {
-      if (revision === job) signal('无法读取该画面，可手动登记对手棋子。');
+      if (isLatest()) report('无法读取该画面，请重试或导入截图。');
     } finally {
-      if (revision === job) render();
+      if (isLatest()) {
+        pending.delete(slot);
+        render();
+      }
     }
   }
 
+  function readCurrent() {
+    const frame = getFrame();
+    if (!frame) {
+      void warmOpeningOcr().catch(() => {});
+      signal('可共享游戏窗口，或导入该对手的截图。');
+      return;
+    }
+    void read(() => frame);
+  }
+
   view.onchange = () => {
-    revision++;
-    draft = new Map([...(getContext()?.opponents.get(view.value) || [])].map(id => [id, true]));
-    signal(view.value ? `当前是对手 ${view.value} 视角。核对后保存到该对手。` : '当前是我的视角。');
     onViewChange();
     render();
+    if (view.value) readCurrent();
+    else signal('当前是我的视角。');
   };
-  capture.onclick = () => {
-    const frame = getFrame();
-    if (!frame) { signal('请先共享游戏窗口，或导入对手截图。'); return; }
-    void read(() => frame);
-  };
+  capture.onclick = readCurrent;
   photo.onchange = () => {
     const file = photo.files[0];
     photo.value = '';
@@ -100,38 +115,22 @@ export function bindOpponentScout({ view, capture, photo, unit, add, save, clear
     if (file.size > 20 * 1024 * 1024) { signal('请选择 20 MB 以内的截图。'); return; }
     void read(() => createImageBitmap(file));
   };
-  add.onclick = () => {
-    if (!unit.value) return;
-    draft.set(unit.value, true);
-    render();
-  };
-  save.onclick = () => {
-    revision++;
-    const checked = [...draft].filter(([, selected]) => selected).map(([id]) => id);
-    if (!view.value || !checked.length) return;
-    onChange(view.value, checked);
-    signal(`已保存对手 ${view.value} 的 ${checked.length} 种棋子。`);
-    render();
-  };
   clear.onclick = () => {
-    revision++;
-    draft.clear();
-    onChange(view.value, []);
-    signal('已清除这个对手的记录。');
+    pending.delete(view.value);
+    onChange(view.value, null);
+    signal('已清除该对手的记录。');
     render();
   };
   clearAll.onclick = () => {
-    revision++;
-    draft.clear();
-    onChange(null, []);
+    pending.clear();
+    onChange(null, null);
     signal('已清空本局对手记录。');
     render();
   };
   return {
     render,
     reset() {
-      revision++;
-      draft.clear();
+      pending.clear();
       view.value = '';
       signal('当前是我的视角。');
       render();

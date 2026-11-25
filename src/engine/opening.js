@@ -1,4 +1,4 @@
-import { competingOpponents, predictOpponentRoutes } from './opponent-scout.js';
+import { opponentPressure } from './opponent-scout.js';
 import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
 import { rankAugments } from './augments.js?v=inventory-augments';
@@ -37,13 +37,12 @@ function cityFit(city, comp, itemPoints, unitById) {
   }
 }
 
-export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model, opponents }) {
+export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model, opponentBoards = new Map() }) {
   const itemById = new Map((itemsData?.items || []).map(row => [row.id, row]));
   const unitById = new Map(setData.units.map(row => [row.id, row]));
   const augmentTraits = new Set(chosenAugments.flatMap(aug => [...(aug.traits || []), ...(aug.grantTraits || [])]));
   const baseline = recommend({ setData, comps, selected, level });
-  const predictions = predictOpponentRoutes(comps, opponents, patch);
-  const hasScoutedRoutes = predictions.some(row => row.comp);
+  const hasOpponentEvidence = [...opponentBoards.values()].some(({ routes }) => routes.length);
   const isTrained = supportsOpeningModel(setData.set, patch, model);
   const ranked = baseline.map(row => {
     const { comp } = row;
@@ -55,8 +54,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
     const aug = Math.min(14, Object.keys(comp.aimTraits || {}).filter(id => augmentTraits.has(id)).length * 7);
     const learned = isTrained ? openingModelBonus(openingModelFeatures(comp, selected, gear.points), model.weights) : 0;
     const viable = Boolean(units || gear.points || city || economy === 'high' || aug || learned);
-    const opponentCount = competingOpponents(comp, predictions);
-    const discount = Math.min(28, opponentCount * 12);
+    const { opponents: opponentCount, discount } = opponentPressure(comp, opponentBoards);
     const fit = units + gear.points + cityPoints + econ + aug + learned - discount;
     const reasons = [
       units && `持有 ${current.length} 名阵容棋子`,
@@ -66,10 +64,10 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       econ && '经济支持高人口',
       aug && '已选海克斯匹配目标羁绊',
       learned > 0 && '来牌符合已知过渡棋盘',
-      opponentCount ? `可能有 ${opponentCount} 名同行，适配扣 ${discount} 分`
-        : hasScoutedRoutes && '已判读对手中未发现同行',
+      opponentCount ? `可能有 ${opponentCount} 家同行，适配扣 ${discount} 分`
+        : hasOpponentEvidence && '已分析路线中未发现同行',
     ].filter(Boolean);
-    return { ...row, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints: gear.points, opponentCount };
+    return { ...row, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints: gear.points, opponentCount, hasOpponentEvidence };
   });
   return ranked.sort((a, b) => Number(b.viable) - Number(a.viable) || b.fit - a.fit || compareStrength(a, b));
 }

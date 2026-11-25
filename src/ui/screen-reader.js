@@ -1,6 +1,6 @@
-import { renderLineupList } from './lineup-list.js';
+import { renderLineupList } from './lineup-list.js?v=scout-2-1';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=opponent-scout';
+import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=scout-2-1';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 const FRAME_INTERVAL_MS = 1000;
 const CAPTURE_LIMIT_MS = 180_000;
@@ -87,7 +87,13 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
           return;
         }
         if (opponent) {
-          if (evidence?.stage === '2-1') say('检测到 2-1，正在共享对手视角。');
+          if (evidence?.stage === '2-1' && result.hidden) {
+            if (session.context.ranked().some(row => row.viable || row.hasOpponentEvidence)) {
+              showDirection(session.context, '已结合当前记录生成 2-1 阵容方向。');
+            } else {
+              say('检测到 2-1，正在共享对手视角。');
+            }
+          }
           retry();
           return;
         }

@@ -1,5 +1,5 @@
 export function recommendedLineups(ranked = []) {
-  return ranked.some(row => row.viable) ? ranked.slice(0, 3) : [];
+  return ranked.some(row => row.viable || row.hasOpponentEvidence) ? ranked.slice(0, 3) : [];
 }
 
 export function renderLineupList(container, ranked, { label = '推荐阵容', link = false, emptyHint } = {}) {
@@ -16,7 +16,7 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
   heading.textContent = label;
   const list = document.createElement('ol');
   list.className = 'ranked-lineups';
-  for (const { comp, score, reasons, viable } of rows) {
+  for (const { comp, score, reasons, viable, hasOpponentEvidence } of rows) {
     const row = document.createElement('li');
     row.dataset.comp = comp.id;
     const name = document.createElement('strong');
@@ -24,7 +24,8 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
     const stats = document.createElement('span');
     stats.textContent = ` · 榜单 ${comp.rank?.tier || '未评级'} · 适配 ${score} 分 · ${comp.level} 人口`;
     row.append(name, stats);
-    const explanation = viable ? reasons.join(' · ') : '转型参考，当前开局条件未匹配。';
+    const explanation = [...(viable ? [] : ['转型参考，当前开局条件未匹配。']),
+      ...(viable || hasOpponentEvidence ? reasons : [])].join(' · ');
     if (explanation) {
       const detail = document.createElement('p');
       detail.className = 'fine';
