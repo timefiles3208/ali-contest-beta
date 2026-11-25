@@ -1,6 +1,6 @@
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
-import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=lineup-only';
-import { readOwnShopHud, recognizeBoardText } from './local-ocr.js?v=recommendation-tools';
+import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=share-ocr';
+import { readOwnShopHud, recognizeBoardText } from './local-ocr.js?v=share-ocr';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
@@ -138,40 +138,68 @@ export function snapshotFromEvidence(evidence, setData, opening) {
   return result;
 }
 
-export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening, enhanced = false) {
-  let base, items, size, shop;
+export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening, enhanced = false, onEnhanced) {
+  let base, items, size, shop, neural, neuralSettled = false;
+  const result = (ai, timedOut) => {
+    const empty = { stage: null, matchFrame: false, units: [], traits: [] };
+    const evidence = items ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : { ...(base || empty) };
+    if (evidence.stage && evidence.stage !== '2-1' && shop) evidence.shop = shop;
+    return { ...snapshotFromEvidence(evidence, setData, opening), ai, timedOut };
+  };
   const timed = await withinRecognitionBudget(async (current) => {
     const active = () => isCurrent() && current();
     const canvas = await snapshotCanvas(file, rotation);
     if (!active()) return;
     size = canvas;
+    let settleEnhanced, shopReady = false;
+    const enhancedReady = new Promise(resolve => { settleEnhanced = resolve; });
+    const completeEnhanced = () => {
+      if (!enhanced || !active() || !shopReady || !items?.length || !base?.matchFrame) return;
+      if (base.stage === '2-1' && opening) {
+        const cards = mergeNeuralEvidence(base, items, size, setData, opening).opening?.offeredSlots;
+        if (cards?.filter(Boolean).length !== 3) return;
+      }
+      settleEnhanced();
+    };
     const readShop = readOwnShopHud(canvas, active).then(profile => {
       if (active()) shop = profile;
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => {
+      shopReady = true;
+      completeEnhanced();
+    });
+    const publish = evidence => {
+      if (!active() || !evidence) return;
+      base = evidence;
+      completeEnhanced();
+    };
     const standard = recognizeBoardText(canvas, setData, active, {
       detailed: true, opening,
-      onProgress(evidence) { if (active()) base = evidence; },
-    }).then(evidence => {
-      if (active()) base = evidence;
-    });
+      onProgress: publish,
+    }).then(publish);
     if (!enhanced) {
       await Promise.all([standard, readShop]);
       return;
     }
-    const neural = readNeuralText(canvas, active).then(rows => {
-      if (active()) items = rows;
+    neural = readNeuralText(canvas, isCurrent).then(rows => {
+      neuralSettled = true;
+      if (isCurrent() && rows?.length) items = rows;
+      completeEnhanced();
     });
-    const [regular] = await Promise.allSettled([standard, neural, readShop]);
-    if (regular.status === 'rejected' && !items) throw regular.reason;
-  }, enhanced ? 16_000 : undefined);
+    await Promise.race([
+      Promise.allSettled([standard, neural, readShop]).then(([regular]) => {
+        if (regular.status === 'rejected' && !items) throw regular.reason;
+      }),
+      enhancedReady,
+    ]);
+  }, enhanced ? 18_000 : undefined);
   if (!isCurrent() || (!timed.timedOut && base === null)) return null;
-  const empty = { stage: null, matchFrame: false, units: [], traits: [] };
-  const evidence = items ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : base || empty;
-  if (evidence.stage && evidence.stage !== '2-1' && shop) evidence.shop = shop;
-  return {
-    ...snapshotFromEvidence(evidence, setData, opening),
-    ai: enhanced ? (items ? 'used' : 'fallback') : null, timedOut: timed.timedOut,
-  };
+  if (neural && !neuralSettled && onEnhanced) {
+    void neural.then(() => {
+      if (isCurrent()) onEnhanced(result(items ? 'used' : 'fallback', false));
+    }).catch(() => {});
+    return result('pending', false);
+  }
+  return result(enhanced ? (items ? 'used' : 'fallback') : null, timed.timedOut && !items);
 }
 
 async function snapshotCanvas(file, rotation) {

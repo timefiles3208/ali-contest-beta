@@ -1,7 +1,8 @@
 import { contentFrame } from './game-frame.js';
 import { createOcrLane } from './ocr-lane.js';
 import { fillGoldCardSlots } from './augment-icon-ocr.js?v=layout';
-import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, opponentTraitLabels, parseShopHud, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=recommendation-tools';
+import { augmentTier } from '../data/augment-tiers.js';
+import { entriesForOcr, hasMatchFrame, matchRegionLabel, matchRepeatedCardTitle, mergeScreenEvidence, openingNamesInText, opponentTraitLabels, parseShopHud, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=share-ocr';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 const DESKTOP_STAGE = [0.398, 0.002, 0.420, 0.025];
@@ -133,6 +134,18 @@ async function openingSlots(canvas, setData, entries, isCurrent, onSlots) {
     const passes = heightScale === 1 ? [130, 150, 172] : [130, 150];
     let slots = await readLabels(canvas, bounds, entries, isCurrent, passes.map(threshold => ({ zoom: 4, threshold })));
     if (!slots) return null;
+    const detected = slots.filter(Boolean);
+    const tier = detected.length === 2 && augmentTier(detected[0]);
+    if (tier && detected.every(id => augmentTier(id) === tier)) {
+      const missing = slots.indexOf(null);
+      const center = CARD_CENTERS[missing];
+      const area = cropForOcr(canvas, [center - 0.046, 0.479 * heightScale, center + 0.046, 0.522 * heightScale],
+        { zoom: 6, threshold: 130 });
+      const text = await readOcr(area, isCurrent, '13');
+      if (text === null || !isCurrent()) return null;
+      const comparable = entries.filter(entry => augmentTier(entry.id) === tier && !detected.includes(entry.id));
+      slots[missing] = matchRegionLabel(text, comparable) || matchRepeatedCardTitle(text, comparable);
+    }
     if (setData.set === 18) slots = await fillGoldCardSlots(canvas, CARD_CENTERS, slots, entries, isCurrent, heightScale);
     if (!isCurrent()) return null;
     const matches = slots.filter(Boolean);
@@ -150,12 +163,22 @@ export async function readOwnShopHud(canvas, isCurrent) {
   if (canvas.width / canvas.height < 1.65 || canvas.width / canvas.height > 1.95) return null;
   const read = (bounds, characters, threshold = 145, mode = '7') =>
     readOcr(cropForOcr(canvas, bounds, { zoom: 6, threshold }), isCurrent, mode, characters);
-  const level = await read([0.126, 0.815, 0.153, 0.841], '0123456789');
-  if (!level || !isCurrent()) return null;
-  const gold = await read([0.475, 0.817, 0.502, 0.842], '0123456789');
-  const xp = await read([0.195, 0.819, 0.214, 0.837], '0123456789/', 115, '13');
-  const profile = parseShopHud(gold || '', level, xp || '');
-  return isCurrent() && profile.level != null && profile.gold != null ? profile : null;
+  const scale = canvas.width * 9 / 16 / canvas.height;
+  const scales = Math.abs(scale - 1) > 0.02 && scale > .9 && scale < 1.11 ? [1, scale] : [1];
+  for (const h of scales) {
+    const levelBox = [0.126, 0.815 * h, 0.153, 0.841 * h];
+    let level = await read(levelBox, '0123456789');
+    if (!isCurrent()) return null;
+    if (!parseShopHud('', level || '', '').level) level = await read(levelBox, '0123456789', 185, '8');
+    if (!isCurrent()) return null;
+    if (!parseShopHud('', level || '', '').level) continue;
+    const gold = await read([0.475, 0.817 * h, 0.502, 0.842 * h], '0123456789');
+    if (!isCurrent()) return null;
+    const xp = await read([0.195, 0.819 * h, 0.214, 0.837 * h], '0123456789/', 115, '13');
+    const profile = parseShopHud(gold || '', level || '', xp || '');
+    if (isCurrent() && profile.level != null && profile.gold != null) return profile;
+  }
+  return null;
 }
 
 export async function recognizeBoardText(canvas, setData, isCurrent = () => true, {
@@ -181,7 +204,7 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
       slots = await openingSlots(canvas, setData, entriesForOcr(opening.augments, setData.set), isCurrent,
         found => onProgress?.(withSlots(found)));
       if (!slots || !isCurrent()) return null;
-      if (slots.every(Boolean) && slots.length === 3) {
+      if (slots.some(Boolean)) {
         return withSlots(slots);
       }
     }

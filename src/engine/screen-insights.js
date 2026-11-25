@@ -33,12 +33,25 @@ export function hasMatchFrame(stage, text) {
 export function parseShopHud(goldText, levelText, xpText) {
   const gold = goldText.normalize('NFKC').trim().match(/^\d{1,3}$/)?.[0];
   const level = levelText.normalize('NFKC').trim().match(/^(?:Lv\.?\s*)?(10|[1-9])\s*级?$/i)?.[1];
-  const progress = xpText.normalize('NFKC').trim().match(/^(\d{1,2})\s*\/\s*(\d{1,2})$/);
+  const text = xpText.normalize('NFKC').trim();
+  const required = [0, 2, 2, 6, 10, 20, 36, 56, 68, 68][Number(level)];
+  const progress = text.match(/^(\d{1,2})\s*\/\s*(\d{1,2})$/) ||
+    (required && text.match(new RegExp(`^(\\d{1,2})(${required})$`)));
   return {
     ...(gold != null && Number(gold) <= 200 && { gold: Number(gold) }),
     ...(level && { level: Number(level) }),
     ...(level && progress && +progress[1] < +progress[2] && +progress[2] <= 68 && { xp: +progress[1] }),
   };
+}
+
+export function matchRepeatedCardTitle(text, entries) {
+  const label = regionLabel(text);
+  if (!/^(\p{Script=Han})\1\p{Script=Han}{2,}$/u.test(label)) return null;
+  const matches = new Set(entries.filter(({ name }) => {
+    const title = regionLabel(name);
+    return title[0] === title[1] && title.slice(2) === label.slice(2);
+  }).map(({ id }) => id));
+  return matches.size === 1 ? matches.values().next().value : null;
 }
 
 export function matchRegionLabel(text, entries) {

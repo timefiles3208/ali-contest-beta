@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseShopHud } from '../src/engine/screen-insights.js';
+import { matchRepeatedCardTitle, parseShopHud } from '../src/engine/screen-insights.js';
 import { solveBoardConstraints } from '../src/engine/board-constraints.js';
 import { rankOpeningAugments } from '../src/engine/opening.js';
 
@@ -8,6 +8,18 @@ test('normalizes zero gold and validates shop progress independently', () => {
   assert.deepEqual(parseShopHud('０', '3 级', '2/6'), { gold: 0, level: 3, xp: 2 });
   assert.deepEqual(parseShopHud('1 2', '110', '9/6'), {});
   assert.deepEqual(parseShopHud('30', 'Lv. 10', ''), { gold: 30, level: 10 });
+});
+
+test('recovers a dropped XP slash only when the level fixes the denominator', () => {
+  assert.deepEqual(parseShopHud('0', '3', '26'), { gold: 0, level: 3, xp: 2 });
+  assert.deepEqual(parseShopHud('0', '3', '29'), { gold: 0, level: 3 });
+});
+
+test('only resolves a repeated OCR glyph when the same-tier title is unique', () => {
+  const rows = [{ id: 'a', name: '遥遥领先' }, { id: 'b', name: '远见领先' }];
+  assert.equal(matchRepeatedCardTitle('通通领先', rows), 'a');
+  assert.equal(matchRepeatedCardTitle('通过领先', rows), null);
+  assert.equal(matchRepeatedCardTitle('通通领先', [...rows, { id: 'c', name: '步步领先' }]), null);
 });
 
 test('adds a valid alternate board without borrowing the original rating', () => {

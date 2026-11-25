@@ -4,8 +4,8 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=recommendation-tools';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=trait-strips';
+import { bindScreenReader } from './ui/screen-reader.js?v=share-ocr';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=share-ocr';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=recommendation-tools';
 import { bindRecommendationFloat } from './ui/recommendation-float.js';
 import { solveBoardConstraints } from './engine/board-constraints.js';
@@ -22,7 +22,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=formation-plan';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=recommendation-tools';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=share-ocr';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -665,6 +665,7 @@ function renderSnapshot() {
   if (!locked && snap.ai === 'fallback' && !snap.timedOut && !snap.error) {
     status.textContent += ' PaddleOCR 未能运行，已使用常规识别。';
   }
+  if (!locked && snap.ai === 'pending') status.textContent += ' AI 增强仍在后台处理，完成后会更新结果。';
 
   renderSnapshotLineups();
   const box = el('snapResult');
@@ -776,7 +777,11 @@ async function runRecognize(enhanced = false) {
   if (loadingSet || !state.snap.file || state.snap.busy || state.snap.importing || !state.setData?.units.length) return;
   const set = state.meta;
   const generation = boardLoad;
-  const current = () => state.meta === set && generation === boardLoad;
+  const { file, rotation } = state.snap;
+  const request = {};
+  state.snap.request = request;
+  const current = () => state.meta === set && generation === boardLoad &&
+    state.snap.request === request && state.snap.file === file && state.snap.rotation === rotation;
   state.snap.busy = true;
   state.snap.enhancing = enhanced;
   state.snap.ai = null;
@@ -784,21 +789,31 @@ async function runRecognize(enhanced = false) {
   state.snap.mapped = null;
   state.snap.applied = false;
   renderSnapshot();
-  try {
-    const ctx = openingContext();
-    const result = await recognizeSnapshot(state.snap.file, state.snap.rotation, state.setData, current, {
-      cities: ctx.cities, augments: ctx.augments,
-    }, enhanced);
+  const accept = (result, late = false) => {
     if (!result || !current()) return;
+    if (late && state.snap.applied) {
+      state.snap.ai = null;
+      return;
+    }
     state.snap.ai = result.ai;
     state.snap.timedOut = result.timedOut;
+    if (late && result.ai !== 'used') return;
     if (!result.stage && !result.candidates.length && !result.traits.length) {
+      if (result.ai === 'pending') return;
       state.snap.error = { message: result.timedOut
         ? '识别已到等待上限，可直接核对已登记的棋子和装备，或裁出商店和羁绊区域重试。'
         : '没有读到当前赛季的棋子名或羁绊名。请核对游戏与赛季，并使用原始截图或裁出名称较清晰的区域。' };
       return;
     }
-    state.snap.mapped = matchSnapshot(result, { setData: state.setData, itemsData: state.items });
+    state.snap.error = null;
+    const mapped = matchSnapshot(result, { setData: state.setData, itemsData: state.items });
+    if (late) {
+      const exclusions = new Map((state.snap.mapped?.candidates || []).map(row => [row.id || row.name, row.excluded]));
+      for (const row of mapped.candidates) {
+        if (exclusions.has(row.id || row.name)) row.excluded = exclusions.get(row.id || row.name);
+      }
+    }
+    state.snap.mapped = mapped;
     if (result.matchFrame && result.level != null && result.gold != null) {
       openingAdvice.receive({ shop: { level: result.level, gold: result.gold, xp: result.xp } });
     }
@@ -806,8 +821,18 @@ async function runRecognize(enhanced = false) {
       openingAdvice.receive({
         units: state.snap.mapped.candidates.map(row => row.id).filter(Boolean), opening: result.opening,
       });
-      openingAdvice.show();
+      if (!late) openingAdvice.show();
     }
+  };
+  try {
+    const ctx = openingContext();
+    const result = await recognizeSnapshot(file, rotation, state.setData, current, {
+      cities: ctx.cities, augments: ctx.augments,
+    }, enhanced, update => {
+      accept(update, true);
+      if (current()) renderSnapshot();
+    });
+    accept(result);
   } catch (error) {
     if (current()) state.snap.error = { message: error?.message || '识别失败了。' };
   } finally {

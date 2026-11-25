@@ -1,16 +1,20 @@
 import { entriesForOcr, hasMatchFrame, openingNamesInText, screenEvidence } from '../engine/screen-insights.js?v=video-ocr';
 
 const SDK = 'https://cdn.jsdelivr.net/npm/@paddleocr/paddleocr-js@0.4.2/+esm';
-const TIMEOUT_MS = 35_000;
 const SLOT_CENTERS = [0.287, 0.501, 0.715];
-let model;
-let active;
+let model, worker, active;
 
 function loadModel() {
   model ??= import(SDK).then(({ PaddleOCR }) => PaddleOCR.create({
-    lang: 'ch',
-    ocrVersion: 'PP-OCRv5',
-    ortOptions: { backend: 'wasm', numThreads: 1 },
+    lang: 'ch', ocrVersion: 'PP-OCRv5',
+    worker: { createWorker: () => {
+      worker = new Worker(new URL('./neural-ocr-worker.js?v=share-ocr', import.meta.url), { type: 'module' });
+      return worker;
+    } },
+    ortOptions: {
+      backend: 'wasm', numThreads: 1,
+      wasmPaths: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/',
+    },
   })).catch(error => {
     model = undefined;
     throw error;
@@ -20,17 +24,27 @@ function loadModel() {
 
 export async function readNeuralText(canvas, isCurrent = () => true) {
   if (active) return null;
-  const job = loadModel().then(async ocr => {
-    if (!isCurrent()) return null;
-    const [result] = await ocr.predict(canvas, { textRecScoreThresh: 0.65, textDetLimitSideLen: 1280 });
-    return result?.items ?? [];
-  }).catch(() => null).finally(() => { active = undefined; });
-  active = job;
-  let timeout;
+  active = true;
+  let timer;
   try {
-    return await Promise.race([job, new Promise(resolve => { timeout = setTimeout(() => resolve(null), TIMEOUT_MS); })]);
+    const inference = loadModel().then(async ocr => {
+      if (!isCurrent()) return null;
+      const [result] = await ocr.predict(canvas, { textRecScoreThresh: 0.65, textDetLimitSideLen: 1024 });
+      return isCurrent() ? result?.items ?? [] : null;
+    });
+    const limit = new Promise(resolve => {
+      timer = setTimeout(() => {
+        worker?.terminate();
+        worker = model = undefined;
+        resolve(null);
+      }, 45_000);
+    });
+    return await Promise.race([inference, limit]);
+  } catch {
+    return null;
   } finally {
-    clearTimeout(timeout);
+    clearTimeout(timer);
+    active = false;
   }
 }
 

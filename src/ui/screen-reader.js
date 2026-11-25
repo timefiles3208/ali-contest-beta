@@ -1,6 +1,6 @@
 import { renderLineupList } from './lineup-list.js?v=recommendation-tools';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=recommendation-tools';
+import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=share-ocr';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { boardFrameStamp, sameBoardFrame, waitForVideoFrame } from '../adapters/video-frame.js';
 const FRAME_INTERVAL_MS = 400;
