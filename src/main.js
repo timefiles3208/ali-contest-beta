@@ -1,17 +1,17 @@
-import { recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=scout-2-1';
+import { recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opponent-profile';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=scout-2-1';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=scout-2-1';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=scout-2-1';
+import { bindScreenReader } from './ui/screen-reader.js?v=opponent-profile';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=opponent-profile';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=opponent-profile';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=scout-2-1';
+import { rankOpening } from './engine/opening.js?v=opponent-profile';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
@@ -19,7 +19,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=scout-2-1';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=opponent-profile';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -854,9 +854,11 @@ function bind() {
   });
   scout = bindOpponentScout({
     view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'),
+    economy: el('scoutEconomy'), augment: el('scoutAugment'), saveProfile: el('scoutSaveProfile'),
     clear: el('scoutClear'), clearAll: el('scoutClearAll'), status: el('scoutStatus'), summary: el('scoutSummary'),
     getContext: () => !loadingSet && state.setData ? {
       setData: state.setData, comps: state.comps, boards: state.opponentBoards, patch: state.board?.version,
+      augments: state.augs?.augments || [],
     } : null,
     getFrame: () => screenReader.getFrame(),
     onViewChange: () => screenReader.perspectiveChanged(),

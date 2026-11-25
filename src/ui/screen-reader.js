@@ -1,6 +1,6 @@
-import { renderLineupList } from './lineup-list.js?v=scout-2-1';
+import { renderLineupList } from './lineup-list.js?v=opponent-profile';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=scout-2-1';
+import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=opponent-profile';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 const FRAME_INTERVAL_MS = 1000;
 const CAPTURE_LIMIT_MS = 180_000;

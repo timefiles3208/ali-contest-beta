@@ -128,3 +128,19 @@ export function screenDirection(setData, comps, { units, traits }, level = 7) {
   }
   return best;
 }
+
+export function readOpponentProfile(text, augments) {
+  const lines = text.normalize('NFKC').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const goldReadings = new Set();
+  const selectedTitles = [];
+  for (const [index, line] of lines.entries()) {
+    const gold = line.match(/^(?:(?:对\s*[手方]|敌\s*方)\s*金\s*币|opponent\s+gold)\s*[:：]?\s*(\d{1,3})\s*$/i);
+    if (gold) goldReadings.add(Number(gold[1]));
+    const selected = line.match(/^(?:(?:已\s*选(?:\s*择)?|对\s*[手方]已\s*选)\s*(?:海\s*克\s*斯|强\s*化\s*符\s*文)|selected\s+augment)\s*(?:[:：]\s*)?(.*)$/i);
+    if (selected) selectedTitles.push(selected[1].trim() || lines[index + 1] || '');
+  }
+  return {
+    gold: goldReadings.size === 1 ? [...goldReadings][0] : null,
+    augmentIds: openingNamesInText(selectedTitles.join('\n'), [], augments).offered,
+  };
+}

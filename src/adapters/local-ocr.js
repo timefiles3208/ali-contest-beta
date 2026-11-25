@@ -1,6 +1,6 @@
 import { contentFrame } from './game-frame.js';
 import { fillGoldCardSlots } from './augment-icon-ocr.js?v=layout';
-import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
+import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=opponent-profile';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 const DESKTOP_STAGE = [0.398, 0.002, 0.420, 0.025];
@@ -265,13 +265,27 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   return evidence;
 }
 
-export async function recognizeOpponentLabels(canvas, setData, isCurrent) {
+export async function recognizeOpponentLabels(canvas, setData, isCurrent, augments = [], onPartial) {
   const board = contentFrame(canvas);
-  const labels = cropForOcr(board, [0.03, 0.12, 0.87, 0.82], { zoom: 1, contrast: false });
+  const bounds = [0.03, 0.12, 0.87, 0.82];
+  const labels = cropForOcr(board, bounds, { zoom: 1, contrast: false });
   const text = await readOcr(labels, isCurrent);
   if (text === null || !isCurrent()) return null;
-  return {
+  const profile = readOpponentProfile(text, augments);
+  const evidence = {
     units: openingNamesInText(text, [], entriesForOcr(setData.units, setData.set)).offered,
     traits: screenEvidence(text, setData).traits,
+    ...profile,
   };
+  onPartial?.(evidence);
+
+  const titleFragments = text.split('\n').map(line => line.split(/[:：]/).at(-1)).join('\n');
+  const possibleTitle = openingNamesInText(titleFragments, [], augments).offered.length;
+  if (profile.augmentIds.length || (profile.gold == null && !possibleTitle)) return evidence;
+
+  // A second segmentation can recover the full label from a tooltip that sparse OCR split.
+  const focused = await readOcr(cropForOcr(board, bounds, { zoom: 1.2 }), isCurrent, '6');
+  if (!focused || !isCurrent()) return evidence;
+  const second = readOpponentProfile(focused, augments);
+  return { ...evidence, gold: profile.gold ?? second.gold, augmentIds: second.augmentIds };
 }

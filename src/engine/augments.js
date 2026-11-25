@@ -29,7 +29,7 @@ export function categorize(aug, linkedCount = 0) {
 
 export const CATEGORY_LABEL = { trait: '羁绊', core: '强化', item: '装备', econ: '经济', combat: '战力', other: '通用' };
 
-function economyBenefits(text) {
+export function economyBenefits(text) {
   return {
     grantsXP: /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,14}经验|(?:升级|购买经验)[^。；，！\n]{0,8}(?:更便宜|少花|减少)/.test(text),
     grantsGold: /(?<!无法|不能|不会|不再)(?:获得|提供)[^。；，！\n]{0,16}(?:金币|利息)/.test(text),
