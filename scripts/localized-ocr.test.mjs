@@ -2,7 +2,7 @@ import { snapshotFromEvidence } from '../src/adapters/snapshot.js';
 import { mergeNeuralEvidence } from '../src/adapters/paddle-ocr.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { matchRegionLabel, screenEvidence, hasMatchFrame, openingNamesInText } from '../src/engine/screen-insights.js';
+import { matchRegionLabel, opponentTraitLabels, screenEvidence, hasMatchFrame, openingNamesInText } from '../src/engine/screen-insights.js';
 
 const labels = [
   { id: 'bag', name: '英勇福袋' }, { id: 'bagPlus', name: '英勇福袋+' },
@@ -112,4 +112,13 @@ test('AI ignores off-topic text that only mentions a known champion, trait or au
   assert.deepEqual(result.units, []);
   assert.deepEqual(result.traits, []);
   assert.equal(result.opening, undefined);
+});
+
+
+test('scout trait panels recover segmented English and a unique missing Chinese edge glyph', () => {
+  const setData = { set: 18, traits: [{id:'DA_18_Vanguard',name:'重装战士'}, {id:'DA_18_Rapidfire', name:'迅捷射手'}, {id:'mage',name:'法师'}] };
+  assert.deepEqual(opponentTraitLabels('v anguard\n1 捷 射 手 2/3\n法师',setData),
+    ['DA_18_Vanguard','DA_18_Rapidfire','mage']);
+  assert.deepEqual(opponentTraitLabels('Vanguardish\n射手\n攻略推荐：迅捷射手先上',setData), []);
+  assert.deepEqual(opponentTraitLabels('捷射手',{...setData,traits:[...setData.traits,{id:'ambiguous',name:'敏捷射手'}]}),[]);
 });

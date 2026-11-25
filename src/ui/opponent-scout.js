@@ -1,4 +1,4 @@
-import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=ocr-priority';
+import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=trait-strips';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
 import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=formation-plan';
@@ -107,23 +107,27 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
           const active = () => current() && isLatest();
           const icons = context.setData.set === 18 ? readSelectedAugmentIcons(contentFrame(canvas), context.augments, active)
             .then(ids => { if (active()) visualIds = ids; }).catch(() => {}) : Promise.resolve();
+          const desktop = canvas.width / canvas.height >= 1.65 && canvas.width / canvas.height <= 1.95;
+          const traits = desktop ? await recognizeOpponentTraitStrip(canvas, context.setData, active, [], 0, true)
+            .catch(() => []) : [];
+          const merge = evidence => ({
+            units: [], gold: null, augmentIds: [], ...evidence,
+            traits: [...new Set([...traits, ...(evidence?.traits || [])])],
+          });
+          if (traits.length && active()) partial = merge(null);
           let failure;
           const text = await recognizeOpponentLabels(canvas, context.setData, active, context.augments,
-            evidence => { partial = evidence; }).catch(error => { failure = error; return null; });
+            evidence => { partial = merge(evidence); }).catch(error => { failure = error; return null; });
           await icons;
           if (failure && !visualIds.length && !partial) throw failure;
-          const evidence = includeIcons(text || partial);
-          if (!live || !active() || view.value !== slot ||
-              (evidence && evidence.units.length + evidence.traits.length >= 2)) return evidence;
+          const evidence = includeIcons(text ? merge(text) : partial);
+          if (desktop || !active() || (evidence && evidence.units.length + evidence.traits.length >= 2)) return evidence;
 
-          const retry = await getFrame(slot, { sameAs: captured.stamp });
-          if (!retry || !active() || view.value !== slot) return evidence;
-          const traits = await recognizeOpponentTraitStrip(retry.canvas, context.setData, active).catch(() => []);
-          if (!traits.length || !active()) return evidence;
-          return {
-            units: [], gold: null, augmentIds: [], ...evidence,
-            traits: [...new Set([...(evidence?.traits || []), ...traits])],
-          };
+          const extra = await recognizeOpponentTraitStrip(canvas, context.setData, active,
+            evidence?.traits, evidence?.units.length).catch(() => []);
+          if (!extra.length || !active()) return evidence;
+          traits.push(...extra);
+          return merge(evidence);
         } finally {
           image.close?.();
         }

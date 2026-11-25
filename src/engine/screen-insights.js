@@ -144,3 +144,21 @@ export function readOpponentProfile(text, augments) {
     augmentIds: openingNamesInText(selectedTitles.join('\n'), [], augments).offered,
   };
 }
+
+export function opponentTraitLabels(text, setData) {
+  const labels = entriesForOcr(setData.traits || [], setData.set).map(({ id, name }) => ({
+    id, name: name.normalize('NFKC').replace(/\s+/g, '').toLowerCase(),
+  }));
+  const found = new Set();
+  for (const row of text.normalize('NFKC').split(/\r?\n/)) {
+    const label = row.trim().replace(/^[\d\s/|:·>]+|[\d\s/|:·>]+$/g, '').replace(/\s+/g, '').toLowerCase();
+    if (!label || !/^(?:\p{Script=Han}{2,}|[a-z]{3,})$/u.test(label)) continue;
+    const exact = labels.filter(entry => entry.name === label);
+    const candidates = exact.length || !/^\p{Script=Han}{3,}$/u.test(label) ? exact
+      : labels.filter(entry => entry.name.length === label.length + 1 &&
+          (entry.name.startsWith(label) || entry.name.endsWith(label)));
+    const ids = new Set(candidates.map(entry => entry.id));
+    if (ids.size === 1) found.add(ids.values().next().value);
+  }
+  return [...found];
+}

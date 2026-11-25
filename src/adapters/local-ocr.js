@@ -1,7 +1,7 @@
 import { contentFrame } from './game-frame.js';
 import { createOcrLane } from './ocr-lane.js';
 import { fillGoldCardSlots } from './augment-icon-ocr.js?v=layout';
-import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=opponent-profile';
+import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, opponentTraitLabels, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=trait-strips';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
 const DESKTOP_STAGE = [0.398, 0.002, 0.420, 0.025];
@@ -289,9 +289,15 @@ export async function recognizeOpponentLabels(canvas, setData, isCurrent, augmen
   return { ...evidence, gold: profile.gold ?? second.gold, augmentIds: second.augmentIds };
 }
 
-export async function recognizeOpponentTraitStrip(canvas, setData, isCurrent) {
+export async function recognizeOpponentTraitStrip(canvas, setData, isCurrent, known = [], unitCount = 0, fastOnly = false) {
   const board = contentFrame(canvas);
-  const strip = cropForOcr(board, [0.035, 0.22, 0.17, 0.64], { zoom: 2.5 });
+  const strip = cropForOcr(board, [0.065, 0.235, 0.147, 0.638], { zoom: 4 });
   const text = await scout.read(strip, isCurrent, '6');
-  return text && isCurrent() ? screenEvidence(text, setData).traits : [];
+  if (!isCurrent()) return [];
+  const traits = [...new Set([...opponentTraitLabels(text || '', setData), ...screenEvidence(text || '', setData).traits])];
+  if (fastOnly || new Set([...known, ...traits]).size + unitCount >= 2) return traits;
+  const wider = cropForOcr(board, [0.035, 0.22, 0.17, 0.64], { zoom: 2.5 });
+  const extra = await scout.read(wider, isCurrent, '6');
+  return isCurrent() ? [...new Set([...traits, ...screenEvidence(extra || '', setData).traits,
+    ...opponentTraitLabels(extra || '', setData)])] : traits;
 }
