@@ -4,13 +4,14 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalog } from './adapters/catalog.js';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=lineup-list';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=lineup-list';
+import { bindScreenReader } from './ui/screen-reader.js?v=opponent-scout';
+import { bindOpponentScout } from './ui/opponent-scout.js';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=opponent-scout';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=trained-ranker';
+import { rankOpening } from './engine/opening.js?v=opponent-scout';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=inventory-augments';
@@ -18,11 +19,11 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=adaptive-transitions';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=lineup-only';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=opponent-scout';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-let modelReference, screenReader, openingAdvice, matchSamples, iconMatch;
+let modelReference, screenReader, openingAdvice, matchSamples, iconMatch, scout;
 let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
@@ -52,10 +53,13 @@ const state = {
   openingCity: '',
   economy: '',
   openingAugment: '',
+  opponents: new Map(),
   snap: { file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false },
 };
 
 async function loadBoard() {
+  state.opponents.clear();
+  scout?.reset();
   screenReader?.reset();
   openingAdvice?.reset();
   el('augmentTierFilter').value = '';
@@ -98,6 +102,8 @@ async function loadBoard() {
 }
 
 async function loadSet(setNum) {
+  state.opponents.clear();
+  scout?.reset();
   screenReader?.reset();
   iconMatch?.reset();
   const meta = findSet(setNum);
@@ -377,6 +383,8 @@ function renderSide() {
   renderGear(top);
   renderSnapshotLineups();
   openingAdvice?.draw();
+  scout?.render();
+  if (state.ranked) screenReader?.refreshDirection();
   matchSamples?.refresh();
 }
 
@@ -840,8 +848,25 @@ function bind() {
         ranked: () => state.ranked || [],
       };
     },
+    isOpponentView: () => Boolean(el('scoutView').value),
     onEvidence: openingAdvice.receive,
     onOpening: openingAdvice.show,
+  });
+  scout = bindOpponentScout({
+    view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'), unit: el('scoutUnit'),
+    add: el('scoutAdd'), save: el('scoutSave'), clear: el('scoutClear'), clearAll: el('scoutClearAll'),
+    choices: el('scoutChoices'), status: el('scoutStatus'), summary: el('scoutSummary'),
+    getContext: () => !loadingSet && state.setData ? {
+      setData: state.setData, comps: state.comps, opponents: state.opponents, patch: state.board?.version,
+    } : null,
+    getFrame: () => screenReader.getFrame(),
+    onViewChange: () => screenReader.perspectiveChanged(),
+    onChange(slot, units) {
+      if (slot === null) state.opponents.clear();
+      else if (units.length) state.opponents.set(slot, units);
+      else state.opponents.delete(slot);
+      if (state.setData && !loadingSet) renderResults();
+    },
   });
   modelReference = bindModelReference({
     file: el('modelFile'), unit: el('modelUnit'), display: el('modelDisplay'),

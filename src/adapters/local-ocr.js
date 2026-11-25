@@ -148,7 +148,7 @@ async function openingSlots(canvas, setData, entries, isCurrent) {
   return best;
 }
 export async function recognizeBoardText(canvas, setData, isCurrent = () => true, {
-  detailed = false, opening, readCards = true, fastOpening = false, onStage, onProgress,
+  detailed = false, opening, readCards = true, fastOpening = false, stageOnly = false, onStage, onProgress,
 } = {}) {
   if (fastOpening) canvas = contentFrame(canvas);
   const landscape = canvas.width >= canvas.height;
@@ -161,7 +161,7 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   if (hint && fastOpening) {
     onStage?.(hint);
     const evidence = { stage: hint, units: [], traits: [], matchFrame: true };
-    if (stageAfterOpening(hint) || (hint === '2-1' && !readCards)) return evidence;
+    if (stageOnly || stageAfterOpening(hint) || (hint === '2-1' && !readCards)) return evidence;
     if (hint === '2-1' && opening && readCards) {
       slots = await openingSlots(canvas, setData, entriesForOcr(opening.augments, setData.set), isCurrent);
       if (!slots || !isCurrent()) return null;
@@ -182,6 +182,7 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   const text = await readOcr(textCanvas, isCurrent);
   if (text === null || !isCurrent()) return null;
   const initial = screenEvidence(text, setData);
+  if (stageOnly) return { stage: initial.stage };
   const reads = [initial];
   const fullText = [text];
   if (hint) reads.push({ stage: hint, units: earlyShop || [], traits: [] });
@@ -262,4 +263,12 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     }
   }
   return evidence;
+}
+
+export async function recognizeOpponentLabels(canvas, setData, isCurrent) {
+  const board = contentFrame(canvas);
+  const labels = cropForOcr(board, [0.12, 0.12, 0.87, 0.82], { zoom: 1.2, contrast: false });
+  const text = await readOcr(labels, isCurrent);
+  if (text === null || !isCurrent()) return null;
+  return openingNamesInText(text, [], entriesForOcr(setData.units, setData.set)).offered;
 }

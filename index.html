@@ -32,11 +32,40 @@
       <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
       <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
     </div>
-    <label for="screenPhoto">导入截图识别</label>
+    <label for="screenPhoto">导入我的 2-1 截图</label>
     <input id="screenPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" />
     <p id="screenStatus" class="snap-status" role="status">正在检查屏幕共享支持…</p>
     <section id="screenDirection" class="snap-status ok" aria-live="polite" hidden></section>
     <video id="screenVideo" class="screen-video" muted playsinline hidden aria-label="共享画面预览"></video>
+    <details class="snap-model" id="opponentScout">
+      <summary>对手视角与同行分析</summary>
+      <p class="fine">请先选择对手，再切换到游戏里的对手画面并读取。保存前请核对棋子。回到自己的游戏画面后，请选择「我的视角」。</p>
+      <div class="snap-actions">
+        <label>当前视角
+          <select id="scoutView">
+            <option value="">我的视角</option>
+            <option value="1">对手 1</option><option value="2">对手 2</option>
+            <option value="3">对手 3</option><option value="4">对手 4</option>
+            <option value="5">对手 5</option><option value="6">对手 6</option>
+            <option value="7">对手 7</option>
+          </select>
+        </label>
+        <button id="scoutCapture" class="ghost" type="button" disabled>读取当前对手画面</button>
+        <label>导入对手截图 <input id="scoutPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" disabled /></label>
+      </div>
+      <div class="snap-actions">
+        <label>手动补录 <select id="scoutUnit" disabled></select></label>
+        <button id="scoutAdd" class="ghost" type="button" disabled>添加棋子</button>
+      </div>
+      <div id="scoutChoices" class="snap-actions"></div>
+      <div class="snap-actions">
+        <button id="scoutSave" class="primary" type="button" disabled>保存对手棋子</button>
+        <button id="scoutClear" class="ghost" type="button" disabled>清除该对手</button>
+        <button id="scoutClearAll" class="ghost" type="button" disabled>清空本局对手记录</button>
+      </div>
+      <p id="scoutStatus" class="snap-status" role="status">当前是我的视角。</p>
+      <ul id="scoutSummary" hidden></ul>
+    </details>
   </section>
   <dialog id="openingDialog" aria-labelledby="openingTitle">
     <header class="opening-header">
@@ -212,6 +241,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=lineup-list"></script>
+<script type="module" src="./src/main.js?v=opponent-scout"></script>
 </body>
 </html>

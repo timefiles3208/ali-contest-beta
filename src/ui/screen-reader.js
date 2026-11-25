@@ -1,6 +1,6 @@
 import { renderLineupList } from './lineup-list.js';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=opening-latency';
+import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=opponent-scout';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 const FRAME_INTERVAL_MS = 1000;
 const CAPTURE_LIMIT_MS = 180_000;
@@ -14,9 +14,10 @@ function toCanvas(image, width, height, maxSize = 1600) {
   return canvas;
 }
 
-export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening }) {
+export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening, isOpponentView }) {
   const supported = Boolean(navigator.mediaDevices?.getDisplayMedia);
   let active, finishedJob;
+  let perspectiveRevision = 0;
   const say = (message) => { status.textContent = message; };
   const clearResult = () => {
     result.textContent = '';
@@ -27,7 +28,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     start.disabled = !supported || Boolean(active || finishedJob);
     stop.disabled = !active;
     finish.disabled = !active?.stream || !video.videoWidth;
-    photo.disabled = Boolean(active || finishedJob);
+    photo.disabled = Boolean(active || finishedJob || isOpponentView());
   }
 
   function release(session) {
@@ -60,13 +61,16 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   async function scan(session) {
     if (active !== session) return;
     const canvas = frame();
+    const revision = perspectiveRevision;
+    const opponent = isOpponentView();
+    const retry = () => { session.tick = setTimeout(() => void scan(session), FRAME_INTERVAL_MS); };
     if (canvas) {
       try {
         const read = await withinRecognitionBudget(current => recognizeBoardText(
-          canvas, session.context.setData, () => active === session && current(), {
-            opening: session.context.opening, fastOpening: true, readCards: !session.cardsRead,
+          canvas, session.context.setData, () => active === session && perspectiveRevision === revision && current(), {
+            opening: opponent ? undefined : session.context.opening, fastOpening: true, stageOnly: opponent, readCards: !opponent && !session.cardsRead,
             onStage(stage) {
-              if (stage !== '2-1' || session.atOpening) return;
+              if (opponent || perspectiveRevision !== revision || stage !== '2-1' || session.atOpening) return;
               session.atOpening = true;
               onOpening();
               say('检测到 2-1，正在补读本轮海克斯。');
@@ -74,11 +78,17 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
           },
         ), 14_000);
         if (active !== session) return;
+        if (perspectiveRevision !== revision) { retry(); return; }
         const evidence = read.value;
         if (stageAfterOpening(evidence?.stage)) {
           release(session);
           if (session.atOpening) showDirection(session.context);
           else say('已读到 2-1 之后的阶段，屏幕读取已停止。');
+          return;
+        }
+        if (opponent) {
+          if (evidence?.stage === '2-1') say('检测到 2-1，正在共享对手视角。');
+          retry();
           return;
         }
         if (evidence?.opening) onEvidence(evidence);
@@ -92,12 +102,13 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         }
       } catch {
         if (active !== session) return;
+        if (perspectiveRevision !== revision || opponent) { retry(); return; }
         release(session);
         say('文字识别未能运行，请重试或导入截图。');
         return;
       }
     }
-    if (active === session) session.tick = setTimeout(() => void scan(session), FRAME_INTERVAL_MS);
+    if (active === session) retry();
   }
 
   async function readOpeningPhoto(file, context, job) {
@@ -158,7 +169,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       await video.play();
       if (active !== session) return;
       render();
-      say('正在加载中文识别组件…');
+      say(isOpponentView() ? '已共享，可从对手视角读取当前一帧。' : '正在加载中文识别组件…');
       void scan(session);
     } catch (error) {
       if (active !== session) return;
@@ -180,7 +191,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   photo.onchange = async () => {
     const file = photo.files[0];
     photo.value = '';
-    if (!file || active || finishedJob) return;
+    if (!file || active || finishedJob || isOpponentView()) return;
     const context = getContext();
     if (!context) { say('请等当前数据源的阵容库载入。'); return; }
     if (file.size > 20 * 1024 * 1024) { say('请选择 20 MB 以内的截图。'); return; }
@@ -207,5 +218,18 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   };
   addEventListener('pagehide', reset);
   reset();
-  return { reset };
+  return {
+    reset,
+    getFrame: () => active?.stream ? frame() : null,
+    perspectiveChanged() {
+      perspectiveRevision++;
+      render();
+      if (active?.stream) say(isOpponentView() ? '可从对手视角读取当前一帧。' : '已切回我的视角。');
+    },
+    refreshDirection() {
+      if (result.hidden) return;
+      const context = getContext();
+      result.hidden = !context || !renderLineupList(result, context.ranked(), { label: '阵容方向', link: true });
+    },
+  };
 }
