@@ -1,6 +1,6 @@
-import { renderLineupList } from './lineup-list.js?v=opponent-profile';
+import { renderLineupList } from './lineup-list.js?v=selected-augment-icons';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=opponent-profile';
+import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=selected-augment-icons';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 const FRAME_INTERVAL_MS = 1000;
 const CAPTURE_LIMIT_MS = 180_000;
@@ -42,9 +42,9 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     render();
   }
 
-  function frame() {
+  function frame(maxSize) {
     return video.videoWidth && video.readyState >= 2
-      ? toCanvas(video, video.videoWidth, video.videoHeight) : null;
+      ? toCanvas(video, video.videoWidth, video.videoHeight, maxSize) : null;
   }
 
   function showDirection(context, note = '已按确认的开局条件匹配当前阵容库。') {
@@ -226,7 +226,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   reset();
   return {
     reset,
-    getFrame: () => active?.stream ? frame() : null,
+    getFrame: () => active?.stream ? frame(1920) : null,
     perspectiveChanged() {
       perspectiveRevision++;
       render();

@@ -254,6 +254,7 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 .snap-unit-result { display: inline-flex; flex-direction: column; gap: 4px; }
 .snap-unit-items { color: var(--dim); max-width: 18rem; font-size: .8rem; overflow-wrap: anywhere; }
 .snap-model { padding-top: .75rem; border-top: 1px solid var(--line); }
+.scout-augment-icon { display: inline-block; width: 24px; height: 24px; margin-inline-start: .35rem; vertical-align: middle; border-radius: 4px; }
 .snap-model summary { cursor: pointer; font-size: .875rem; }
 .snap-model-fields { display: flex; flex-wrap: wrap; gap: .75rem; margin: .75rem 0; }
 .snap-model-fields label { display: grid; gap: .35rem; min-width: 0; }

@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=lineup-list" />
+<link rel="stylesheet" href="./styles.css?v=selected-augment-icons" />
 </head>
 <body>
 <header class="bar">
@@ -52,6 +52,9 @@
         </label>
         <button id="scoutCapture" class="ghost" type="button" disabled>重新读取</button>
         <label>导入对手截图 <input id="scoutPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" disabled /></label>
+      </div>
+      <div class="snap-actions">
+        <label>导入单枚已选海克斯图标 <input id="scoutIconPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" disabled /></label>
       </div>
       <div class="snap-actions">
         <button id="scoutClear" class="ghost" type="button" disabled>清除该对手</button>
@@ -248,6 +251,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=opponent-profile"></script>
+<script type="module" src="./src/main.js?v=selected-augment-icons"></script>
 </body>
 </html>

@@ -1,11 +1,13 @@
-import { recognizeOpponentLabels, warmOpeningOcr } from '../adapters/local-ocr.js?v=opponent-profile';
+import { recognizeOpponentLabels, warmOpeningOcr } from '../adapters/local-ocr.js?v=selected-augment-icons';
+import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
+import { contentFrame } from '../adapters/game-frame.js';
 import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 
 const SCOUT_BUDGET_MS = 5_000;
 const ECONOMY_NAMES = { low: '偏低', normal: '一般', high: '较高' };
 
-export function bindOpponentScout({ view, capture, photo, economy, augment, saveProfile, clear, clearAll, status, summary, getContext, getFrame, onChange, onViewChange }) {
+export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, augment, saveProfile, clear, clearAll, status, summary, getContext, getFrame, onChange, onViewChange }) {
   const pending = new Map();
   let listedAugments;
   const signal = text => { status.textContent = text; };
@@ -15,6 +17,7 @@ export function bindOpponentScout({ view, capture, photo, economy, augment, save
     const slot = view.value;
     const available = Boolean(context?.comps.length && slot);
     capture.disabled = photo.disabled = economy.disabled = augment.disabled = !available;
+    iconPhoto.disabled = !available || context?.setData.set !== 18;
     if (listedAugments !== context?.augments) {
       listedAugments = context?.augments;
       const entries = [...(listedAugments || [])].sort((a, b) => a.name.localeCompare(b.name, 'zh'));
@@ -36,7 +39,7 @@ export function bindOpponentScout({ view, capture, photo, economy, augment, save
       const goldText = gold != null ? `${gold} 金币（${econ}）` : econ ? `经济预估${econ}` : '金币未知';
       const augments = augmentIds.map(id => augmentsById.get(id)).filter(Boolean);
       detail.textContent = ` · 棋子和羁绊 ${observed.join('、') || '未知'} · ${goldText} · 已选海克斯 ${augments.join('、') || '未知'}`;
-      item.append(title, detail);
+      item.append(title, detail, ...augmentIds.map(augmentIconElement).filter(Boolean));
       if (routes.length) {
         const list = document.createElement('ol');
         for (const { comp } of routes) {
@@ -74,7 +77,10 @@ export function bindOpponentScout({ view, capture, photo, economy, augment, save
     report('正在分析对手 ' + slot + '…');
     render();
     try {
-      let partial;
+      let partial, visualIds = [];
+      const includeIcons = (textEvidence) => textEvidence?.augmentIds.length || !visualIds.length ? textEvidence : {
+        units: [], traits: [], gold: null, ...textEvidence, augmentIds: visualIds,
+      };
       const result = await withinRecognitionBudget(async current => {
         const image = await input();
         try {
@@ -82,19 +88,26 @@ export function bindOpponentScout({ view, capture, photo, economy, augment, save
           let canvas = image;
           if (!image.getContext) {
             canvas = document.createElement('canvas');
-            const scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+            const scale = Math.min(1, 1920 / Math.max(image.width, image.height));
             canvas.width = Math.max(1, Math.round(image.width * scale));
             canvas.height = Math.max(1, Math.round(image.height * scale));
             canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
           }
-          return await recognizeOpponentLabels(canvas, context.setData, () => current() && isLatest(), context.augments,
-            evidence => { partial = evidence; });
+          const active = () => current() && isLatest();
+          const icons = context.setData.set === 18 ? readSelectedAugmentIcons(contentFrame(canvas), context.augments, active)
+            .then(ids => { if (active()) visualIds = ids; }).catch(() => {}) : Promise.resolve();
+          let failure;
+          const text = await recognizeOpponentLabels(canvas, context.setData, active, context.augments,
+            evidence => { partial = evidence; }).catch(error => { failure = error; return null; });
+          await icons;
+          if (failure && !visualIds.length && !partial) throw failure;
+          return includeIcons(text || partial);
         } finally {
           image.close?.();
         }
       }, SCOUT_BUDGET_MS);
       if (!isLatest()) return;
-      const evidence = result.value || partial;
+      const evidence = result.value || includeIcons(partial);
       const previous = context.boards.get(slot);
       const boardCount = evidence ? evidence.units.length + evidence.traits.length : 0;
       if (evidence && (boardCount >= 2 || evidence.gold != null || evidence.augmentIds.length || (boardCount && previous?.augmentIds.length))) {
@@ -124,6 +137,7 @@ export function bindOpponentScout({ view, capture, photo, economy, augment, save
     const frame = getFrame();
     if (!frame) {
       void warmOpeningOcr().catch(() => {});
+      if (getContext()?.setData.set === 18) void warmOpponentAugmentIcons();
       signal('可共享游戏窗口，或导入该对手的截图。');
       return;
     }
@@ -134,7 +148,10 @@ export function bindOpponentScout({ view, capture, photo, economy, augment, save
     economy.value = augment.value = '';
     onViewChange();
     render();
-    if (view.value) readCurrent();
+    if (view.value) {
+      if (getContext()?.setData.set === 18) void warmOpponentAugmentIcons();
+      readCurrent();
+    }
     else signal('当前是我的视角。');
   };
   economy.onchange = augment.onchange = render;
@@ -162,6 +179,41 @@ export function bindOpponentScout({ view, capture, photo, economy, augment, save
     if (!file) return;
     if (file.size > 20 * 1024 * 1024) { signal('请选择 20 MB 以内的截图。'); return; }
     void read(() => createImageBitmap(file));
+  };
+  iconPhoto.onchange = async () => {
+    const [file] = iconPhoto.files;
+    iconPhoto.value = '';
+    const slot = view.value;
+    const context = getContext();
+    if (!file || !slot || context?.setData.set !== 18 || !context.comps.length) return;
+    if (file.size > 5 * 1024 * 1024) { signal('请选择 5 MB 以内的单枚海克斯图标。'); return; }
+    const job = {};
+    pending.set(slot, job);
+    const report = message => { if (view.value === slot) signal(message); };
+    report('正在匹配已选海克斯图标…');
+    render();
+    try {
+      const result = await withinRecognitionBudget(() => readCroppedAugmentIcon(file, context.augments), SCOUT_BUDGET_MS);
+      if (pending.get(slot) !== job) return;
+      if (!result.value) {
+        report(result.timedOut ? '图标识别已到等待上限。' : '图标匹配不明确，请裁出一枚完整图标，或手动补充名称。');
+        return;
+      }
+      const previous = context.boards.get(slot);
+      save(slot, {
+        units: previous?.units || [], traits: previous?.traits || [],
+        gold: previous?.gold ?? null, economy: previous?.economy || '',
+        augmentIds: [...new Set([...(previous?.augmentIds || []), result.value])].slice(0, 3),
+      }, context);
+      report(`已登记对手 ${slot} 的 ${context.augments.find(row => row.id === result.value)?.name}。`);
+    } catch {
+      if (pending.get(slot) === job) report('无法读取该图标，试试 PNG、JPG 或 WebP。');
+    } finally {
+      if (pending.get(slot) === job) {
+        pending.delete(slot);
+        render();
+      }
+    }
   };
   clear.onclick = () => {
     pending.delete(view.value);

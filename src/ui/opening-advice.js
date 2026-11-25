@@ -1,5 +1,5 @@
-import { renderLineupList } from './lineup-list.js?v=opponent-profile';
-import { rankOpeningAugments } from '../engine/opening.js?v=opponent-profile';
+import { renderLineupList } from './lineup-list.js?v=selected-augment-icons';
+import { rankOpeningAugments } from '../engine/opening.js?v=selected-augment-icons';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
 export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, getContext, onChange, onPick, onTier }) {
