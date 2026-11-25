@@ -4,8 +4,8 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=fresh-screen-frames';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=fresh-screen-frames';
+import { bindScreenReader } from './ui/screen-reader.js?v=ocr-priority';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=ocr-priority';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=formation-plan';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
@@ -19,7 +19,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=formation-plan';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=fresh-screen-frames';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=ocr-priority';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -317,14 +317,15 @@ function renderResults() {
     : '';
   renderFoot();
   state.ranked = null;
-  renderSide();
 
   if (!state.setData.units.length) {
     box.innerHTML = `<div class="empty">${esc(state.meta.label)} 的卡池尚未生成，推荐不可用。<br />${esc(state.setData.preview?.note || '')}</div>`;
+    renderSide();
     return;
   }
   if (!state.comps.length) {
     box.innerHTML = `<div class="empty">${esc(state.issues.join('；') || '阵容库为空')}</div>`;
+    renderSide();
     return;
   }
   const ranked = rankOpening({ ...openingContext(), patch: state.board?.version, model: openingModel });

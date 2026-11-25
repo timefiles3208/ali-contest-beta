@@ -1,6 +1,6 @@
 import { renderLineupList } from './lineup-list.js?v=formation-plan';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=fresh-screen-frames';
+import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=ocr-priority';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { boardFrameStamp, sameBoardFrame, waitForVideoFrame } from '../adapters/video-frame.js';
 const FRAME_INTERVAL_MS = 400;
@@ -220,6 +220,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       }, CAPTURE_LIMIT_MS);
       video.srcObject = stream;
       video.hidden = false;
+      void warmScoutOcr().catch(() => {});
       await video.play();
       if (active !== session) return;
       render();

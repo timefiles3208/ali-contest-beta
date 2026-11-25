@@ -1,4 +1,5 @@
 import { contentFrame } from './game-frame.js';
+import { createOcrLane } from './ocr-lane.js';
 import { fillGoldCardSlots } from './augment-icon-ocr.js?v=layout';
 import { entriesForOcr, hasMatchFrame, matchRegionLabel, mergeScreenEvidence, openingNamesInText, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=opponent-profile';
 
@@ -10,44 +11,42 @@ const COMPACT_TRAITS = [0.095, 0.089, 0.22, 0.51];
 const CARD_CENTERS = [0.287, 0.501, 0.715];
 const SHOP_LABELS = [0.291, 0.396, 0.501, 0.606, 0.711].map(left => [left, 0.969, left + 0.038, 0.991]);
 const MOBILE_SHOP_LABELS = [0.165, 0.327, 0.492, 0.655].map(left => [left, 0.415, left + 0.043, 0.449]);
-let worker;
-let queue = Promise.resolve();
+let runtime;
 
-async function loadWorker() {
-  if (!globalThis.Tesseract) {
+function loadRuntime() {
+  if (globalThis.Tesseract) return Promise.resolve(globalThis.Tesseract);
+  runtime ??= new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = new URL('tesseract.min.js', OCR_DIR);
-    await new Promise((resolve, reject) => {
-      script.onload = resolve;
-      script.onerror = () => {
-        script.remove();
-        reject(new Error('识别组件加载失败，请重试。'));
-      };
-      document.head.append(script);
-    });
-  }
-  const worker = await globalThis.Tesseract.createWorker(['chi_sim', 'eng'], 1, {
+    const failed = () => {
+      script.remove();
+      reject(new Error('识别组件加载失败，请重试。'));
+    };
+    script.onload = () => globalThis.Tesseract ? resolve(globalThis.Tesseract) : failed();
+    script.onerror = failed;
+    document.head.append(script);
+  }).catch(error => {
+    runtime = undefined;
+    throw error;
+  });
+  return runtime;
+}
+
+async function loadWorker() {
+  const tesseract = await loadRuntime();
+  return tesseract.createWorker(['chi_sim', 'eng'], 1, {
     workerPath: new URL('worker.min.js', OCR_DIR).href,
     corePath: OCR_DIR.href,
     langPath: new URL('lang', OCR_DIR).href,
     workerBlobURL: false,
   });
-  return worker;
 }
 
-function readOcr(canvas, isCurrent, mode = '11', whitelist = '') {
-  const job = queue.then(async () => {
-    if (!isCurrent()) return null;
-    const engine = await warmOpeningOcr();
-    if (!isCurrent()) return null;
-    await engine.setParameters({ tessedit_pageseg_mode: mode, tessedit_char_whitelist: whitelist });
-    if (!isCurrent()) return null;
-    const { data } = await engine.recognize(canvas);
-    return data.text;
-  });
-  queue = job.catch(() => {});
-  return job;
-}
+const opening = createOcrLane(loadWorker);
+const scout = createOcrLane(loadWorker);
+const readOcr = opening.read;
+export const warmOpeningOcr = opening.warm;
+export const warmScoutOcr = scout.warm;
 
 function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0, contrast = true, fixed = false } = {}) {
   const pixel = fixed ? v => v : Math.round;
@@ -101,11 +100,6 @@ async function readDimStage(canvas, setData, isCurrent) {
     if (stage) return stage;
   }
   return null;
-}
-
-export function warmOpeningOcr() {
-  worker ||= loadWorker().catch(error => { worker = null; throw error; });
-  return worker;
 }
 
 async function readHudStage(canvas, setData, isCurrent) {
@@ -274,7 +268,7 @@ export async function recognizeOpponentLabels(canvas, setData, isCurrent, augmen
   const board = contentFrame(canvas);
   const bounds = [0.03, 0.12, 0.87, 0.82];
   const labels = cropForOcr(board, bounds, { zoom: 1, contrast: false });
-  const text = await readOcr(labels, isCurrent);
+  const text = await scout.read(labels, isCurrent);
   if (text === null || !isCurrent()) return null;
   const profile = readOpponentProfile(text, augments);
   const evidence = {
@@ -289,7 +283,7 @@ export async function recognizeOpponentLabels(canvas, setData, isCurrent, augmen
   if (profile.augmentIds.length || (profile.gold == null && !possibleTitle)) return evidence;
 
   // A second segmentation can recover the full label from a tooltip that sparse OCR split.
-  const focused = await readOcr(cropForOcr(board, bounds, { zoom: 1.2 }), isCurrent, '6');
+  const focused = await scout.read(cropForOcr(board, bounds, { zoom: 1.2 }), isCurrent, '6');
   if (!focused || !isCurrent()) return evidence;
   const second = readOpponentProfile(focused, augments);
   return { ...evidence, gold: profile.gold ?? second.gold, augmentIds: second.augmentIds };
@@ -298,6 +292,6 @@ export async function recognizeOpponentLabels(canvas, setData, isCurrent, augmen
 export async function recognizeOpponentTraitStrip(canvas, setData, isCurrent) {
   const board = contentFrame(canvas);
   const strip = cropForOcr(board, [0.035, 0.22, 0.17, 0.64], { zoom: 2.5 });
-  const text = await readOcr(strip, isCurrent, '6');
+  const text = await scout.read(strip, isCurrent, '6');
   return text && isCurrent() ? screenEvidence(text, setData).traits : [];
 }

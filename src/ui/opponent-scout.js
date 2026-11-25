@@ -1,4 +1,4 @@
-import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmOpeningOcr } from '../adapters/local-ocr.js?v=fresh-screen-frames';
+import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=ocr-priority';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
 import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=formation-plan';
@@ -160,7 +160,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
 
   function readCurrent() {
     if (!hasSharedStream()) {
-      void warmOpeningOcr().catch(() => {});
+      void warmScoutOcr().catch(() => {});
       if (getContext()?.setData.set === 18) void warmOpponentAugmentIcons();
       signal('可共享游戏窗口，或导入该对手的截图。');
       return;

@@ -1,6 +1,6 @@
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=lineup-only';
-import { recognizeBoardText } from './local-ocr.js?v=fresh-screen-frames';
+import { recognizeBoardText } from './local-ocr.js?v=ocr-priority';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
