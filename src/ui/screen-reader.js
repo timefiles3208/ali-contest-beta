@@ -1,8 +1,10 @@
 import { renderLineupList } from './lineup-list.js?v=formation-plan';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=selected-augment-icons';
+import { recognizeBoardText, warmOpeningOcr } from '../adapters/local-ocr.js?v=fresh-screen-frames';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
-const FRAME_INTERVAL_MS = 1000;
+import { boardFrameStamp, sameBoardFrame, waitForVideoFrame } from '../adapters/video-frame.js';
+const FRAME_INTERVAL_MS = 400;
+const SCOUT_STAGE_INTERVAL_MS = 950;
 const CAPTURE_LIMIT_MS = 180_000;
 
 function toCanvas(image, width, height, maxSize = 1600) {
@@ -18,6 +20,9 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   const supported = Boolean(navigator.mediaDevices?.getDisplayMedia);
   let active, finishedJob;
   let perspectiveRevision = 0;
+  const thumbnail = document.createElement('canvas');
+  thumbnail.width = 12;
+  thumbnail.height = 8;
   const say = (message) => { status.textContent = message; };
   const clearResult = () => {
     result.textContent = '';
@@ -36,6 +41,8 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     active = null;
     clearTimeout(session.tick);
     clearTimeout(session.limit);
+    session.frameRequest?.abort();
+    session.scanFrame?.abort();
     session.stream?.getTracks().forEach(track => track.stop());
     video.srcObject = null;
     video.hidden = true;
@@ -45,6 +52,31 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   function frame(maxSize) {
     return video.videoWidth && video.readyState >= 2
       ? toCanvas(video, video.videoWidth, video.videoHeight, maxSize) : null;
+  }
+
+  async function captureScoutFrame(slot, { sameAs } = {}) {
+    const session = active;
+    if (!session?.stream) return null;
+    const revision = perspectiveRevision;
+    session.frameRequest?.abort();
+    const request = new AbortController();
+    session.frameRequest = request;
+    const previous = session.scoutFrame;
+    const reject = previous?.slot !== slot ? previous?.stamp : null;
+    const take = () => {
+      if (session !== active || perspectiveRevision !== revision || request.signal.aborted || !video.videoWidth || video.readyState < 2) return null;
+      const stamp = boardFrameStamp(video, thumbnail);
+      if (sameBoardFrame(reject, stamp) || (sameAs && !sameBoardFrame(sameAs, stamp))) return null;
+      const canvas = frame(1920);
+      return canvas ? { canvas, stamp } : null;
+    };
+    // An already presented distinct view is usable even if the sharing tab is now static.
+    const captured = (reject && take())
+      || await waitForVideoFrame(video, take, { timeout: reject ? 700 : 320, signal: request.signal })
+      || take();
+    if (!captured || session !== active || perspectiveRevision !== revision) return null;
+    session.scoutFrame = { slot, stamp: captured.stamp };
+    return captured;
   }
 
   function showDirection(context, note = '已按确认的开局条件匹配当前阵容库。') {
@@ -60,10 +92,26 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
 
   async function scan(session) {
     if (active !== session) return;
-    const canvas = frame();
+    session.tick = null;
     const revision = perspectiveRevision;
     const opponent = isOpponentView();
-    const retry = () => { session.tick = setTimeout(() => void scan(session), FRAME_INTERVAL_MS); };
+    const retry = () => {
+      if (active !== session) return;
+      const delay = revision !== perspectiveRevision ? 0 : opponent ? SCOUT_STAGE_INTERVAL_MS : FRAME_INTERVAL_MS;
+      session.tick = setTimeout(() => void scan(session), delay);
+    };
+    const nextFrame = session.lastPerspective !== revision;
+    session.lastPerspective = revision;
+    let canvas = null;
+    if (nextFrame) {
+      const request = new AbortController();
+      session.scanFrame = request;
+      canvas = await waitForVideoFrame(video, frame, { timeout: 400, signal: request.signal });
+      if (active !== session) return;
+      if (revision !== perspectiveRevision) { retry(); return; }
+    } else {
+      canvas = frame();
+    }
     if (canvas) {
       try {
         const read = await withinRecognitionBudget(current => recognizeBoardText(
@@ -155,7 +203,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     say('请选择游戏窗口。');
     void warmOpeningOcr().catch(() => {});
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 2, max: 5 } }, audio: false });
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 8, max: 12 } }, audio: false });
       if (active !== session) { stream.getTracks().forEach(track => track.stop()); return; }
       session.stream = stream;
       const track = stream.getVideoTracks()[0];
@@ -226,9 +274,16 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   reset();
   return {
     reset,
-    getFrame: () => active?.stream ? frame(1920) : null,
+    hasSharedStream: () => Boolean(active?.stream),
+    getFrame: captureScoutFrame,
     perspectiveChanged() {
       perspectiveRevision++;
+      active?.frameRequest?.abort();
+      active?.scanFrame?.abort();
+      if (active?.stream && active.tick != null) {
+        clearTimeout(active.tick);
+        void scan(active);
+      }
       render();
       if (active?.stream) say(isOpponentView() ? '可从对手视角读取当前一帧。' : '已切回我的视角。');
     },

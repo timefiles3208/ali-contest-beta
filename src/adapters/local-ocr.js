@@ -170,6 +170,11 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
       }
     }
   }
+  if (stageOnly && fastOpening) {
+    const hud = cropForOcr(canvas, [0.28, 0, 0.68, 0.082], { zoom: 1.8 });
+    const text = await readOcr(hud, isCurrent);
+    return text && isCurrent() ? { stage: screenEvidence(text, setData).stage } : null;
+  }
   let earlyShop;
   if (detailed && desktop && hint && hint !== '2-1') {
     onProgress?.({ stage: hint, matchFrame: true, units: [], traits: [] });
@@ -288,4 +293,11 @@ export async function recognizeOpponentLabels(canvas, setData, isCurrent, augmen
   if (!focused || !isCurrent()) return evidence;
   const second = readOpponentProfile(focused, augments);
   return { ...evidence, gold: profile.gold ?? second.gold, augmentIds: second.augmentIds };
+}
+
+export async function recognizeOpponentTraitStrip(canvas, setData, isCurrent) {
+  const board = contentFrame(canvas);
+  const strip = cropForOcr(board, [0.035, 0.22, 0.17, 0.64], { zoom: 2.5 });
+  const text = await readOcr(strip, isCurrent, '6');
+  return text && isCurrent() ? screenEvidence(text, setData).traits : [];
 }

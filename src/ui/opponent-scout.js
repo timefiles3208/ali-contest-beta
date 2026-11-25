@@ -1,4 +1,4 @@
-import { recognizeOpponentLabels, warmOpeningOcr } from '../adapters/local-ocr.js?v=selected-augment-icons';
+import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmOpeningOcr } from '../adapters/local-ocr.js?v=fresh-screen-frames';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
 import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=formation-plan';
@@ -7,8 +7,9 @@ import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 const SCOUT_BUDGET_MS = 5_000;
 const ECONOMY_NAMES = { low: '偏低', normal: '一般', high: '较高' };
 
-export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, augment, saveProfile, clear, clearAll, status, summary, getContext, getFrame, onChange, onViewChange }) {
+export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, augment, saveProfile, clear, clearAll, status, summary, getContext, getFrame, hasSharedStream, onChange, onViewChange }) {
   const pending = new Map();
+  let liveQueue = Promise.resolve();
   let listedAugments;
   const signal = text => { status.textContent = text; };
 
@@ -66,7 +67,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
     return routes;
   }
 
-  async function read(input) {
+  async function read(input, live = false) {
     const slot = view.value;
     const context = getContext();
     if (!slot || !context?.comps.length) return;
@@ -77,12 +78,22 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
     report('正在分析对手 ' + slot + '…');
     render();
     try {
+      const captured = live ? await getFrame(slot) : null;
+      if (!isLatest()) return;
+      if (live && !captured) {
+        report('未收到可区分的新画面。请先切到该对手，再点重新读取。'
+          + (context.boards.has(slot) ? '已保留上一次记录。' : ''));
+        return;
+      }
+      if (captured) report(`已截取对手 ${slot} 的画面，正在分析，可切下一家。`);
       let partial, visualIds = [];
       const includeIcons = (textEvidence) => textEvidence?.augmentIds.length || !visualIds.length ? textEvidence : {
         units: [], traits: [], gold: null, ...textEvidence, augmentIds: visualIds,
       };
-      const result = await withinRecognitionBudget(async current => {
-        const image = await input();
+      const analyze = () => withinRecognitionBudget(async current => {
+        if (!isLatest()) return null;
+        const image = live ? captured.canvas : await input();
+        if (!image) return null;
         try {
           if (!current() || !isLatest()) return null;
           let canvas = image;
@@ -101,11 +112,25 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
             evidence => { partial = evidence; }).catch(error => { failure = error; return null; });
           await icons;
           if (failure && !visualIds.length && !partial) throw failure;
-          return includeIcons(text || partial);
+          const evidence = includeIcons(text || partial);
+          if (!live || !active() || view.value !== slot ||
+              (evidence && evidence.units.length + evidence.traits.length >= 2)) return evidence;
+
+          const retry = await getFrame(slot, { sameAs: captured.stamp });
+          if (!retry || !active() || view.value !== slot) return evidence;
+          const traits = await recognizeOpponentTraitStrip(retry.canvas, context.setData, active).catch(() => []);
+          if (!traits.length || !active()) return evidence;
+          return {
+            units: [], gold: null, augmentIds: [], ...evidence,
+            traits: [...new Set([...(evidence?.traits || []), ...traits])],
+          };
         } finally {
           image.close?.();
         }
       }, SCOUT_BUDGET_MS);
+      const work = live ? liveQueue.then(analyze) : analyze();
+      if (live) liveQueue = work.catch(() => {});
+      const result = await work;
       if (!isLatest()) return;
       const evidence = result.value || includeIcons(partial);
       const previous = context.boards.get(slot);
@@ -134,14 +159,13 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
   }
 
   function readCurrent() {
-    const frame = getFrame();
-    if (!frame) {
+    if (!hasSharedStream()) {
       void warmOpeningOcr().catch(() => {});
       if (getContext()?.setData.set === 18) void warmOpponentAugmentIcons();
       signal('可共享游戏窗口，或导入该对手的截图。');
       return;
     }
-    void read(() => frame);
+    void read(null, true);
   }
 
   view.onchange = () => {
