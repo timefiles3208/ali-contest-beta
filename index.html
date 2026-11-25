@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=selected-augment-icons" />
+<link rel="stylesheet" href="./styles.css?v=rolldown-budget" />
 </head>
 <body>
 <header class="bar">
@@ -100,6 +100,16 @@
     <p id="openingOwned" class="fine" role="status"></p>
     <fieldset id="openingCandidates" hidden></fieldset>
     <section id="openingDirection" aria-live="polite"></section>
+    <fieldset id="openingRolldown" hidden>
+      <legend>搜牌预算估算（可选）</legend>
+      <div class="opening-fields">
+        <label>当前等级 <input id="openingRollLevel" type="number" min="1" max="10" step="1" placeholder="1–10" /></label>
+        <label>可用金币 <input id="openingRollGold" type="number" min="0" max="200" step="1" placeholder="0–200" /></label>
+        <label>当前等级已累积经验 <input id="openingRollXp" type="number" min="0" max="68" step="1" placeholder="默认 0" /></label>
+        <label>上方所选棋子的持有张数 <input id="openingUnitCopies" type="number" min="1" max="9" step="1" disabled /></label>
+      </div>
+      <p class="fine">登记后默认持有 1 张，二星算 3 张、三星算 9 张。概率只覆盖首位主 C，按标准商店和付费刷新估算。已观察到的同名对手棋子按每家 1 张计入。</p>
+    </fieldset>
     <fieldset class="opening-hex">
       <legend>本轮提供的海克斯</legend>
       <div class="opening-tier">
@@ -253,6 +263,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=optional-scout"></script>
+<script type="module" src="./src/main.js?v=rolldown-budget"></script>
 </body>
 </html>

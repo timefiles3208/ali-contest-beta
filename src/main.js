@@ -1,17 +1,18 @@
-import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=formation-plan';
+import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=rolldown-budget';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=trait-strips';
+import { bindScreenReader } from './ui/screen-reader.js?v=rolldown-budget';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=trait-strips';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=optional-scout';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=rolldown-budget';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=formation-plan';
+import { rankOpening } from './engine/opening.js?v=rolldown-budget';
+import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=formation-plan';
@@ -41,6 +42,8 @@ const state = {
   sourceId: savedSource(),
   board: null,
   selected: new Set(),
+  unitCopies: new Map(),
+  rollBudget: {},
   level: 7,
   cost: null,
   query: '',
@@ -112,6 +115,8 @@ async function loadSet(setNum) {
   state.meta = meta;
   modelReference?.setScope(state.sourceId, null, sourceFor(state.sourceId).game);
   state.selected.clear();
+  state.unitCopies.clear();
+  state.rollBudget = {};
   state.open.clear();
   state.cost = null;
   state.query = '';
@@ -309,6 +314,9 @@ function openingContext() {
 
 function renderResults() {
   const sel = state.selected;
+  for (const id of state.unitCopies.keys()) {
+    if (!sel.has(id)) state.unitCopies.delete(id);
+  }
   const box = el('comps');
   const bd = traitBreakdown(state.setData, sel);
   el('traitsNow').innerHTML = sel.size
@@ -375,7 +383,7 @@ function renderResults() {
       <header class="comp-head"><span class="rank">${i + 1}</span><span class="nm">${esc(c.name)}${c.rank?.tier ? ` <small class="board-stat">${esc(c.rank.tier)} 级</small>` : ''}</span>
         <span class="tags">${tags}</span>
         <span class="score"><span class="meter"><i style="width:${Math.min(100, r.score)}%"></i></span><span class="num c${r.score >= 70 ? 2 : r.score >= 40 ? 4 : 1}">${r.score}</span></span>
-      </header>${body}
+      </header>${r.roll ? `<p class="fine">${esc(rolldownSummary(r.roll))}</p>` : ''}${body}
     </article>`;
   }).join('') + coldNote;
   renderSide();
@@ -812,9 +820,13 @@ function bind() {
     tier: el('openingHexTier'), tierStatus: el('openingHexTierStatus'),
     direction: el('openingDirection'), picks: el('openingPicks'),
     opponentCoverage: el('openingOpponentCoverage'), getContext: openingContext,
-    onChange({ city, economy, item, delta, unit, selected }) {
+    rollFields: el('openingRolldown'), rollLevel: el('openingRollLevel'),
+    rollGold: el('openingRollGold'), rollXp: el('openingRollXp'), copies: el('openingUnitCopies'),
+    onChange({ city, economy, item, delta, unit, selected, rollBudget, unitCopies }) {
       if (city != null) state.openingCity = city;
       if (economy != null) state.economy = economy;
+      if (rollBudget) Object.assign(state.rollBudget, rollBudget);
+      if (unitCopies && state.selected.has(unitCopies.id)) state.unitCopies.set(unitCopies.id, unitCopies.count);
       if (item && state.items?.components.some(component => component.id === item)) {
         const count = Math.max(0, Math.min(4, (state.owned.get(item) || 0) + delta));
         count ? state.owned.set(item, count) : state.owned.delete(item);

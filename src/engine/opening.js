@@ -4,6 +4,7 @@ import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from '.
 import { recommend } from './recommend.js';
 import { rankAugments } from './augments.js?v=formation-plan';
 import { augmentTier } from '../data/augment-tiers.js';
+import { estimateRolldown, validRollBudget } from './rolldown.js';
 
 const TIERS = { 'S+': 7, S: 6, A: 5, B: 4, C: 3, D: 2, E: 1 };
 
@@ -38,13 +39,15 @@ function cityFit(city, comp, itemPoints, unitById, plan) {
   }
 }
 
-export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model, opponentBoards = new Map() }) {
+export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model, opponentBoards = new Map(), rollBudget, unitCopies = new Map(), sourceId = 'datatft' }) {
   const itemById = new Map((itemsData?.items || []).map(row => [row.id, row]));
   const unitById = new Map(setData.units.map(row => [row.id, row]));
   const augmentTraits = new Set(chosenAugments.flatMap(aug => [...(aug.traits || []), ...(aug.grantTraits || [])]));
   const baseline = recommend({ setData, comps, selected, level });
   const hasOpponentEvidence = [...opponentBoards.values()].some(({ routes }) => routes.length);
   const isTrained = supportsOpeningModel(setData.set, patch, model);
+  const useRolldown = sourceId === 'datatft' && setData.set === 18 && patch === '18.7' && validRollBudget(rollBudget);
+  const rollCache = new Map();
   const ranked = baseline.map(row => {
     const { comp } = row;
     const current = comp.units.filter(id => selected.has(id));
@@ -58,9 +61,24 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       : economy === 'low' && !formation.chase.length ? -formation.levelingDemand * 2 : 0;
     const aug = Math.min(14, Object.keys(comp.aimTraits || {}).filter(id => augmentTraits.has(id)).length * 7);
     const learned = isTrained ? openingModelBonus(openingModelFeatures(comp, selected, gear.points), model.weights) : 0;
-    const viable = Boolean(units || gear.points || city || economy === 'high' || aug || learned);
+    const carry = formation.carries[0];
+    let roll = null;
+    if (useRolldown && carry) {
+      const key = `${carry.id}:${carry.stars}`;
+      if (!rollCache.has(key)) {
+        const contested = [...opponentBoards.values()].filter(board => board.units?.includes(carry.id)).length;
+        const estimate = estimateRolldown(carry, {
+          ...rollBudget, contested,
+          held: selected.has(carry.id) ? unitCopies.get(carry.id) ?? 1 : 0,
+        });
+        rollCache.set(key, estimate && { ...estimate, unit: carry });
+      }
+      roll = rollCache.get(key);
+    }
+    const rollPoints = roll ? 8 * Math.max(roll.current.probability, roll.upgrade?.probability ?? 0) : 0;
+    const viable = Boolean(units || gear.points || city || economy === 'high' || aug || learned || roll);
     const { opponents: opponentCount, discount } = opponentPressure(comp, opponentBoards);
-    const fit = units + gear.points + cityPoints + econ + aug + learned + chasePoints - discount;
+    const fit = units + gear.points + cityPoints + econ + aug + learned + chasePoints + rollPoints - discount;
     const reasons = [
       units && `持有 ${current.length} 名阵容棋子`,
       gear.held.length && `${gear.held.length} 件成装匹配`,
@@ -74,7 +92,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       opponentCount ? `可能有 ${opponentCount} 家同行，适配扣 ${discount} 分`
         : hasOpponentEvidence && '已分析路线中未发现同行',
     ].filter(Boolean);
-    return { ...row, formation, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints: gear.points, opponentCount, hasOpponentEvidence };
+    return { ...row, formation, roll, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints: gear.points, opponentCount, hasOpponentEvidence };
   });
   return ranked.sort((a, b) => Number(b.viable) - Number(a.viable) || b.fit - a.fit || compareStrength(a, b));
 }

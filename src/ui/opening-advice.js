@@ -1,8 +1,8 @@
-import { renderLineupList } from './lineup-list.js?v=formation-plan';
+import { renderLineupList } from './lineup-list.js?v=rolldown-budget';
 import { rankOpeningAugments } from '../engine/opening.js?v=formation-plan';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
-export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, getContext, onChange, onPick, onTier }) {
+export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, getContext, onChange, onPick, onTier }) {
   let detectedUnits = [];
   let catalogIdentity;
   let picksKey;
@@ -42,6 +42,11 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     }
     city.value = ctx.city?.id || '';
     economy.value = ctx.economy || '';
+    rollFields.hidden = ctx.sourceId !== 'datatft' || setData.set !== 18 || ctx.board?.version !== '18.7';
+    rollLevel.value = ctx.rollBudget.level ?? '';
+    rollGold.value = ctx.rollBudget.gold ?? '';
+    rollXp.value = ctx.rollBudget.xp ?? '';
+    showCopies(ctx);
     const chosenTier = tier.value || ctx.city?.firstAugmentTier;
     const offered = offeredIds(augments, chosenTier);
     const inferred = inferAugmentTier(offered);
@@ -124,6 +129,22 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     if (!dialog.open) dialog.showModal();
     draw();
   }
+
+  function showCopies(ctx) {
+    const id = unitSelect.value;
+    copies.disabled = !ctx?.selected.has(id);
+    copies.value = copies.disabled ? '' : ctx.unitCopies.get(id) ?? 1;
+  }
+
+  for (const [key, field] of Object.entries({ level: rollLevel, gold: rollGold, xp: rollXp })) {
+    field.onchange = () => {
+      if (field.reportValidity()) onChange({ rollBudget: { [key]: field.value === '' ? undefined : field.valueAsNumber } });
+    };
+  }
+  unitSelect.onchange = () => showCopies(getContext());
+  copies.onchange = () => {
+    if (copies.reportValidity()) onChange({ unitCopies: { id: unitSelect.value, count: copies.valueAsNumber || 1 } });
+  };
 
   function receive({ units, opening }) {
     const ctx = getContext();

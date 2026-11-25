@@ -1,3 +1,5 @@
+import { rolldownSummary } from '../engine/rolldown.js';
+
 export function recommendedLineups(ranked = []) {
   return ranked.some(row => row.viable || row.hasOpponentEvidence) ? ranked.slice(0, 3) : [];
 }
@@ -38,7 +40,7 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
   heading.textContent = label;
   const list = document.createElement('ol');
   list.className = 'ranked-lineups';
-  for (const { comp, score, reasons, viable, hasOpponentEvidence, formation } of rows) {
+  for (const { comp, score, reasons, viable, hasOpponentEvidence, formation, roll } of rows) {
     const row = document.createElement('li');
     row.dataset.comp = comp.id;
     const name = document.createElement('strong');
@@ -46,6 +48,12 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
     const stats = document.createElement('span');
     stats.textContent = ` · 榜单 ${comp.rank?.tier || '未评级'} · 适配 ${score} 分 · 最终阵容 ${comp.level} 人口`;
     row.append(name, stats);
+    if (roll) {
+      const estimate = document.createElement('p');
+      estimate.className = 'fine';
+      estimate.textContent = rolldownSummary(roll);
+      row.append(estimate);
+    }
     const plan = [formationRoles(formation), formationStages(formation)].filter(Boolean).join(' · ');
     if (plan) {
       const details = document.createElement('p');

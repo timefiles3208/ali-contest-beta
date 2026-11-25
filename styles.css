@@ -310,7 +310,7 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 .opening-header h2 { margin: 0; }
 .opening-fields, .opening-hex { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
 .opening-fields label, .opening-hex label { display: grid; align-content: start; gap: 4px; }
-.opening-fields select, .opening-hex input {
+.opening-fields select, .opening-fields input, .opening-hex input {
   width: 100%;
   box-sizing: border-box;
   min-height: 36px;
@@ -326,7 +326,7 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 #openingCandidates label { display: inline-block; margin: 4px 10px 4px 0; }
 #openingDirection { margin: 13px 0; padding: 12px; background: #1e2b36; border-radius: 8px; }
 #openingDirection .fine { margin: 4px 0 0; }
-.opening-hex { border: 1px solid #334155; border-radius: 6px; padding: 10px; }
+.opening-hex, #openingRolldown { border: 1px solid #334155; border-radius: 6px; padding: 10px; }
 .opening-tier { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: end; gap: 8px 12px; }
 .opening-tier .fine { margin: 0 0 5px; }
 #openingPicks { display: grid; gap: 8px; padding-inline-start: 1.6em; margin-bottom: 0; }
