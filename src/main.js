@@ -2,7 +2,7 @@ import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineu
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
-import { loadCatalog } from './adapters/catalog.js';
+import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=formation-plan';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=formation-plan';
@@ -28,6 +28,7 @@ let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
 const SOURCE_KEY = 'tft-board-source';
+const catalogLocation = location => location === 'database' ? 'Supabase' : '本地快照';
 function savedSource() {
   try { return sourceFor(localStorage.getItem(SOURCE_KEY)).id; } catch { return BOARD_SOURCES[0].id; }
 }
@@ -79,10 +80,8 @@ async function loadBoard() {
   renderResults();
   try {
     if (state.setData.set !== 18) throw new Error('此赛季没有该数据源的快照');
-    const [raw, ratings] = await Promise.all([
-      loadCatalog(source.file),
-      source.ratingsFile ? loadCatalog(source.ratingsFile).catch(() => null) : null,
-    ]);
+    const paths = source.ratingsFile ? [source.file, source.ratingsFile] : [source.file];
+    const { values: [raw, ratings = null], location } = await loadCatalogBundle(paths, { optional: [source.ratingsFile] });
     if (generation !== boardLoad) return;
     const board = adaptBoard(raw, { source: source.id, setData: state.setData, items: state.items, ratings });
     const valid = validateComps(board.comps, state.setData);
@@ -90,7 +89,7 @@ async function loadBoard() {
     state.comps = valid.comps;
     state.ref = summarizeBoard(valid.comps);
     state.issues = valid.issues;
-    badge.textContent = `${source.host} · ${board.version} · ${state.comps.length} 套`;
+    badge.textContent = `${source.host} · ${board.version} · ${state.comps.length} 套 · ${catalogLocation(location)}`;
     badge.className = `badge ${state.comps.length ? 'ok' : 'warn'}`;
   } catch (error) {
     if (generation !== boardLoad) return;
@@ -125,13 +124,21 @@ async function loadSet(setNum) {
   state.snap.error = null;
   el('search').value = '';
 
-  const [setData, items, augments] = await Promise.all([
-    loadCatalog(meta.dataFile).catch((e) => ({ set: meta.set, costs: [], traits: [], units: [], source: {}, loadError: e.message })),
-    loadCatalog(meta.itemsFile).catch(() => null),
-    loadCatalog(meta.augFile).catch(() => null),
-  ]);
+  const catalogBadge = el('catalogBadge');
+  catalogBadge.className = 'badge';
+  catalogBadge.textContent = '卡池载入中…';
+  const release = await loadCatalogBundle([meta.dataFile, meta.itemsFile, meta.augFile], {
+    optional: [meta.itemsFile, meta.augFile],
+  }).catch(error => ({ values: [{ set: meta.set, costs: [], traits: [], units: [], source: {}, loadError: error.message }, null, null] }));
+  const [setData, items, augments] = release.values;
   if (generation !== setLoad) return;
   loadingSet = false;
+  const coreReady = setData.units.length > 0;
+  const complete = coreReady && items && augments;
+  catalogBadge.className = `badge ${complete ? 'ok' : 'warn'}`;
+  catalogBadge.textContent = coreReady
+    ? `卡池·装备·海克斯 · ${catalogLocation(release.location)}${complete ? '' : ' · 部分缺失'}`
+    : meta.status === 'preview' ? '卡池 · 赛季预览' : '卡池 · 数据不可用';
   state.setData = setData;
   state.items = items;
   state.augs = augments;
