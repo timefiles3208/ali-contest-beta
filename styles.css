@@ -355,3 +355,5 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 .float-window .result-float {
   position: static; width: 100%; max-width: none; max-height: 100vh; resize: none; border-radius: 0;
 }
+.artifact-choice { display: inline-flex; align-items: center; gap: 4px; margin: 2px 8px 2px 0; }
+.artifact-choice img { flex: none; border-radius: 4px; }

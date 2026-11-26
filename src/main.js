@@ -1,4 +1,5 @@
 import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=recommendation-tools';
+import { recommendArtifacts } from './engine/artifacts.js';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
@@ -236,10 +237,14 @@ function renderCompGuide(comp) {
       ? `<span class="guide-cell occupied" title="${esc(unit.name)} · ${unit.stars} 星">${iconHtml(unit, version, 26)}<span>${esc(unit.name)}</span></span>`
       : '<span class="guide-cell" aria-hidden="true"></span>').join('')}
   </div>`).join('');
-  const targets = units.map(unit => `<tr>
+  const sourceItems = state.sourceId === 'dataj' ? state.board?.items : undefined;
+  const artifactRows = units.map(unit => recommendArtifacts(unit, state.board?.version, sourceItems));
+  const hasArtifacts = artifactRows.some(row => row.length);
+  const targets = units.map((unit, i) => `<tr>
     <th scope="row">${esc(unit.name)} <small>${unit.cost}费</small></th>
     <td><span class="guide-stars">${unit.stars} 星</span><small>${unit.sourceStars ? '来源标注' : '参考'}</small></td>
     <td>${unit.items.map(id => items.get(id)).filter(Boolean).map(esc).join('、') || '—'}</td>
+    ${hasArtifacts ? `<td>${artifactRows[i].map(item => `<span class="artifact-choice" title="${esc(item.reason)}"><img src="${esc(item.icon)}" width="22" height="22" alt="" loading="lazy" /><span>${esc(item.name)}</span></span>`).join('') || '—'}</td>` : ''}
   </tr>`).join('');
   const levels = rolls.map(({ level, targets }) =>
     `<li><strong>${level} 级</strong> · ${targets.map(unit => `${unit.stars >= 3 ? '追' : unit.cost >= 4 ? '搜' : '顺手补'} ${esc(unit.name)} ${unit.cost}费 ${unit.stars}星${unit.sourceStars ? '' : '参考'}`).join('、')}</li>`).join('');
@@ -296,8 +301,9 @@ function renderCompGuide(comp) {
         ${riftbeastShop ? '<p class="fine">开启 5 峡谷野怪时，也可利用羁绊商店补牌。</p>' : ''}
       </div>
     </div>
+    ${hasArtifacts ? '<p class="fine">奥恩神器按棋子用途列为备选，通常选其中一件搭配常规出装。悬停可看搭配理由。</p>' : ''}
     <table class="guide-targets">
-      <thead><tr><th scope="col">棋子</th><th scope="col">目标星级</th><th scope="col">推荐装备</th></tr></thead>
+      <thead><tr><th scope="col">棋子</th><th scope="col">目标星级</th><th scope="col">推荐装备</th>${hasArtifacts ? '<th scope="col">奥恩神器</th>' : ''}</tr></thead>
       <tbody>${targets}</tbody>
     </table>
     ${comp.teamCode ? '<button type="button" class="ghost" data-copy-team>复制云顶阵容码</button><p class="fine copy-status" role="status"></p>' : ''}
