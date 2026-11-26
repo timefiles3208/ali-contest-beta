@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { artifactAugmentChoices, recommendArtifacts } from '../src/engine/artifacts.js';
+import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from '../src/engine/artifacts.js';
 
 test('Ornn gets a shield synergy while an ordinary tank gets defensive alternatives', () => {
   const ornn = recommendArtifacts({ id: 'DA_18_Ornn', tank: true }, '18.7');
@@ -21,6 +21,18 @@ test('confirmed artifact augments suggest distinct item and carrier pairs for th
   assert.deepEqual(pairs('DA_PortableForge'), [['禁忌雕像', '奥恩'], ['魔蕴', '法师']]);
   assert.deepEqual(pairs('DA_LatentForge'), pairs('DA_PortableForge'));
   assert.deepEqual(pairs('DA_RadiantRelic'), []);
+  const itemsData = { items: [
+    { id: 'DA_GargoyleStoneplate', name: '石像鬼石板甲', kind: 'completed' },
+    { id: 'DA_SpearOfShojin', name: '朔极之矛', kind: 'completed' },
+  ] };
+  const radiantContext = { ...context, itemsData, ownedItems: new Set(['DA_SpearOfShojin']) };
+  const radiant = radiantAugmentChoices('DA_RadiantRelic', radiantContext);
+  assert.deepEqual(radiant.choices.map(({ item, unit }) => [item.name, unit.name]),
+    [['光明版石像鬼石板甲', '奥恩'], ['光明版朔极之矛', '法师']]);
+  assert.match(radiantAugmentChoices('DA_GoldenGamble', radiantContext).prompt, /硬币正面/);
+  assert.deepEqual(radiantAugmentChoices('TFT11_Augment_RadiantRefactor', radiantContext).choices.map(({ unit }) => unit.name), ['法师']);
+  assert.equal(radiantAugmentChoices('DA_RadiantRascal', radiantContext), null);
+  assert.equal(radiantAugmentChoices('DA_RadiantRelic', { ...radiantContext, sourceItems: new Map() }), null);
   assert.deepEqual(artifactAugmentChoices('DA_PortableForge', { ...context, patch: '18.8' }), []);
   assert.deepEqual(artifactAugmentChoices('DA_PortableForge', { ...context, sourceItems: new Map() }), []);
 });

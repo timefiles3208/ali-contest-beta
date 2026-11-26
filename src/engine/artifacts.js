@@ -52,14 +52,48 @@ const ARTIFACT_AUGMENTS = new Set([
   'DA_PortableForge', 'DA_LatentForge', 'DA_LivingForge', 'DA_NestingAnvils', 'DA_NestingAnvilsPlus', 'DA_SweetTreats',
 ]);
 
-export function artifactAugmentChoices(id, { comp, setData, patch, sourceItems, selected }) {
-  if (!ARTIFACT_AUGMENTS.has(id) || patch !== '18.7' || !comp) return [];
+function equipmentChoices({ comp, setData, selected }, itemsForUnit) {
   const formation = formationPlan(comp, new Map(setData.units.map(unit => [unit.id, unit])));
   const units = [...new Set([...formation.carries, ...formation.tanks, ...formation.chase])]
     .sort((a, b) => Number(selected.has(b.id)) - Number(selected.has(a.id)));
-  const options = units.map(unit => recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, sourceItems)
-    .map(item => ({ item, unit })));
-  const firstChoices = options.flatMap(pairs => pairs.slice(0, 1));
-  const allChoices = [...firstChoices, ...options.flatMap(pairs => pairs.slice(1))];
+  const options = units.map(unit => itemsForUnit(unit).map(item => ({ item, unit })));
+  const allChoices = [...options.flatMap(pairs => pairs.slice(0, 1)), ...options.flatMap(pairs => pairs.slice(1))];
   return allChoices.filter(({ item }, i) => allChoices.findIndex(pair => pair.item.id === item.id) === i).slice(0, 2);
+}
+
+export function artifactAugmentChoices(id, context) {
+  const { comp, patch, sourceItems } = context;
+  if (!ARTIFACT_AUGMENTS.has(id) || patch !== '18.7' || !comp) return [];
+  return equipmentChoices(context, unit => recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, sourceItems));
+}
+
+const RADIANT_PROMPTS = new Map([
+  ['DA_RadiantRelic', '若刷到'],
+  ['TFT9_Augment_BardPlaybook3', '8级光明武器若刷到'],
+  ['DA_PandorasItemsIII', '若随机出'],
+  ['DA_GoldenGamble', '硬币正面且开到时'],
+  ['DA_GoldenGamblePlus', '硬币正面且开到时'],
+  ['DA_GoldenGamblePlusPlus', '硬币正面且开到时'],
+  ['TFT11_Augment_RadiantRefactor', '建议'],
+  ['TFT_Augment_QualityOverQuantity', '棋子仅携带这一件时，建议'],
+]);
+const RADIANT_UPGRADES = new Set(['TFT11_Augment_RadiantRefactor', 'TFT_Augment_QualityOverQuantity']);
+const RADIANT_EXCLUDED = new Set(['DA_TacticiansCape', 'DA_TacticiansCrown', 'DA_TacticiansShield']);
+const RADIANT_ALIASES = { DA_Deathblade: '光明版锐利之刃', DA_GiantSlayer: '光明版巨人捕手' };
+
+export function radiantAugmentChoices(id, context) {
+  const { comp, patch, sourceItems, itemsData, ownedItems } = context;
+  const prompt = RADIANT_PROMPTS.get(id);
+  if (!prompt || patch !== '18.7' || !comp) return null;
+  const upgrade = RADIANT_UPGRADES.has(id);
+  // S18's craftable equipment has radiant counterparts, except the three crowns.
+  const radiantByBase = new Map((itemsData?.items || []).flatMap(item => {
+    if (item.kind !== 'completed' || RADIANT_EXCLUDED.has(item.id) || (upgrade && !ownedItems?.has(item.id))) return [];
+    const canonical = '光明版' + item.name;
+    const alias = RADIANT_ALIASES[item.id];
+    const name = sourceItems && !sourceItems.has(canonical) ? alias : canonical;
+    return name && (!sourceItems || sourceItems.has(name)) ? [[item.id, { id: item.id, name, baseName: item.name }]] : [];
+  }));
+  const choices = equipmentChoices(context, unit => unit.items.map(item => radiantByBase.get(item)).filter(Boolean));
+  return choices.length ? { choices, prompt, upgrade } : null;
 }

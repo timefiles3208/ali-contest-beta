@@ -1,5 +1,5 @@
 import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opening-deadline';
-import { artifactAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=artifact-augment-notice';
+import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=radiant-augment-notice';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
@@ -389,14 +389,19 @@ function selectLineup(comp) {
   showLineupPlan();
 }
 
-function showArtifactAugmentNotice(id, comp) {
+function showEquipmentAugmentNotice(id, comp) {
   const sourceItems = state.sourceId === 'dataj' ? state.board?.items : undefined;
-  const choices = artifactAugmentChoices(id, {
+  const context = {
     comp, setData: state.setData, patch: state.board?.version, sourceItems, selected: state.selected,
-  });
+    itemsData: state.items, ownedItems: state.ownedItems,
+  };
+  const radiant = radiantAugmentChoices(id, context);
+  const choices = radiant?.choices || artifactAugmentChoices(id, context);
   if (!choices.length) return;
-  const pairs = choices.map(({ item, unit }) => `${item.name}给${unit.name}`);
-  openingPrompts.showEquipment(id, `${comp.name} · 若刷到，优先考虑${pairs.join('、')}。`);
+  const pairs = choices.map(({ item, unit }) => radiant?.upgrade
+    ? `${item.baseName}升为光明版后给${unit.name}` : `${item.name}给${unit.name}`);
+  const instruction = radiant?.upgrade ? radiant.prompt : `${radiant?.prompt || '若刷到'}，优先考虑`;
+  openingPrompts.showEquipment(id, `${comp.name} · ${instruction}${pairs.join('、')}。`);
 }
 
 async function copyTeamCode(code, feedback, field) {
@@ -1002,7 +1007,7 @@ function bind() {
       openingPrompts.finish();
       renderResults();
       if (!el('screenFinish').disabled) el('screenFinish').click();
-      showArtifactAugmentNotice(id, comp);
+      showEquipmentAugmentNotice(id, comp);
     },
     onShow(stage) {
       if (stage === '2-1') openingPrompts.beginAugments();
@@ -1187,7 +1192,7 @@ function bind() {
     const added = !state.chosen.delete(id);
     if (added) state.chosen.add(id);
     renderResults();
-    if (added) showArtifactAugmentNotice(id, comp);
+    if (added) showEquipmentAugmentNotice(id, comp);
     else openingPrompts.clearEquipment(id);
   };
   el('gear').onclick = (e) => {
