@@ -1,7 +1,7 @@
 import { contentFrame } from './game-frame.js';
 import { createOcrLane } from './ocr-lane.js';
-import { fillGoldCardSlots } from './augment-icon-ocr.js?v=layout';
-import { augmentTier } from '../data/augment-tiers.js';
+import { fillGoldCardSlots, warmGoldCardIcons } from './augment-icon-ocr.js?v=augment-speed';
+import { augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 import { entriesForOcr, hasMatchFrame, matchRegionLabel, matchRepeatedCardTitle, mergeScreenEvidence, openingNamesInText, opponentTraitLabels, parseShopHud, readOpponentProfile, screenEvidence, stageAfterOpening } from '../engine/screen-insights.js?v=share-ocr';
 
 const OCR_DIR = new URL('../vendor/ocr/', import.meta.url);
@@ -46,8 +46,16 @@ async function loadWorker() {
 
 const opening = createOcrLane(loadWorker);
 const scout = createOcrLane(loadWorker);
-const readOcr = opening.read;
-export const warmOpeningOcr = opening.warm;
+// Small crops can be encoded immediately, without waiting for a hidden tab's canvas callback.
+function openingImage(canvas) {
+  return canvas.width * canvas.height <= 450_000 ? canvas.toDataURL('image/png') : canvas;
+}
+
+const readOcr = (canvas, current, mode, whitelist) => opening.read(openingImage(canvas), current, mode, whitelist);
+export function warmOpeningOcr() {
+  void warmGoldCardIcons();
+  return opening.warm();
+}
 export const warmScoutOcr = scout.warm;
 
 function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0, contrast = true, fixed = false } = {}) {
@@ -77,18 +85,20 @@ function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0
   return crop;
 }
 
-async function readLabels(canvas, regions, entries, isCurrent, passes) {
-  const ids = [];
-  for (const bounds of regions) {
-    let id = null;
+async function readLabels(canvas, regions, entries, isCurrent, passes, known = [], onLabel) {
+  const ids = regions.map((_, i) => known[i] || null);
+  for (const [i, bounds] of regions.entries()) {
+    if (ids[i]) continue;
     for (const pass of passes) {
       const area = cropForOcr(canvas, bounds, { zoom: 5, ...pass });
       const text = await readOcr(area, isCurrent, '7');
       if (text === null || !isCurrent()) return null;
-      id = matchRegionLabel(text, entries);
-      if (id) break;
+      ids[i] = matchRegionLabel(text, entries);
+      if (ids[i]) {
+        onLabel?.(ids);
+        break;
+      }
     }
-    ids.push(id);
   }
   return ids;
 }
@@ -129,11 +139,23 @@ async function openingSlots(canvas, setData, entries, isCurrent, onSlots) {
   const layouts = [1, scale, 0.94, 1.06]
     .filter((value, i, all) => value >= 0.88 && value <= 1.13 && all.findIndex(other => Math.abs(other - value) < 0.02) === i);
   let best = [];
+  let publishedCount = 0;
+  function publish(slots) {
+    const ids = slots.filter(Boolean);
+    if (ids.length > publishedCount && ids.length >= 2 && new Set(ids).size === ids.length && inferAugmentTier(ids)) {
+      publishedCount = ids.length;
+      onSlots?.([...slots]);
+    }
+  }
   for (const heightScale of layouts) {
     const bounds = CARD_CENTERS.map(center => [center - 0.065, 0.485 * heightScale, center + 0.065, 0.516 * heightScale]);
     const passes = heightScale === 1 ? [130, 150, 172] : [130, 150];
-    let slots = await readLabels(canvas, bounds, entries, isCurrent, passes.map(threshold => ({ zoom: 4, threshold })));
-    if (!slots) return null;
+    let slots = [];
+    for (const threshold of passes) {
+      slots = await readLabels(canvas, bounds, entries, isCurrent, [{ zoom: 4, threshold }], slots, publish);
+      if (!slots) return null;
+      if (slots.every(Boolean)) break;
+    }
     const detected = slots.filter(Boolean);
     const tier = detected.length === 2 && augmentTier(detected[0]);
     if (tier && detected.every(id => augmentTier(id) === tier)) {
@@ -145,6 +167,7 @@ async function openingSlots(canvas, setData, entries, isCurrent, onSlots) {
       if (text === null || !isCurrent()) return null;
       const comparable = entries.filter(entry => augmentTier(entry.id) === tier && !detected.includes(entry.id));
       slots[missing] = matchRegionLabel(text, comparable) || matchRepeatedCardTitle(text, comparable);
+      publish(slots);
     }
     if (setData.set === 18) slots = await fillGoldCardSlots(canvas, CARD_CENTERS, slots, entries, isCurrent, heightScale);
     if (!isCurrent()) return null;
@@ -152,7 +175,7 @@ async function openingSlots(canvas, setData, entries, isCurrent, onSlots) {
     if (new Set(matches).size !== matches.length) continue;
     if (matches.length > best.filter(Boolean).length) {
       best = slots;
-      onSlots?.(best);
+      publish(best);
     }
     if (matches.length === 3) break;
   }
@@ -301,7 +324,8 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     const entries = entriesForOcr(opening.augments, setData.set);
     evidence.opening = openingNamesInText(fullText.join('\n'), opening.cities, evidence.stage === '2-1' && readCards ? entries : []);
     if (canReadCards && readCards && evidence.stage === '2-1' && entries.length) {
-      slots ??= await openingSlots(canvas, setData, entries, isCurrent);
+      slots ??= await openingSlots(canvas, setData, entries, isCurrent,
+        found => onProgress?.({ ...evidence, opening: { ...evidence.opening, offeredSlots: found } }));
       if (!slots || !isCurrent()) return null;
       if (slots.some(Boolean)) evidence.opening.offeredSlots = slots;
     }

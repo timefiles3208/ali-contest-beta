@@ -11,7 +11,7 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
   let activeUnit;
   let dismissal = false;
   let expired = false;
-  let hasChoices = false;
+  let choicesShown = 0;
   let timer;
   let lastInventory;
 
@@ -63,7 +63,7 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
     if (phase === 'augments') return;
     phase = 'augments';
     dismissal = false;
-    hasChoices = false;
+    choicesShown = 0;
     text = AUGMENT_NOTICE;
     scheduleHide();
     draw();
@@ -71,11 +71,12 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
 
   function updateAugments(choices) {
     if (phase !== 'augments') return;
-    text = choices.length
-      ? `2-1 海克斯 · 已匹配 ${choices.length} 项，优先考虑「${choices[0].aug.name}」。`
+    const count = choices.length;
+    text = count
+      ? `2-1 海克斯 · ${count === 3 ? '已匹配 3 项' : `暂按已识别的 ${count} 项`}，优先考虑「${choices[0].aug.name}」。`
       : AUGMENT_NOTICE;
-    if (choices.length && !hasChoices && !dismissal) {
-      hasChoices = true;
+    if (count && (!choicesShown || count === 3 && choicesShown < 3) && !dismissal) {
+      choicesShown = count;
       scheduleHide();
     }
     draw();

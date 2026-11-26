@@ -6,7 +6,7 @@ const MIN_MARGIN = 0.12;
 const REFERENCE = new URL('../data/s18.18.7.gold-augment-icons.json', import.meta.url);
 let templates;
 
-function loadTemplates() {
+export function warmGoldCardIcons() {
   templates ??= fetch(REFERENCE).then(async response => {
     if (!response.ok) throw new Error('Icon reference unavailable');
     const data = await response.json();
@@ -76,7 +76,7 @@ export async function fillGoldCardSlots(canvas, centers, slots, entries, isCurre
   if (shapes.filter(Boolean).length + slots.filter(Boolean).length < 2) return slots;
 
   const allowed = new Set(entries.map(entry => entry.id));
-  const refs = (await loadTemplates()).filter(row => allowed.has(row.id));
+  const refs = (await warmGoldCardIcons()).filter(row => allowed.has(row.id));
   if (!isCurrent()) return slots;
   const resolved = slots.map((id, i) => id || closest(shapes[i], refs));
   const unique = new Set(resolved.filter(Boolean));

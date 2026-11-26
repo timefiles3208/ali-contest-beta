@@ -9,6 +9,8 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   let picksKey;
   let listTier;
   let previewing = false;
+  let detectedSlots = [];
+  const editedSlots = new Set();
 
   function options(select, entries, label) {
     const previous = select.value;
@@ -21,6 +23,8 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     detectedUnits = [];
     detectedShop = null;
     previewing = false;
+    detectedSlots = [];
+    editedSlots.clear();
     city.value = economy.value = item.value = unitSelect.value = '';
     tier.value = '';
     inputs.forEach(input => { input.value = ''; });
@@ -169,13 +173,24 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     if (!ctx.city && cities.length === 1) onChange({ city: cities[0] });
     const slots = opening?.offeredSlots;
     if (slots) {
-      slots.forEach((id, i) => {
-        const name = ctx.augments.find(row => row.id === id)?.name;
-        if (name && inputs[i] && !inputs[i].value && !inputs.some(input => input.value === name)) inputs[i].value = name;
-      });
+      const names = slots.map(id => ctx.augments.find(row => row.id === id)?.name);
+      if (names.filter(Boolean).length >= detectedSlots.filter(Boolean).length) {
+        // Preserve edits while allowing a later, more complete read to correct automatic fields.
+        const userValues = inputs.map((input, i) => editedSlots.has(i) ? input.value : '');
+        const used = new Set(userValues.filter(Boolean));
+        detectedSlots = inputs.map((input, i) => {
+          if (editedSlots.has(i)) return null;
+          const name = names[i];
+          if (!name || used.has(name)) { input.value = ''; return null; }
+          used.add(name);
+          input.value = name;
+          return name;
+        });
+      }
     } else {
       const offered = (opening?.offered || []).map(id => ctx.augments.find(row => row.id === id)?.name).filter(Boolean);
-      if (offered.length && offered.length <= 3 && inputs.every(input => !input.value)) {
+      if (offered.length && offered.length <= 3 && !editedSlots.size && inputs.every(input => !input.value)) {
+        detectedSlots = offered;
         offered.forEach((name, i) => { inputs[i].value = name; });
       }
     }
@@ -190,7 +205,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   toggleUnit.onclick = () => {
     if (unitSelect.value) onChange({ unit: unitSelect.value, selected: !getContext()?.selected.has(unitSelect.value) });
   };
-  inputs.forEach(input => { input.oninput = draw; });
+  inputs.forEach((input, i) => { input.oninput = () => { editedSlots.add(i); detectedSlots[i] = null; draw(); }; });
   tier.onchange = draw;
   return {
     draw, show, receive, reset,
