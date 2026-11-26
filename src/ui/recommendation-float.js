@@ -16,10 +16,14 @@ export function bindRecommendationFloat({ toggle, panel, status, ranked }) {
   const opacity = document.createElement('input');
   Object.assign(opacity, { type: 'range', min: '60', max: '100', value: '100' });
   label.append(opacity);
+  const notice = document.createElement('p');
+  notice.className = 'float-notice';
+  notice.setAttribute('role', 'status');
+  notice.hidden = true;
   const body = document.createElement('div');
   body.className = 'float-result';
   controls.append(title, fold, close);
-  panel.append(controls, label, body);
+  panel.append(controls, label, notice, body);
   let pip = null;
 
   function refresh() {
@@ -70,5 +74,11 @@ export function bindRecommendationFloat({ toggle, panel, status, ranked }) {
     refresh();
   };
   new MutationObserver(refresh).observe(status, { childList: true });
-  return { refresh };
+  return {
+    refresh,
+    setNotice(text) {
+      notice.textContent = text;
+      notice.hidden = !text;
+    },
+  };
 }

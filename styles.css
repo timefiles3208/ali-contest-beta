@@ -265,7 +265,11 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 .snap-model a { color: var(--accent); font-size: .875rem; }
 .snap-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .snap-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.snap-actions button {
+.snap-actions button,
+.opening-notice-actions button,
+.opening-header button,
+.opening-fields button,
+#openingPicks button {
   border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer;
   border: 1px solid var(--line); background: var(--panel-2); color: var(--ink);
 }
@@ -308,6 +312,23 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
 #openingDialog::backdrop { background: #080d16b8; }
 .opening-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .opening-header h2 { margin: 0; }
+.opening-notice {
+  position: fixed;
+  z-index: 21;
+  inset-inline-end: 12px;
+  top: max(70px, env(safe-area-inset-top));
+  width: min(360px, calc(100% - 24px));
+  padding: 12px;
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid #3b616d;
+  border-radius: 8px;
+}
+.opening-notice p { margin: 0; }
+.opening-notice-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+#openingNoticeReview { color: var(--accent); }
+#openingDialog .opening-notice { position: static; width: 100%; margin-top: 12px; }
+.float-notice { color: var(--accent); margin: 10px 0 6px; }
 .opening-fields, .opening-hex { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
 .opening-fields label, .opening-hex label { display: grid; align-content: start; gap: 4px; }
 .opening-fields select, .opening-fields input, .opening-hex input {

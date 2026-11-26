@@ -2,7 +2,7 @@ import { renderLineupList } from './lineup-list.js?v=opening-deadline';
 import { rankOpeningAugments } from '../engine/opening.js?v=recommendation-tools';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
-export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier }) {
+export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier, onShow, onChoices }) {
   let detectedUnits = [];
   let detectedShop;
   let catalogIdentity;
@@ -103,6 +103,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       setData, augments, ranked, selected, owned, ownedItems, itemsData,
       offered: available, tier: effective, city: ctx.city, economy: ctx.economy, augmentStats: ctx.board?.augments,
     });
+    onChoices(chosen);
     const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
     if (nextKey === picksKey) return;
     picksKey = nextKey;
@@ -131,9 +132,10 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     });
   }
 
-  function show() {
+  function show(stage) {
     if (open.disabled) return;
     if (!dialog.open) dialog.showModal();
+    onShow(stage);
     draw();
   }
 
@@ -178,7 +180,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     draw();
   }
 
-  open.onclick = show;
+  open.onclick = () => show();
   city.onchange = () => onChange({ city: city.value });
   economy.onchange = () => onChange({ economy: economy.value });
   addItem.onclick = () => { if (item.value) onChange({ item: item.value, delta: 1 }); };

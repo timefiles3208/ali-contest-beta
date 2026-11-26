@@ -18,7 +18,7 @@ function toCanvas(image, width, height, maxSize = 1600) {
   return canvas;
 }
 
-export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening, isOpponentView }) {
+export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening, onOpeningEnd, onShareStart, isOpponentView }) {
   const supported = Boolean(navigator.mediaDevices?.getDisplayMedia);
   let active, finishedJob;
   let perspectiveRevision = 0;
@@ -127,7 +127,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
             onStage(stage) {
               if (active !== session || opponent || perspectiveRevision !== revision || stage !== '2-1' || session.atOpening) return;
               session.atOpening = true;
-              onOpening();
+              onOpening(stage);
               say('检测到 2-1，正在补读本轮海克斯。');
             },
           },
@@ -137,6 +137,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         const evidence = read.value;
         if (stageAfterOpening(evidence?.stage)) {
           release(session);
+          onOpeningEnd();
           if (session.atOpening) showDirection(session.context);
           else say('已读到 2-1 之后的阶段，屏幕读取已停止。');
           return;
@@ -188,7 +189,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     const evidence = read.value;
     if (evidence?.stage?.startsWith('1-') && evidence.shop) {
       onEvidence(evidence);
-      onOpening();
+      onOpening(evidence.stage);
       say('已读取开局等级和金币，可在推荐面板核对并应用。');
       return;
     }
@@ -198,7 +199,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       return;
     }
     onEvidence(evidence);
-    onOpening();
+    onOpening(evidence.stage);
     showDirection(context);
   }
   start.onclick = async () => {
@@ -238,6 +239,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       void warmScoutOcr().catch(() => {});
       await video.play();
       if (active !== session) return;
+      onShareStart();
       render();
       say(isOpponentView() ? '已共享，可从对手视角读取当前一帧。' : '正在加载中文识别组件…');
       void scan(session);
@@ -252,6 +254,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     if (!active?.stream) return;
     const { context } = active;
     release(active);
+    onOpeningEnd();
     showDirection(context);
   };
   stop.onclick = () => {

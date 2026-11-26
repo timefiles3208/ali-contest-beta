@@ -5,10 +5,11 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=opening-deadline';
+import { bindScreenReader } from './ui/screen-reader.js?v=opening-prompts';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=opponent-artifacts';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=opening-deadline';
-import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-deadline';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=opening-prompts';
+import { bindOpeningPrompts } from './ui/opening-prompts.js?v=opening-prompts';
+import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-prompts';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
@@ -28,7 +29,7 @@ import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let modelReference, screenReader, openingAdvice, matchSamples, iconMatch, scout;
-let resultFloat;
+let resultFloat, openingPrompts;
 let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
@@ -70,6 +71,7 @@ async function loadBoard() {
   scout?.reset();
   screenReader?.reset();
   openingAdvice?.reset();
+  openingPrompts?.reset();
   el('augmentTierFilter').value = '';
   state.openingCity = state.economy = '';
   const generation = ++boardLoad;
@@ -111,6 +113,7 @@ async function loadSet(setNum) {
   state.opponentBoards.clear();
   scout?.reset();
   screenReader?.reset();
+  openingPrompts?.reset();
   iconMatch?.reset();
   const meta = findSet(setNum);
   const generation = ++setLoad;
@@ -422,6 +425,7 @@ function renderSide() {
   renderGear(top);
   renderSnapshotLineups();
   openingAdvice?.draw();
+  openingPrompts?.updateInventory(openingContext());
   scout?.render();
   if (state.ranked) screenReader?.refreshDirection();
   resultFloat?.refresh();
@@ -827,7 +831,7 @@ async function runRecognize(enhanced = false) {
       openingAdvice.receive({
         units: state.snap.mapped.candidates.map(row => row.id).filter(Boolean), opening: result.opening,
       });
-      if (!late) openingAdvice.show();
+      if (!late) openingAdvice.show('2-1');
     }
   };
   try {
@@ -902,15 +906,26 @@ function bind() {
       if (state.openingAugment) state.chosen.delete(state.openingAugment);
       state.openingAugment = id;
       state.chosen.add(id);
+      openingPrompts.finish();
       renderResults();
       if (!el('screenFinish').disabled) el('screenFinish').click();
     },
+    onShow(stage) {
+      if (stage === '2-1') openingPrompts.beginAugments();
+      openingPrompts.draw();
+    },
+    onChoices: choices => openingPrompts.updateAugments(choices),
     onTier(tier) {
       const filter = el('augmentTierFilter');
       if (filter.value === tier) return;
       filter.value = tier;
       renderHexes((state.ranked || []).find(row => row.viable));
     },
+  });
+  openingPrompts = bindOpeningPrompts({
+    notice: el('openingNotice'), message: el('openingNoticeText'), review: el('openingNoticeReview'),
+    dismiss: el('openingNoticeDismiss'), dialog: el('openingDialog'), home: el('screenStatus'),
+    open: () => openingAdvice.show(), onMessage: text => resultFloat?.setNotice(text),
   });
   screenReader = bindScreenReader({
     start: el('screenStart'), finish: el('screenFinish'), stop: el('screenStop'), photo: el('screenPhoto'),
@@ -928,6 +943,8 @@ function bind() {
     isOpponentView: () => Boolean(el('scoutView').value),
     onEvidence: openingAdvice.receive,
     onOpening: openingAdvice.show,
+    onOpeningEnd: openingPrompts.finish,
+    onShareStart: openingPrompts.start,
   });
   resultFloat = bindRecommendationFloat({
     toggle: el('openResultFloat'), panel: el('resultFloat'), status: el('screenStatus'),
