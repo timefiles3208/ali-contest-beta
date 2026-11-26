@@ -1,5 +1,5 @@
 import { renderLineupList } from './lineup-list.js?v=opening-deadline';
-import { rankOpeningAugments } from '../engine/opening.js?v=recommendation-tools';
+import { rankOpeningAugments } from '../engine/opening.js?v=lineup-augment-guides';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
 export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier, onShow, onChoices }) {
@@ -42,7 +42,8 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     const available = effective ? offered.filter(id => augmentTier(id) === effective) : [];
     const chosen = rankOpeningAugments({
       setData, augments, ranked, selected, owned, ownedItems, itemsData,
-      offered: available, tier: effective, city: ctx.city, economy: ctx.economy, augmentStats: ctx.board?.augments,
+      offered: available, tier: effective, city: ctx.city, economy: ctx.economy,
+      augmentStats: ctx.board?.augments, patch: ctx.board?.version,
     });
     onChoices(chosen);
     if (!dialog.open) return;

@@ -7,7 +7,7 @@ import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=augment-speed';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=augment-speed';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=augment-speed';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=lineup-augment-guides';
 import { bindOpeningPrompts } from './ui/opening-prompts.js?v=augment-speed';
 import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-prompts';
 import { solveBoardConstraints } from './engine/board-constraints.js';
@@ -15,11 +15,11 @@ import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=recommendation-tools';
+import { rankOpening } from './engine/opening.js?v=lineup-augment-guides';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
-import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=recommendation-tools';
+import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=lineup-augment-guides';
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=opponent-artifacts';
 import { validateComps } from './adapters/provider.js';
@@ -500,6 +500,7 @@ function renderHexes(top) {
     city: openingContext()?.city,
     economy: state.economy, itemsData: state.items, owned: state.owned, ownedItems: state.ownedItems,
     augmentStats: state.board?.augments,
+    patch: state.board?.version,
     limit: 10,
   }).filter((x) => !curatedSet.has(x.aug.id));
 

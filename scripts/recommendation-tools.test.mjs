@@ -47,3 +47,31 @@ test('augment ranking uses sourced rating as a small prior and respects the offe
     augmentStats: new Map([['乙', { rating: 'S' }], ['丙', { rating: 'S' }]]) });
   assert.deepEqual(rows.map(row => row.aug.name), ['乙', '甲']);
 });
+
+test('same-version lineup evidence elevates Baby Academy without admitting other offered tiers', () => {
+  const comp = {
+    id: 'datatft-16269', name: '宝宝学院阿卡丽', rank: { source: 'datatft.com' },
+    units: ['DA_18_Akali_AD', 'DA_18_Ornn', 'DA_18_Camille', 'DA_18_Leona', 'DA_18_Sejuani', 'DA_18_Varus', 'DA_18_Kayle'],
+    aimTraits: { school: 2 },
+  };
+  const baby = { id: 'DA_EarlyLearnings', name: '宝宝学院' };
+  const other = { id: 'DA_SpeedyDoubleKill', name: '一波带走俩' };
+  const silver = { id: 'DA_SmallGrabBag', name: '小小福袋' };
+  const augments = [baby, other, silver];
+  const selected = new Set(['DA_18_Akali_AD']);
+  const args = {
+    setData: { set: 18, units: [{ id: 'DA_18_Akali_AD', name: '阿卡丽', cost: 1, traits: [] }] },
+    ranked: [{ comp, viable: true }],
+    augments, offered: augments.map(aug => aug.id), tier: 'gold', selected,
+    augmentStats: new Map([['一波带走俩', { rating: 'S+' }]]),
+  };
+  const current = rankOpeningAugments({ ...args, patch: '18.7' });
+  assert.deepEqual(current.map(row => row.aug.id), [baby.id, other.id]);
+  assert.match(current[0].reasons.join(' '), /LUM\.GG.*宝宝学院阿卡丽/);
+  assert.equal(rankOpeningAugments({ ...args, patch: '18.8' })[0].aug.id, other.id);
+  const unofficial = { ...comp, units: [...comp.units.slice(0, -1), 'different'] };
+  assert.equal(rankOpeningAugments({ ...args, patch: '18.7', ranked: [{ comp: unofficial, viable: true }] })[0].aug.id, other.id);
+  assert.equal(rankOpeningAugments({ ...args, patch: '18.7', offered: [other.id, silver.id] })[0].aug.id, other.id);
+  const compSpecificAlternative = { ...other, traits: ['school'] };
+  assert.equal(rankOpeningAugments({ ...args, patch: '18.7', augments: [baby, compSpecificAlternative] })[0].aug.id, other.id);
+});

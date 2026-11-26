@@ -1,7 +1,7 @@
-// 海克斯打分：官方数据只给了描述文本，没有强度分层，所以这里只做「跟你现在这局有多贴」的匹配，
-// 外加一层按关键词分类的通用先验(人工标注，不是实时胜率)。
+// 根据当前开局、目标阵容攻略和全局榜单给海克斯排序。
 import { traitBreakdown } from './recommend.js';
 import { formationPlan } from './formation.js';
+import { datajOpeningAugments, tftOpeningAugments } from '../data/s18.18.7.lineup-augments.js';
 
 const CATEGORY_RULES = [
   ['item', /装备|组件|散件|成品|锻造|器械|冠冕/, 0.12],
@@ -102,14 +102,31 @@ function citySynergy(aug, city, high, { hitItems, hitTraits, hitCore, benefits }
   }
 }
 
+function lineupGuide(comp, set, patch) {
+  if (!comp || set !== 18 || patch !== '18.7') return null;
+  if (comp.rank?.source === 'dataj.cc') {
+    const id = comp.id?.match(/^dataj-(\d+)$/)?.[1];
+    const ids = datajOpeningAugments[id];
+    return ids ? { source: 'DataJ', ids } : null;
+  }
+  if (comp.rank?.source === 'datatft.com') {
+    const guide = tftOpeningAugments[comp.id];
+    if (guide?.roster?.length === comp.units.length && guide.roster.every(id => comp.units.includes(id))) return guide;
+  }
+  return null;
+}
+
 export function rankAugments({
   setData, augments = [], ranked = [], selected = new Set(), chosen = new Set(), limit = 6, city, economy,
-  itemsData, owned = new Map(), ownedItems = new Set(), augmentStats,
+  itemsData, owned = new Map(), ownedItems = new Set(), augmentStats, patch,
 }) {
   const traitIdByName = new Map((setData.traits || []).map((t) => [t.name, t.id]));
   const top = ranked.find((r) => r.viable) || null;
   const comp = top?.comp;
   const selectedIds = selected instanceof Set ? selected : new Set(selected);
+  const guide = lineupGuide(comp, setData.set, patch);
+  const directFit = guide && (top.gearPoints > 0 || comp.units.some(id => selectedIds.has(id)));
+  const guideWeight = directFit ? 0.42 : 0.17;
   const heldNames = new Set(setData.units.filter(unit => selectedIds.has(unit.id)).map(unit => unit.name));
   const formation = top?.formation || (comp && formationPlan(comp, new Map(setData.units.map(unit => [unit.id, unit]))));
   const reroll = formation?.chase.some(unit => unit.cost <= 3);
@@ -150,10 +167,13 @@ export function rankAugments({
     const stats = augmentStats?.get(aug.name.normalize('NFKC').replace(/\s/g, ''));
     const tierPoints = { 'S+': 0.1, S: 0.08, A: 0.05, B: 0.03, C: 0.01 };
     const prior = tierPoints[stats?.rating] ?? (Number.isFinite(stats?.top4) ? Math.max(0, Math.min(0.08, (stats.top4 - 45) / 150)) : 0);
+    const guideMatch = guide?.ids.includes(aug.id);
     const total = 0.5 * traitScore + 0.3 * Math.min(1, (hitCore.length + hitAny.length) / 2)
-      + 0.18 * Math.min(1, hitItems.length) + cat.prior + (synergy?.points || 0) + inventoryFit + prior;
+      + 0.18 * Math.min(1, hitItems.length) + cat.prior + (synergy?.points || 0) + inventoryFit + prior
+      + (guideMatch ? guideWeight : 0);
     const score = Math.min(1, total);
     const reasons = [];
+    if (guideMatch) reasons.push(`${guide.source} · ${comp.name}阵容推荐`);
     if (stats?.rating) reasons.push(`榜单 ${stats.rating}`);
     if (Number.isFinite(stats?.top4)) reasons.push(`前四率 ${stats.top4}%`);
     if (Number.isFinite(stats?.avg)) reasons.push(`平均名次 ${stats.avg}`);
