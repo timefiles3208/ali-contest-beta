@@ -1,14 +1,14 @@
-import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=recommendation-tools';
+import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opening-deadline';
 import { recommendArtifacts } from './engine/artifacts.js?v=opponent-artifacts';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=share-ocr';
+import { bindScreenReader } from './ui/screen-reader.js?v=opening-deadline';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=opponent-artifacts';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=recommendation-tools';
-import { bindRecommendationFloat } from './ui/recommendation-float.js';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=opening-deadline';
+import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-deadline';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';

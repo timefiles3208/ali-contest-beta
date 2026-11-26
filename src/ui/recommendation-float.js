@@ -1,4 +1,4 @@
-import { renderLineupList } from './lineup-list.js?v=recommendation-tools';
+import { renderLineupList } from './lineup-list.js?v=opening-deadline';
 
 export function bindRecommendationFloat({ toggle, panel, status, ranked }) {
   const parent = panel.parentNode;
@@ -24,7 +24,7 @@ export function bindRecommendationFloat({ toggle, panel, status, ranked }) {
 
   function refresh() {
     if (panel.hidden) return;
-    renderLineupList(body, ranked(), { label: '阵容方向', emptyHint: status.textContent });
+    renderLineupList(body, ranked(), { label: '阵容方向', emptyHint: status.textContent, allowUnmatched: true });
   }
   function restore() {
     pip = null;

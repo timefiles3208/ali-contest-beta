@@ -1,7 +1,7 @@
 import { rolldownSummary } from '../engine/rolldown.js';
 
-export function recommendedLineups(ranked = []) {
-  return ranked.some(row => row.viable || row.hasOpponentEvidence || row.planning) ? ranked.slice(0, 3) : [];
+export function recommendedLineups(ranked = [], { allowUnmatched = false } = {}) {
+  return allowUnmatched || ranked.some(row => row.viable || row.hasOpponentEvidence || row.planning) ? ranked.slice(0, 3) : [];
 }
 
 export function formationRoles(formation) {
@@ -26,8 +26,8 @@ function formationStages(formation) {
   }).join(' · ');
 }
 
-export function renderLineupList(container, ranked, { label = '推荐阵容', link = false, emptyHint } = {}) {
-  const rows = recommendedLineups(ranked);
+export function renderLineupList(container, ranked, { label = '推荐阵容', link = false, emptyHint, allowUnmatched = false } = {}) {
+  const rows = recommendedLineups(ranked, { allowUnmatched });
   if (!rows.length) {
     const prompt = document.createElement('p');
     prompt.className = 'fine';

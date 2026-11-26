@@ -1,11 +1,13 @@
-import { renderLineupList } from './lineup-list.js?v=recommendation-tools';
+import { renderLineupList } from './lineup-list.js?v=opening-deadline';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
 import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=share-ocr';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { boardFrameStamp, sameBoardFrame, waitForVideoFrame } from '../adapters/video-frame.js';
 const FRAME_INTERVAL_MS = 400;
 const SCOUT_STAGE_INTERVAL_MS = 950;
+const DIRECTION_FALLBACK_MS = 16_000;
 const CAPTURE_LIMIT_MS = 180_000;
+const DIRECTION_OPTIONS = { label: '阵容方向', link: true, allowUnmatched: true };
 
 function toCanvas(image, width, height, maxSize = 1600) {
   const canvas = document.createElement('canvas');
@@ -41,6 +43,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     active = null;
     clearTimeout(session.tick);
     clearTimeout(session.limit);
+    clearTimeout(session.directionFallback);
     session.frameRequest?.abort();
     session.scanFrame?.abort();
     session.stream?.getTracks().forEach(track => track.stop());
@@ -80,7 +83,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   }
 
   function showDirection(context, note = '已按确认的开局条件匹配当前阵容库。') {
-    const hasLineups = renderLineupList(result, context.ranked(), { label: '阵容方向', link: true });
+    const hasLineups = renderLineupList(result, context.ranked(), DIRECTION_OPTIONS);
     result.hidden = !hasLineups;
     if (!hasLineups) {
       say('请确认手上棋子、装备或城邦效果后查看阵容方向。');
@@ -122,7 +125,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
               if (!opponent && active === session && perspectiveRevision === revision && evidence.opening) onEvidence(evidence);
             },
             onStage(stage) {
-              if (opponent || perspectiveRevision !== revision || stage !== '2-1' || session.atOpening) return;
+              if (active !== session || opponent || perspectiveRevision !== revision || stage !== '2-1' || session.atOpening) return;
               session.atOpening = true;
               onOpening();
               say('检测到 2-1，正在补读本轮海克斯。');
@@ -140,11 +143,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         }
         if (opponent) {
           if (evidence?.stage === '2-1' && result.hidden) {
-            if (session.context.ranked().some(row => row.viable || row.hasOpponentEvidence)) {
-              showDirection(session.context, '已结合当前记录生成 2-1 阵容方向。');
-            } else {
-              say('检测到 2-1，正在共享对手视角。');
-            }
+            showDirection(session.context, '检测到 2-1，已按当前记录给出阵容方向。');
           }
           retry();
           return;
@@ -156,13 +155,14 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         } else {
           say(session.atOpening
             ? '检测到 2-1，可查看开局推荐。选完海克斯后结束共享。'
-            : '正在读取画面文字，到 2-1 时会打开开局推荐。');
+            : result.hidden ? '正在读取画面文字，到 2-1 时会打开开局推荐。'
+              : '尚未确认 2-1，已显示阵容参考，正在继续读取画面。');
         }
       } catch {
         if (active !== session) return;
         if (perspectiveRevision !== revision || opponent) { retry(); return; }
         release(session);
-        say('文字识别未能运行，请重试或导入截图。');
+        showDirection(session.context, '画面文字识别失败，已显示阵容参考。可重新共享或导入截图。');
         return;
       }
     }
@@ -193,9 +193,8 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       return;
     }
     if (evidence?.stage !== '2-1') {
-      say(evidence?.stage
-        ? `截图读到 ${evidence.stage}。请导入 2-1 的海克斯选择画面。`
-        : '未确认 2-1 回合。请使用包含完整回合栏的原图，或手动打开开局推荐。');
+      if (evidence?.stage) say(`截图读到 ${evidence.stage}。请导入 2-1 的海克斯选择画面。`);
+      else showDirection(context, '截图未确认 2-1，已显示阵容参考。可导入包含回合栏的原图继续识别。');
       return;
     }
     onEvidence(evidence);
@@ -228,6 +227,12 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         release(session);
         say('已到读取时限，屏幕共享已停止。');
       }, CAPTURE_LIMIT_MS);
+      session.directionFallback = setTimeout(() => {
+        if (active !== session || !result.hidden) return;
+        showDirection(context, session.atOpening
+          ? '已按当前记录给出 2-1 阵容方向，识别结果会继续补充。'
+          : '尚未确认 2-1，先显示阵容参考。检测到 2-1 后会打开推荐面板。');
+      }, DIRECTION_FALLBACK_MS);
       video.srcObject = stream;
       video.hidden = false;
       void warmScoutOcr().catch(() => {});
@@ -301,7 +306,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     refreshDirection() {
       if (result.hidden) return;
       const context = getContext();
-      result.hidden = !context || !renderLineupList(result, context.ranked(), { label: '阵容方向', link: true });
+      result.hidden = !context || !renderLineupList(result, context.ranked(), DIRECTION_OPTIONS);
     },
   };
 }

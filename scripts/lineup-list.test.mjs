@@ -21,6 +21,8 @@ test('short lists preserve fit, rating, and placement order and only adds unmatc
   });
   assert.deepEqual(recommendedLineups(ranked).map(row => row.comp.id), ['better-fit', 'rating', 'second']);
   assert.deepEqual(recommendedLineups(ranked.filter(row => row.comp.id === 'unmatched')), []);
+  assert.deepEqual(recommendedLineups(ranked.filter(row => row.comp.id === 'unmatched'), { allowUnmatched: true })
+    .map(row => [row.comp.id, row.viable]), [['unmatched', false]]);
   assert.deepEqual(recommendedLineups(ranked.filter(row => ['rating', 'unmatched'].includes(row.comp.id)))
     .map(row => [row.comp.id, row.viable]), [['rating', true], ['unmatched', false]]);
 });

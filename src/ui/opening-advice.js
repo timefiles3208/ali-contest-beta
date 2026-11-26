@@ -1,4 +1,4 @@
-import { renderLineupList } from './lineup-list.js?v=recommendation-tools';
+import { renderLineupList } from './lineup-list.js?v=opening-deadline';
 import { rankOpeningAugments } from '../engine/opening.js?v=recommendation-tools';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
@@ -97,7 +97,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     candidates.replaceChildren(legend, ...checks);
     candidates.hidden = !checks.length;
     renderLineupList(direction, ranked, {
-      emptyHint: '选择城邦、确认当前持有的棋子或登记装备。',
+      allowUnmatched: true,
     });
     const chosen = rankOpeningAugments({
       setData, augments, ranked, selected, owned, ownedItems, itemsData,
