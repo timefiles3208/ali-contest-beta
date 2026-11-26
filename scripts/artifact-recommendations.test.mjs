@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { recommendArtifacts } from '../src/engine/artifacts.js';
+import { artifactAugmentChoices, recommendArtifacts } from '../src/engine/artifacts.js';
 
 test('Ornn gets a shield synergy while an ordinary tank gets defensive alternatives', () => {
   const ornn = recommendArtifacts({ id: 'DA_18_Ornn', tank: true }, '18.7');
@@ -8,6 +8,21 @@ test('Ornn gets a shield synergy while an ordinary tank gets defensive alternati
   assert.ok(ornn.every(item => item.icon.endsWith('.png') && item.reason));
   assert.ok(recommendArtifacts({ id: 'DA_18_Leona', tank: true }, '18.7')
     .every(item => item.name !== '禁忌雕像'));
+});
+
+test('confirmed artifact augments suggest distinct item and carrier pairs for the chosen lineup', () => {
+  const ornn = { id: 'DA_18_Ornn', name: '奥恩', cost: 1 };
+  const caster = { id: 'caster', name: '法师', cost: 3 };
+  const comp = { units: [ornn.id, caster.id], carry: [caster.id], items: {
+    [ornn.id]: ['DA_GargoyleStoneplate'], [caster.id]: ['DA_SpearOfShojin'],
+  } };
+  const context = { comp, setData: { units: [ornn, caster] }, patch: '18.7', selected: new Set([ornn.id]) };
+  const pairs = id => artifactAugmentChoices(id, context).map(({ item, unit }) => [item.name, unit.name]);
+  assert.deepEqual(pairs('DA_PortableForge'), [['禁忌雕像', '奥恩'], ['魔蕴', '法师']]);
+  assert.deepEqual(pairs('DA_LatentForge'), pairs('DA_PortableForge'));
+  assert.deepEqual(pairs('DA_RadiantRelic'), []);
+  assert.deepEqual(artifactAugmentChoices('DA_PortableForge', { ...context, patch: '18.8' }), []);
+  assert.deepEqual(artifactAugmentChoices('DA_PortableForge', { ...context, sourceItems: new Map() }), []);
 });
 
 test('spell and attack builds get different options and unsupported versions or sources return none', () => {

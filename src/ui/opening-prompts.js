@@ -17,16 +17,17 @@ export function bindOpeningPrompts({ notice, message, lineups, review, dismiss, 
   let timer;
   let lastInventory;
   let lineupKey;
+  let equipmentAugment;
 
   function draw() {
     const anchor = dialog.open ? inline : home;
     if (notice.previousElementSibling !== anchor) anchor.after(notice);
-    review.hidden = dialog.open;
+    review.hidden = dialog.open || phase === 'equipment';
     notice.hidden = dismissal || expired || !text;
     const visibleMessage = notice.hidden ? '' : text;
     const choices = notice.hidden ? [] : phase === 'augments'
       ? recommendedLineups(ranked(), { allowUnmatched: true }).map(row => row.comp)
-      : earlyComp ? [earlyComp] : [];
+      : phase === 'early' && earlyComp ? [earlyComp] : [];
     const selected = selectedId();
     const nextKey = JSON.stringify([selected, choices.map(comp => [comp.id, comp.name])]);
     if (lineupKey !== nextKey) {
@@ -101,6 +102,16 @@ export function bindOpeningPrompts({ notice, message, lineups, review, dismiss, 
     clearTimeout(timer);
     phase = 'finished';
     text = '';
+    equipmentAugment = undefined;
+    draw();
+  }
+
+  function showEquipment(id, description) {
+    phase = 'equipment';
+    equipmentAugment = id;
+    dismissal = false;
+    text = description;
+    scheduleHide();
     draw();
   }
 
@@ -113,6 +124,7 @@ export function bindOpeningPrompts({ notice, message, lineups, review, dismiss, 
     activeUnit = undefined;
     earlyComp = undefined;
     lastInventory = undefined;
+    equipmentAugment = undefined;
     prompted.clear();
     draw();
   }
@@ -120,7 +132,8 @@ export function bindOpeningPrompts({ notice, message, lineups, review, dismiss, 
   review.onclick = open;
   dismiss.onclick = () => { clearTimeout(timer); dismissal = true; draw(); };
   dialog.addEventListener('close', draw);
-  return { draw, updateInventory, beginAugments, updateAugments, finish, reset,
-    start() { if (phase === 'finished') reset(); },
+  return { draw, updateInventory, beginAugments, updateAugments, finish, reset, showEquipment,
+    clearEquipment(id) { if (phase === 'equipment' && equipmentAugment === id) finish(); },
+    start() { if (phase === 'finished' || phase === 'equipment') reset(); },
   };
 }

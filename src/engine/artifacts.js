@@ -1,3 +1,5 @@
+import { formationPlan, formationRow } from './formation.js?v=opponent-artifacts';
+
 // S18 artifacts and icons from the 16.23 CommunityDragon snapshot.
 const ICON_ROOT = 'https://raw.communitydragon.org/16.23/game/assets/maps/';
 const artifacts = {
@@ -44,4 +46,20 @@ export function recommendArtifacts(unit, patch, sourceItems) {
     : items.some(id => physicalItems.has(id)) ? ['force', 'navori', 'cannon']
     : [];
   return artifactDetails(keys, sourceItems).slice(0, 3);
+}
+
+const ARTIFACT_AUGMENTS = new Set([
+  'DA_PortableForge', 'DA_LatentForge', 'DA_LivingForge', 'DA_NestingAnvils', 'DA_NestingAnvilsPlus', 'DA_SweetTreats',
+]);
+
+export function artifactAugmentChoices(id, { comp, setData, patch, sourceItems, selected }) {
+  if (!ARTIFACT_AUGMENTS.has(id) || patch !== '18.7' || !comp) return [];
+  const formation = formationPlan(comp, new Map(setData.units.map(unit => [unit.id, unit])));
+  const units = [...new Set([...formation.carries, ...formation.tanks, ...formation.chase])]
+    .sort((a, b) => Number(selected.has(b.id)) - Number(selected.has(a.id)));
+  const options = units.map(unit => recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, sourceItems)
+    .map(item => ({ item, unit })));
+  const firstChoices = options.flatMap(pairs => pairs.slice(0, 1));
+  const allChoices = [...firstChoices, ...options.flatMap(pairs => pairs.slice(1))];
+  return allChoices.filter(({ item }, i) => allChoices.findIndex(pair => pair.item.id === item.id) === i).slice(0, 2);
 }

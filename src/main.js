@@ -1,5 +1,5 @@
 import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opening-deadline';
-import { recommendArtifacts } from './engine/artifacts.js?v=opponent-artifacts';
+import { artifactAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=artifact-augment-notice';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
@@ -8,7 +8,7 @@ import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=lineup-picker';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=augment-speed';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=lineup-picker';
-import { bindOpeningPrompts } from './ui/opening-prompts.js?v=lineup-picker';
+import { bindOpeningPrompts } from './ui/opening-prompts.js?v=artifact-augment-notice';
 import { bindRecommendationFloat } from './ui/recommendation-float.js?v=lineup-picker';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
@@ -387,6 +387,16 @@ function selectLineup(comp) {
   el('lineupCopyStatus').textContent = '';
   renderSide();
   showLineupPlan();
+}
+
+function showArtifactAugmentNotice(id, comp) {
+  const sourceItems = state.sourceId === 'dataj' ? state.board?.items : undefined;
+  const choices = artifactAugmentChoices(id, {
+    comp, setData: state.setData, patch: state.board?.version, sourceItems, selected: state.selected,
+  });
+  if (!choices.length) return;
+  const pairs = choices.map(({ item, unit }) => `${item.name}给${unit.name}`);
+  openingPrompts.showEquipment(id, `${comp.name} · 若刷到，优先考虑${pairs.join('、')}。`);
 }
 
 async function copyTeamCode(code, feedback, field) {
@@ -985,12 +995,14 @@ function bind() {
       if (state.setData) renderResults();
     },
     onPick(id) {
+      const comp = state.lineupChoice || state.ranked?.find(row => row.viable)?.comp || state.ranked?.[0]?.comp;
       if (state.openingAugment) state.chosen.delete(state.openingAugment);
       state.openingAugment = id;
       state.chosen.add(id);
       openingPrompts.finish();
       renderResults();
       if (!el('screenFinish').disabled) el('screenFinish').click();
+      showArtifactAugmentNotice(id, comp);
     },
     onShow(stage) {
       if (stage === '2-1') openingPrompts.beginAugments();
@@ -1170,8 +1182,13 @@ function bind() {
   el('hexes').onclick = (e) => {
     const b = e.target.closest('.hex');
     if (!b) return;
-    state.chosen.has(b.dataset.hex) ? state.chosen.delete(b.dataset.hex) : state.chosen.add(b.dataset.hex);
+    const id = b.dataset.hex;
+    const comp = state.lineupChoice || state.ranked?.find(row => row.viable)?.comp || state.ranked?.[0]?.comp;
+    const added = !state.chosen.delete(id);
+    if (added) state.chosen.add(id);
     renderResults();
+    if (added) showArtifactAugmentNotice(id, comp);
+    else openingPrompts.clearEquipment(id);
   };
   el('gear').onclick = (e) => {
     const b = e.target.closest('.gi');
