@@ -1,5 +1,5 @@
 import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=recommendation-tools';
-import { recommendArtifacts } from './engine/artifacts.js';
+import { recommendArtifacts } from './engine/artifacts.js?v=artifact-icons';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';

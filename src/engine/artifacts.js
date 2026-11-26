@@ -1,5 +1,5 @@
 // S18 artifacts and icons from the 16.23 CommunityDragon snapshot.
-const ICON_ROOT = 'https://raw.communitydragon.org/16.23/game/assets/maps/tft/';
+const ICON_ROOT = 'https://raw.communitydragon.org/16.23/game/assets/maps/';
 const artifacts = {
   idol: ['禁忌雕像', 'tft_item_artifact_forbiddenidol', '把部分护盾转化为最大生命值，适合能反复给自己套盾的奥恩'],
   crest: ['光盾徽章', 'tft_item_artifact_lightshieldcrest', '按携带者双抗为低血量友军提供护盾，适合高双抗前排'],
@@ -34,6 +34,6 @@ export function recommendArtifacts(unit, patch, sourceItems) {
     const [name, file, reason, folder, alias] = artifacts[key];
     const sourceName = sourceItems?.has(name) ? name : alias && sourceItems?.has(alias) ? alias : null;
     if (sourceItems && !sourceName) return [];
-    return [{ name: sourceName || name, icon: ICON_ROOT + (folder || 'icons/items/hexcore/') + file + '.png', reason }];
+    return [{ name: sourceName || name, icon: ICON_ROOT + (folder || 'tft/icons/items/hexcore/') + file + '.png', reason }];
   }).slice(0, 3);
 }

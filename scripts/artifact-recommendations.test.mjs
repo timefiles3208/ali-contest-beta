@@ -14,6 +14,8 @@ test('spell and attack builds get different options and unsupported versions or 
   const mage = { carry: true, items: ['DA_SpearOfShojin', 'DA_JeweledGauntlet'] };
   const marksman = { carry: true, items: ['DA_GuinsoosRageblade', 'DA_InfinityEdge'] };
   assert.equal(recommendArtifacts(mage, '18.7')[0].name, '魔蕴');
+  assert.match(recommendArtifacts(mage, '18.7').find(item => item.name === '巫妖之祸').icon,
+    /\/maps\/particles\/tft\/item_icons\/ornn_items\//);
   assert.equal(recommendArtifacts(marksman, '18.7')[0].name, '烁刃');
   assert.deepEqual(recommendArtifacts(mage, '19.1'), []);
   assert.deepEqual(recommendArtifacts(mage, '18.7', new Map()).map(item => item.name), []);
