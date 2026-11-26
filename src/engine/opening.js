@@ -1,5 +1,5 @@
 import { formationPlan } from './formation.js';
-import { opponentPressure } from './opponent-scout.js?v=formation-plan';
+import { opponentPressure } from './opponent-scout.js?v=opponent-equipment';
 import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
 import { rankAugments } from './augments.js?v=lineup-augment-guides';
@@ -77,7 +77,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
     }
     const rollPoints = roll ? 8 * Math.max(roll.current.probability, roll.upgrade?.probability ?? 0) : 0;
     const viable = Boolean(units || gear.points || city || economy === 'high' || aug || learned || roll);
-    const { opponents: opponentCount, discount } = opponentPressure(comp, opponentBoards);
+    const { opponents: opponentCount, discount, equippedOpponents } = opponentPressure(comp, opponentBoards);
     const fit = units + gear.points + cityPoints + econ + aug + learned + chasePoints + rollPoints - discount;
     const reasons = [
       units && `持有 ${current.length} 名阵容棋子`,
@@ -91,6 +91,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       learned > 0 && '来牌符合已知过渡棋盘',
       opponentCount ? `可能有 ${opponentCount} 家同行，适配扣 ${discount} 分`
         : hasOpponentEvidence && '已分析路线中未发现同行',
+      equippedOpponents && `其中 ${equippedOpponents} 家的装备与佩戴棋子契合本阵容`,
     ].filter(Boolean);
     return { ...row, formation, roll, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints: gear.points, opponentCount, hasOpponentEvidence };
   });

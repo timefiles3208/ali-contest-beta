@@ -81,19 +81,26 @@ const RADIANT_UPGRADES = new Set(['TFT11_Augment_RadiantRefactor', 'TFT_Augment_
 const RADIANT_EXCLUDED = new Set(['DA_TacticiansCape', 'DA_TacticiansCrown', 'DA_TacticiansShield']);
 const RADIANT_ALIASES = { DA_Deathblade: '光明版锐利之刃', DA_GiantSlayer: '光明版巨人捕手' };
 
+export function radiantOptions(patch, itemsData, sourceItems) {
+  if (patch !== '18.7') return [];
+  // S18's craftable equipment has radiant counterparts, except the three crowns.
+  return (itemsData?.items || []).flatMap(item => {
+    if (item.kind !== 'completed' || RADIANT_EXCLUDED.has(item.id)) return [];
+    const canonical = '光明版' + item.name;
+    const alias = RADIANT_ALIASES[item.id];
+    const name = sourceItems && !sourceItems.has(canonical) ? alias : canonical;
+    return name && (!sourceItems || sourceItems.has(name))
+      ? [{ id: 'radiant:' + item.id, baseId: item.id, name, baseName: item.name }] : [];
+  });
+}
+
 export function radiantAugmentChoices(id, context) {
   const { comp, patch, sourceItems, itemsData, ownedItems } = context;
   const prompt = RADIANT_PROMPTS.get(id);
   if (!prompt || patch !== '18.7' || !comp) return null;
   const upgrade = RADIANT_UPGRADES.has(id);
-  // S18's craftable equipment has radiant counterparts, except the three crowns.
-  const radiantByBase = new Map((itemsData?.items || []).flatMap(item => {
-    if (item.kind !== 'completed' || RADIANT_EXCLUDED.has(item.id) || (upgrade && !ownedItems?.has(item.id))) return [];
-    const canonical = '光明版' + item.name;
-    const alias = RADIANT_ALIASES[item.id];
-    const name = sourceItems && !sourceItems.has(canonical) ? alias : canonical;
-    return name && (!sourceItems || sourceItems.has(name)) ? [[item.id, { id: item.id, name, baseName: item.name }]] : [];
-  }));
+  const radiantByBase = new Map(radiantOptions(patch, itemsData, sourceItems)
+    .filter(item => !upgrade || ownedItems?.has(item.baseId)).map(item => [item.baseId, item]));
   const choices = equipmentChoices(context, unit => unit.items.map(item => radiantByBase.get(item)).filter(Boolean));
   return choices.length ? { choices, prompt, upgrade } : null;
 }

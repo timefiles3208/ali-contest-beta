@@ -1,8 +1,8 @@
 import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=augment-speed';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
-import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=opponent-artifacts';
-import { artifactOptions } from '../engine/artifacts.js?v=opponent-artifacts';
+import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=opponent-equipment';
+import { artifactOptions, radiantOptions } from '../engine/artifacts.js?v=opponent-equipment';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 
 const SCOUT_BUDGET_MS = 5_000;
@@ -12,7 +12,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
   const pending = new Map();
   let liveQueue = Promise.resolve();
   let listedAugments;
-  let listedUnits, listedPatch, listedSourceItems;
+  let listedUnits, listedPatch, listedItems, listedSourceItems;
   let artifactsById = new Map();
   const signal = text => { status.textContent = text; };
 
@@ -27,12 +27,14 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
       const entries = [...(listedAugments || [])].sort((a, b) => a.name.localeCompare(b.name, 'zh'));
       augment.replaceChildren(new Option('沿用记录', ''), ...entries.map(row => new Option(row.name, row.id)));
     }
-    if (listedPatch !== context?.patch || listedSourceItems !== context?.sourceItems) {
+    if (listedPatch !== context?.patch || listedItems !== context?.itemsData || listedSourceItems !== context?.sourceItems) {
       listedPatch = context?.patch;
       listedSourceItems = context?.sourceItems;
-      const entries = artifactOptions(listedPatch, listedSourceItems).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+      listedItems = context?.itemsData;
+      const entries = [...artifactOptions(listedPatch, listedSourceItems), ...radiantOptions(listedPatch, listedItems, listedSourceItems)]
+        .sort((a, b) => a.name.localeCompare(b.name, 'zh'));
       artifactsById = new Map(entries.map(row => [row.id, row]));
-      artifact.replaceChildren(new Option('选择已装备的神器', ''), ...entries.map(row => new Option(row.name, row.id)));
+      artifact.replaceChildren(new Option('选择已装备的神器或光明装备', ''), ...entries.map(row => new Option(row.name, row.id)));
       artifactHolder.value = '';
     }
     if (listedUnits !== context?.setData.units) {
@@ -65,18 +67,21 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
         if (!artifact) continue;
         const badge = document.createElement('span');
         badge.className = 'artifact-choice';
-        const icon = new Image(22, 22);
-        icon.src = artifact.icon;
-        icon.alt = '';
-        icon.loading = 'lazy';
-        badge.append(icon, `${artifact.name}（${names.get(record.unit) || '佩戴者未知'}）`);
+        if (artifact.icon) {
+          const icon = new Image(22, 22);
+          icon.src = artifact.icon;
+          icon.alt = '';
+          icon.loading = 'lazy';
+          badge.append(icon);
+        }
+        badge.append(`${artifact.name}（${names.get(record.unit) || '佩戴者未知'}）`);
         item.append(badge);
       }
       if (routes.length) {
         const list = document.createElement('ol');
-        for (const { comp } of routes) {
+        for (const { comp, equippedMatch } of routes) {
           const route = document.createElement('li');
-          route.textContent = comp.name;
+          route.textContent = comp.name + (equippedMatch ? '（装备契合）' : '');
           list.append(route);
         }
         item.append(list);

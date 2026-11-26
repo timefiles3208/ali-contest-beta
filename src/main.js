@@ -1,13 +1,13 @@
 import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opening-deadline';
-import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=radiant-augment-notice';
+import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=opponent-equipment';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=lineup-picker';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=augment-speed';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=lineup-picker';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=opponent-equipment';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=opponent-equipment';
 import { bindOpeningPrompts } from './ui/opening-prompts.js?v=artifact-augment-notice';
 import { bindRecommendationFloat } from './ui/recommendation-float.js?v=lineup-picker';
 import { solveBoardConstraints } from './engine/board-constraints.js';
@@ -15,7 +15,7 @@ import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=lineup-augment-guides';
+import { rankOpening } from './engine/opening.js?v=opponent-equipment';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
@@ -1067,6 +1067,7 @@ function bind() {
     getContext: () => !loadingSet && state.setData ? {
       setData: state.setData, comps: state.comps, boards: state.opponentBoards, patch: state.board?.version,
       augments: state.augs?.augments || [],
+      itemsData: state.items,
       sourceItems: state.sourceId === 'dataj' ? state.board?.items : undefined,
     } : null,
     getFrame: screenReader.getFrame,

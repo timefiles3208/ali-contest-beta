@@ -1,5 +1,5 @@
 import { renderLineupList } from './lineup-list.js?v=lineup-picker';
-import { rankOpeningAugments } from '../engine/opening.js?v=lineup-augment-guides';
+import { rankOpeningAugments } from '../engine/opening.js?v=opponent-equipment';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
 export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier, onShow, onChoices, onSelect }) {

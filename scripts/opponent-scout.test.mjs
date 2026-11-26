@@ -83,3 +83,30 @@ test('an equipped artifact favors the carrier build that fits it over a higher-t
     '18.7', { ...options, sourceItems: new Map() })[0].comp.id, 'attack');
   assert.equal(routes({ units: ['a', 'b'], artifacts: [artifact] }, '19.1')[0].comp.id, 'attack');
 });
+
+test('confirmed fitting equipment adds one contest deduction and keeps build variants distinct', () => {
+  const spell = { ...first, id: 'spell', items: { a: ['DA_SpearOfShojin'] } };
+  const attack = { ...first, id: 'attack', rank: { tier: 'A' }, items: { a: ['DA_GuinsoosRageblade'] } };
+  const options = {
+    ...context,
+    comps: [spell, attack, second],
+    patch: '18.7',
+    itemsData: { items: [{ id: 'DA_SpearOfShojin', name: '朔极之矛', kind: 'completed' }] },
+  };
+  const boards = (artifacts, augments = [], settings = options) => new Map([['1', { routes:
+    predictOpponentRoutes(options.comps, { units: ['a', 'b'], artifacts, augments }, options.patch, settings),
+  }]]);
+  const artifact = { id: 'manazane', unit: 'a' };
+  const radiant = { id: 'radiant:DA_SpearOfShojin', unit: 'a' };
+  for (const records of [[artifact], [radiant], [artifact, radiant]]) {
+    const opponentBoards = boards(records);
+    assert.deepEqual(opponentPressure(spell, opponentBoards), { opponents: 1, discount: 16, equippedOpponents: 1 });
+    assert.deepEqual(opponentPressure(attack, opponentBoards), { opponents: 1, discount: 12 });
+    assert.match(rankOpening({ ...options, opponentBoards }).find(row => row.comp.id === spell.id)
+      .reasons.join(' '), /同行.*16 分.*装备/);
+  }
+  assert.deepEqual(opponentPressure(spell, boards([{ ...radiant, unit: '' }])), { opponents: 1, discount: 12 });
+  assert.deepEqual(opponentPressure(spell, boards([radiant], [], { ...options, sourceItems: new Map() })),
+    { opponents: 1, discount: 12 });
+  assert.deepEqual(opponentPressure(spell, boards([], [{ id: 'DA_PortableForge' }])), { opponents: 1, discount: 12 });
+});
