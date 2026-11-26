@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=compact-opening-notice" />
+<link rel="stylesheet" href="./styles.css?v=lineup-picker" />
 </head>
 <body>
 <header class="bar">
@@ -30,6 +30,7 @@
     <div class="snap-actions">
       <button id="screenStart" class="primary" type="button">共享游戏窗口</button>
       <button id="openingOpen" class="ghost" type="button" disabled>开局推荐</button>
+      <button id="showLineupPlan" class="ghost" type="button" hidden>查看已选阵容</button>
       <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
       <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
       <button id="openResultFloat" class="ghost" type="button" aria-expanded="false">推荐浮窗</button>
@@ -39,6 +40,7 @@
     <p id="screenStatus" class="snap-status" role="status">正在检查屏幕共享支持…</p>
     <aside id="openingNotice" class="opening-notice" aria-label="开局提醒" hidden>
       <p id="openingNoticeText" role="status"></p>
+      <div id="openingNoticeLineups" class="opening-notice-lineups" aria-label="选择推荐阵容" hidden></div>
       <div class="opening-notice-actions">
         <button id="openingNoticeReview" class="ghost" type="button">查看推荐</button>
         <button id="openingNoticeDismiss" class="ghost" type="button" aria-label="关闭提醒">关闭</button>
@@ -141,6 +143,21 @@
       <datalist id="openingHexList"></datalist>
     </fieldset>
     <ol id="openingPicks" aria-live="polite"></ol>
+  </dialog>
+  <dialog id="lineupPlan" aria-labelledby="lineupPlanTitle">
+    <header class="opening-header">
+      <h2 id="lineupPlanTitle">已选阵容</h2>
+      <form method="dialog"><button type="submit" class="ghost">关闭</button></form>
+    </header>
+    <section id="lineupPlanCode" class="lineup-code">
+      <label for="lineupCode" id="lineupCodeLabel">阵容码</label>
+      <textarea id="lineupCode" rows="2" spellcheck="false" readonly></textarea>
+      <div class="snap-actions"><button id="copyLineupCode" type="button" class="ghost">复制阵容码</button></div>
+      <p id="lineupCopyStatus" class="fine" role="status"></p>
+    </section>
+    <p id="lineupPlanNoCode" class="fine" hidden>这套阵容暂无可导入的游戏阵容码。</p>
+    <div id="lineupPlanTransition"></div>
+    <div class="snap-actions"><button id="changeLineupChoice" type="button" class="ghost">返回阵容推荐</button></div>
   </dialog>
   <section class="panel snapshot">
     <h2>1 · 导入对局截图（可选）</h2>
@@ -285,6 +302,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=lineup-augment-guides"></script>
+<script type="module" src="./src/main.js?v=lineup-picker"></script>
 </body>
 </html>

@@ -26,7 +26,19 @@ function formationStages(formation) {
   }).join(' · ');
 }
 
-export function renderLineupList(container, ranked, { label = '推荐阵容', link = false, emptyHint, allowUnmatched = false } = {}) {
+export function lineupSelectButton(comp, onSelect, selectedId, compact = false) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'lineup-select';
+  const selected = selectedId === comp.id;
+  button.textContent = compact ? comp.name : selected ? '查看方案' : '选定';
+  button.setAttribute('aria-label', selected ? `查看已选的${comp.name}` : `选择${comp.name}`);
+  button.setAttribute('aria-pressed', String(selected));
+  button.onclick = () => onSelect(comp);
+  return button;
+}
+
+export function renderLineupList(container, ranked, { label = '推荐阵容', link = false, emptyHint, allowUnmatched = false, onSelect, selectedId } = {}) {
   const rows = recommendedLineups(ranked, { allowUnmatched });
   if (!rows.length) {
     const prompt = document.createElement('p');
@@ -48,6 +60,7 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
     const stats = document.createElement('span');
     stats.textContent = ` · ${comp.plannedEmblem && comp.rank ? '原榜单' : '榜单'} ${comp.rank?.tier || '未评级'} · 适配 ${score} 分 · 最终阵容 ${comp.level} 人口`;
     row.append(name, stats);
+    if (onSelect) row.append(lineupSelectButton(comp, onSelect, selectedId));
     if (comp.plannedEmblem) {
       const note = document.createElement('p');
       note.className = 'fine';

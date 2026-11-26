@@ -1,19 +1,22 @@
 import { openingUnitDirection } from '../engine/opening-prompts.js';
+import { lineupSelectButton, recommendedLineups } from './lineup-list.js?v=lineup-picker';
 
 const NOTICE_DURATION_MS = 8_000;
 const AUGMENT_NOTICE = '2-1 海克斯选择，正在识别选项。';
 
-export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, home, open, onMessage }) {
+export function bindOpeningPrompts({ notice, message, lineups, review, dismiss, dialog, home, open, onMessage, ranked, onSelect, selectedId }) {
   const inline = dialog.querySelector('.opening-header');
   const prompted = new Set();
   let phase = 'early';
   let text = '';
   let activeUnit;
+  let earlyComp;
   let dismissal = false;
   let expired = false;
   let choicesShown = 0;
   let timer;
   let lastInventory;
+  let lineupKey;
 
   function draw() {
     const anchor = dialog.open ? inline : home;
@@ -21,6 +24,16 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
     review.hidden = dialog.open;
     notice.hidden = dismissal || expired || !text;
     const visibleMessage = notice.hidden ? '' : text;
+    const choices = notice.hidden ? [] : phase === 'augments'
+      ? recommendedLineups(ranked(), { allowUnmatched: true }).map(row => row.comp)
+      : earlyComp ? [earlyComp] : [];
+    const selected = selectedId();
+    const nextKey = JSON.stringify([selected, choices.map(comp => [comp.id, comp.name])]);
+    if (lineupKey !== nextKey) {
+      lineupKey = nextKey;
+      lineups.replaceChildren(...choices.map(comp => lineupSelectButton(comp, onSelect, selected, true)));
+      lineups.hidden = !choices.length;
+    }
     if (message.textContent !== visibleMessage) {
       message.textContent = visibleMessage;
       onMessage(visibleMessage);
@@ -48,6 +61,7 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
     const hint = openingUnitDirection(context, prompted);
     if (hint) {
       activeUnit = hint.unit.id;
+      earlyComp = hint.row.comp;
       prompted.add(activeUnit);
       dismissal = false;
       text = `已持有${hint.unit.name}，可考虑「${hint.row.comp.name}」。`;
@@ -55,6 +69,7 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
     } else if (activeUnit && !context.selected.has(activeUnit)) {
       text = '';
       activeUnit = undefined;
+      earlyComp = undefined;
     }
     draw();
   }
@@ -96,6 +111,7 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
     dismissal = false;
     expired = false;
     activeUnit = undefined;
+    earlyComp = undefined;
     lastInventory = undefined;
     prompted.clear();
     draw();

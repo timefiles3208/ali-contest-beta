@@ -1,8 +1,8 @@
-import { renderLineupList } from './lineup-list.js?v=opening-deadline';
+import { renderLineupList } from './lineup-list.js?v=lineup-picker';
 import { rankOpeningAugments } from '../engine/opening.js?v=lineup-augment-guides';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 
-export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier, onShow, onChoices }) {
+export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier, onShow, onChoices, onSelect }) {
   let detectedUnits = [];
   let detectedShop;
   let catalogIdentity;
@@ -41,7 +41,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     const effective = chosenTier || inferAugmentTier(offered);
     const available = effective ? offered.filter(id => augmentTier(id) === effective) : [];
     const chosen = rankOpeningAugments({
-      setData, augments, ranked, selected, owned, ownedItems, itemsData,
+      setData, augments, ranked: ctx.augmentRanked, selected, owned, ownedItems, itemsData,
       offered: available, tier: effective, city: ctx.city, economy: ctx.economy,
       augmentStats: ctx.board?.augments, patch: ctx.board?.version,
     });
@@ -109,7 +109,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     candidates.replaceChildren(legend, ...checks);
     candidates.hidden = !checks.length;
     renderLineupList(direction, ranked, {
-      allowUnmatched: true,
+      allowUnmatched: true, onSelect, selectedId: ctx.lineupChoice?.id,
     });
     const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
     if (nextKey === picksKey) return;

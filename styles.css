@@ -297,7 +297,7 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
   border: 1px solid #334155;
 }
 
-#openingDialog {
+#openingDialog, #lineupPlan {
   width: min(630px, calc(100% - 32px));
   max-height: calc(100dvh - 40px);
   overflow: auto;
@@ -308,7 +308,7 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
   padding: clamp(14px, 4vw, 24px);
 }
 
-#openingDialog::backdrop { background: #080d16b8; }
+#openingDialog::backdrop, #lineupPlan::backdrop { background: #080d16b8; }
 .opening-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .opening-header h2 { margin: 0; }
 .opening-notice {
@@ -326,6 +326,22 @@ h2.mt { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); 
   line-height: 1.4;
 }
 .opening-notice p { margin: 0; }
+.opening-notice-lineups:not([hidden]) { display: grid; gap: 3px; margin-top: 6px; }
+.lineup-select {
+  color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  padding: 3px 7px; min-height: 25px; border-radius: 5px; cursor: pointer;
+}
+.lineup-select:hover, .lineup-select[aria-pressed="true"] { border-color: var(--accent); }
+.opening-notice-lineups .lineup-select {
+  text-align: start; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ranked-lineups .lineup-select { margin-inline-start: 8px; font-size: 12px; }
+.lineup-code { margin: 12px 0; }
+.lineup-code label { display: block; margin-bottom: 4px; }
+.lineup-code textarea {
+  display: block; width: 100%; padding: 6px 8px; margin-bottom: 6px; resize: vertical;
+  color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px;
+}
 .opening-notice-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-top: 4px; }
 .opening-notice-actions button {
   min-height: 28px; padding: 3px 7px; border: 1px solid var(--line); border-radius: 5px;

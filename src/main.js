@@ -5,11 +5,11 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=augment-speed';
+import { bindScreenReader } from './ui/screen-reader.js?v=lineup-picker';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=augment-speed';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=lineup-augment-guides';
-import { bindOpeningPrompts } from './ui/opening-prompts.js?v=augment-speed';
-import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-prompts';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=lineup-picker';
+import { bindOpeningPrompts } from './ui/opening-prompts.js?v=lineup-picker';
+import { bindRecommendationFloat } from './ui/recommendation-float.js?v=lineup-picker';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
@@ -23,7 +23,7 @@ import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=lineup-augm
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=opponent-artifacts';
 import { validateComps } from './adapters/provider.js';
-import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
+import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=lineup-picker';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=augment-speed';
 
 const el = (id) => document.getElementById(id);
@@ -62,11 +62,13 @@ const state = {
   openingCity: '',
   economy: '',
   openingAugment: '',
+  lineupChoice: null,
   opponentBoards: new Map(),
   snap: { file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false },
 };
 
 async function loadBoard() {
+  resetLineupChoice();
   state.opponentBoards.clear();
   scout?.reset();
   screenReader?.reset();
@@ -110,6 +112,7 @@ async function loadBoard() {
 }
 
 async function loadSet(setNum) {
+  resetLineupChoice();
   state.opponentBoards.clear();
   scout?.reset();
   screenReader?.reset();
@@ -228,11 +231,16 @@ function renderSelected() {
   el('selCount').textContent = `${list.length} 选 / 人口 ${state.level}`;
 }
 
-function renderCompGuide(comp) {
-  const { board, units, rolls, transition, transitionStages, adaptiveTransitions } = buildCompGuide(
+function currentCompGuide(comp) {
+  return buildCompGuide(
     comp, state.setData, state.board?.version,
     { selected: state.selected, owned: state.owned, ownedItems: state.ownedItems, itemsData: state.items },
   );
+}
+
+function renderCompGuide(comp) {
+  const guide = currentCompGuide(comp);
+  const { board, units, rolls } = guide;
   const version = state.setData.source?.ddragonVersion;
   const items = new Map([...(state.items?.items || []), ...(state.items?.components || [])].map(item => [item.id, item.name]));
   const rows = board.map((row, i) => `<div class="guide-rank" aria-label="第 ${i + 1} 排">
@@ -253,44 +261,8 @@ function renderCompGuide(comp) {
     `<li><strong>${level} 级</strong> · ${targets.map(unit => `${unit.stars >= 3 ? '追' : unit.cost >= 4 ? '搜' : '顺手补'} ${esc(unit.name)} ${unit.cost}费 ${unit.stars}星${unit.sourceStars ? '' : '参考'}`).join('、')}</li>`).join('');
   const riftbeastShop = comp.aimTraits?.DA_Riftbeast18 >= 5
     && rolls.some(({ targets }) => targets.some(unit => unit.traits?.includes('DA_Riftbeast18')));
-  const traitLine = (traits) => traits.map(trait => `${trait.tier} ${esc(trait.name)}`).join(' · ');
-  const source = transitionStages[0]?.source;
-  const transitionBoards = transitionStages.map(stage => `<li>
-    <strong>${stage.level} 人口</strong>
-    <div class="guide-transition-units">
-      ${stage.units.map(unit => `<span>${iconHtml(unit, version, 22)}${esc(unit.name)}</span>`).join('')}
-    </div>
-    <p class="fine">${traitLine(stage.traits) || '暂无激活羁绊'}</p>
-  </li>`).join('');
-  const adaptiveBoards = adaptiveTransitions.map(stage => `<li>
-    <strong>${stage.level} 人口</strong> <span class="fine">已持有 ${stage.held.length}/${stage.level}</span>
-    <div class="guide-transition-units">
-      ${stage.units.map(unit => `<span data-held="${stage.held.includes(unit.id)}">${iconHtml(unit, version, 22)}${esc(unit.name)}</span>`).join('')}
-    </div>
-    <p class="fine">${traitLine(stage.traits) || '暂无激活羁绊'}</p>
-    ${stage.units.length < stage.level ? `<p class="fine">还有 ${stage.level - stage.units.length} 个位置可补</p>` : ''}
-    ${stage.gear.length ? `<ul class="transition-gear">
-      ${stage.gear.map(row => `<li>${esc(row.item.name)} → ${esc(row.unit.name)} · ${row.state === 'done' ? '已持有' : row.state === 'ready' ? '散件可合成' : `还缺 ${esc(items.get(row.missing) || '1 件散件')}`}${row.target.id !== row.unit.id ? ` · 可过渡给 ${esc(row.target.name)}` : ''}</li>`).join('')}
-    </ul>` : ''}
-  </li>`).join('');
   return `<section class="comp-guide" aria-label="阵容攻略">
-    <section class="guide-transition">
-      <h3>过渡阵容</h3>
-      ${adaptiveBoards ? `
-        <h4>按当前来牌和装备调整</h4>
-        <ul class="guide-transition-stages adaptive-transition-stages">${adaptiveBoards}</ul>
-        <h4>原始参考</h4>
-      ` : ''}
-
-      ${source ? `
-        <p class="fine">攻略推演 · <a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)} ${esc(source.patch)}</a></p>
-        <ul class="guide-transition-stages">${transitionBoards}</ul>
-      ` : `
-        <p class="fine">低费棋子推演</p>
-        <p>${transition.units.map(unit => esc(unit.name)).join('、') || '可先用已成型的低费羁绊过渡。'}</p>
-        ${transition.traits.length ? `<p class="fine">${traitLine(transition.traits)}</p>` : ''}
-      `}
-    </section>
+    ${renderTransitionGuide(guide)}
     <div class="guide-layout">
       <div class="guide-position">
         <h3>参考站位</h3>
@@ -309,7 +281,49 @@ function renderCompGuide(comp) {
       <thead><tr><th scope="col">棋子</th><th scope="col">目标星级</th><th scope="col">推荐装备</th>${hasArtifacts ? '<th scope="col">奥恩神器</th>' : ''}</tr></thead>
       <tbody>${targets}</tbody>
     </table>
-    ${comp.teamCode ? '<button type="button" class="ghost" data-copy-team>复制云顶阵容码</button><p class="fine copy-status" role="status"></p>' : ''}
+    ${comp.teamCode ? `<button type="button" class="ghost" data-copy-team>复制${gameCodeLabel(comp)}</button><p class="fine copy-status" role="status"></p>` : ''}
+  </section>`;
+}
+
+function renderTransitionGuide({ transition, transitionStages, adaptiveTransitions }) {
+  const version = state.setData.source?.ddragonVersion;
+  const components = new Map((state.items?.components || []).map(item => [item.id, item.name]));
+  const traitLine = (traits) => traits.map(trait => `${trait.tier} ${esc(trait.name)}`).join(' · ');
+  const source = transitionStages[0]?.source;
+  const transitionBoards = transitionStages.map(stage => `<li>
+    <strong>${stage.level} 人口</strong>
+    <div class="guide-transition-units">
+      ${stage.units.map(unit => `<span>${iconHtml(unit, version, 22)}${esc(unit.name)}</span>`).join('')}
+    </div>
+    <p class="fine">${traitLine(stage.traits) || '暂无激活羁绊'}</p>
+  </li>`).join('');
+  const adaptiveBoards = adaptiveTransitions.map(stage => `<li>
+    <strong>${stage.level} 人口</strong> <span class="fine">已持有 ${stage.held.length}/${stage.level}</span>
+    <div class="guide-transition-units">
+      ${stage.units.map(unit => `<span data-held="${stage.held.includes(unit.id)}">${iconHtml(unit, version, 22)}${esc(unit.name)}</span>`).join('')}
+    </div>
+    <p class="fine">${traitLine(stage.traits) || '暂无激活羁绊'}</p>
+    ${stage.units.length < stage.level ? `<p class="fine">还有 ${stage.level - stage.units.length} 个位置可补</p>` : ''}
+    ${stage.gear.length ? `<ul class="transition-gear">
+      ${stage.gear.map(row => `<li>${esc(row.item.name)} → ${esc(row.unit.name)} · ${row.state === 'done' ? '已持有' : row.state === 'ready' ? '散件可合成' : `还缺 ${esc(components.get(row.missing) || '1 件散件')}`}${row.target.id !== row.unit.id ? ` · 可过渡给 ${esc(row.target.name)}` : ''}</li>`).join('')}
+    </ul>` : ''}
+  </li>`).join('');
+  return `<section class="guide-transition">
+      <h3>过渡阵容</h3>
+      ${adaptiveBoards ? `
+        <h4>按当前来牌和装备调整</h4>
+        <ul class="guide-transition-stages adaptive-transition-stages">${adaptiveBoards}</ul>
+        <h4>原始参考</h4>
+      ` : ''}
+
+      ${source ? `
+        <p class="fine">攻略推演 · <a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)} ${esc(source.patch)}</a></p>
+        <ul class="guide-transition-stages">${transitionBoards}</ul>
+      ` : `
+        <p class="fine">低费棋子推演</p>
+        <p>${transition.units.map(unit => esc(unit.name)).join('、') || '可先用已成型的低费羁绊过渡。'}</p>
+        ${transition.traits.length ? `<p class="fine">${traitLine(transition.traits)}</p>` : ''}
+      `}
   </section>`;
 }
 
@@ -325,11 +339,69 @@ function openingContext() {
   if (!state.setData) return null;
   const cities = state.sourceId === 'datatft' && state.setData.set === 18 ? S18_OPENINGS : OPENING_EFFECTS;
   const augments = state.augs?.augments || [];
+  const ranked = state.ranked || [];
+  const choice = state.lineupChoice;
+  const chosenRow = choice && ranked.find(row => row.comp.id === choice.id);
   return {
-    ...state, itemsData: state.items, cities, augments, ranked: state.ranked || [],
+    ...state, itemsData: state.items, cities, augments, ranked,
+    augmentRanked: choice ? [{ ...chosenRow, comp: choice, viable: true }] : ranked,
     city: cities.find(row => row.id === state.openingCity),
     chosenAugments: augments.filter(row => state.chosen.has(row.id)),
   };
+}
+
+function gameCodeLabel(comp) {
+  return comp.rank?.source === 'dataj.cc' ? '金铲铲阵容码' : '云顶阵容码';
+}
+
+function resetLineupChoice() {
+  state.lineupChoice = null;
+  el('showLineupPlan').hidden = true;
+  if (el('lineupPlan').open) el('lineupPlan').close();
+}
+
+function renderLineupPlan() {
+  const comp = state.lineupChoice;
+  if (!comp) return;
+  el('lineupPlanTitle').textContent = comp.name;
+  el('lineupPlanCode').hidden = !comp.teamCode;
+  el('lineupPlanNoCode').hidden = Boolean(comp.teamCode);
+  el('lineupCodeLabel').textContent = gameCodeLabel(comp);
+  const code = el('lineupCode');
+  if (code.value !== (comp.teamCode || '')) {
+    code.value = comp.teamCode || '';
+    el('lineupCopyStatus').textContent = '';
+  }
+  el('lineupPlanTransition').innerHTML = renderTransitionGuide(currentCompGuide(comp));
+}
+
+function showLineupPlan() {
+  if (!state.lineupChoice) return;
+  if (el('openingDialog').open) el('openingDialog').close();
+  renderLineupPlan();
+  if (!el('lineupPlan').open) el('lineupPlan').showModal();
+}
+
+function selectLineup(comp) {
+  state.lineupChoice = comp;
+  el('lineupCopyStatus').textContent = '';
+  renderSide();
+  showLineupPlan();
+}
+
+async function copyTeamCode(code, feedback, field) {
+  if (!code) return;
+  try {
+    await navigator.clipboard.writeText(code);
+    if (!field || field.value === code) feedback.textContent = '阵容码已复制。';
+  } catch {
+    if (!field) feedback.textContent = code;
+    else if (field.value === code) {
+      field.focus();
+      field.select();
+      feedback.textContent = '已选中阵容码，可手动复制。';
+    }
+  }
 }
 
 function renderResults() {
@@ -426,6 +498,9 @@ function renderSide() {
   renderSnapshotLineups();
   openingAdvice?.draw();
   openingPrompts?.updateInventory(openingContext());
+  openingPrompts?.draw();
+  el('showLineupPlan').hidden = !state.lineupChoice;
+  if (el('lineupPlan').open) renderLineupPlan();
   scout?.render();
   if (state.ranked) screenReader?.refreshDirection();
   resultFloat?.refresh();
@@ -494,7 +569,7 @@ function renderHexes(top) {
   const list = rankAugments({
     setData: state.setData,
     augments: state.augs.augments.filter(aug => inTier(aug.id)),
-    ranked: state.ranked || [],
+    ranked: openingContext()?.augmentRanked || [],
     selected: state.selected,
     chosen: state.chosen,
     city: openingContext()?.city,
@@ -866,6 +941,12 @@ function clearSnapshot() {
 }
 
 function bind() {
+  el('showLineupPlan').onclick = showLineupPlan;
+  el('changeLineupChoice').onclick = () => {
+    el('lineupPlan').close();
+    openingAdvice.show();
+  };
+  el('copyLineupCode').onclick = () => copyTeamCode(state.lineupChoice?.teamCode, el('lineupCopyStatus'), el('lineupCode'));
   matchSamples = bindMatchSamples({
     panel: el('matchSamples'), input: el('matchSampleFiles'), clear: el('clearMatchSamples'),
     status: el('matchSampleStatus'), output: el('matchSampleOutput'),
@@ -916,6 +997,7 @@ function bind() {
       openingPrompts.draw();
     },
     onChoices: choices => openingPrompts.updateAugments(choices),
+    onSelect: selectLineup,
     onTier(tier) {
       const filter = el('augmentTierFilter');
       if (filter.value === tier) return;
@@ -924,9 +1006,10 @@ function bind() {
     },
   });
   openingPrompts = bindOpeningPrompts({
-    notice: el('openingNotice'), message: el('openingNoticeText'), review: el('openingNoticeReview'),
+    notice: el('openingNotice'), message: el('openingNoticeText'), lineups: el('openingNoticeLineups'), review: el('openingNoticeReview'),
     dismiss: el('openingNoticeDismiss'), dialog: el('openingDialog'), home: el('screenStatus'),
     open: () => openingAdvice.show(), onMessage: text => resultFloat?.setNotice(text),
+    ranked: () => state.ranked || [], onSelect: selectLineup, selectedId: () => state.lineupChoice?.id,
   });
   screenReader = bindScreenReader({
     start: el('screenStart'), finish: el('screenFinish'), stop: el('screenStop'), photo: el('screenPhoto'),
@@ -939,6 +1022,7 @@ function bind() {
         opening: { cities: context.cities, augments: context.augments },
         readShop: state.sourceId === 'datatft',
         ranked: () => state.ranked || [],
+        onSelect: selectLineup, selectedId: () => state.lineupChoice?.id,
       };
     },
     isOpponentView: () => Boolean(el('scoutView').value),
@@ -956,7 +1040,7 @@ function bind() {
   });
   resultFloat = bindRecommendationFloat({
     toggle: el('openResultFloat'), panel: el('resultFloat'), status: el('screenStatus'),
-    ranked: () => state.ranked || [],
+    ranked: () => state.ranked || [], onSelect: selectLineup, selectedId: () => state.lineupChoice?.id,
   });
   scout = bindOpponentScout({
     view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'), iconPhoto: el('scoutIconPhoto'),
@@ -1055,12 +1139,7 @@ function bind() {
       const code = state.comps.find(comp => comp.id === id)?.teamCode;
       const feedback = a.querySelector('.copy-status');
       if (!code || !feedback) return;
-      try {
-        await navigator.clipboard.writeText(code);
-        feedback.textContent = '阵容码已复制。';
-      } catch {
-        feedback.textContent = code;
-      }
+      await copyTeamCode(code, feedback);
       return;
     }
     if (!e.target.closest('.comp-head')) return;

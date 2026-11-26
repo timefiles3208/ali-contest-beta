@@ -1,4 +1,4 @@
-import { renderLineupList } from './lineup-list.js?v=opening-deadline';
+import { renderLineupList } from './lineup-list.js?v=lineup-picker';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
 import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=augment-speed';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
@@ -7,7 +7,9 @@ const FRAME_INTERVAL_MS = 400;
 const SCOUT_STAGE_INTERVAL_MS = 950;
 const DIRECTION_FALLBACK_MS = 16_000;
 const CAPTURE_LIMIT_MS = 180_000;
-const DIRECTION_OPTIONS = { label: '阵容方向', link: true, allowUnmatched: true };
+const directionOptions = context => ({
+  label: '阵容方向', link: true, allowUnmatched: true, onSelect: context.onSelect, selectedId: context.selectedId(),
+});
 
 function toCanvas(image, width, height, maxSize = 1600) {
   const canvas = document.createElement('canvas');
@@ -84,7 +86,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   }
 
   function showDirection(context, note = '已按确认的开局条件匹配当前阵容库。') {
-    const hasLineups = renderLineupList(result, context.ranked(), DIRECTION_OPTIONS);
+    const hasLineups = renderLineupList(result, context.ranked(), directionOptions(context));
     result.hidden = !hasLineups;
     if (!hasLineups) {
       say('请确认手上棋子、装备或城邦效果后查看阵容方向。');
@@ -312,7 +314,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     refreshDirection() {
       if (result.hidden) return;
       const context = getContext();
-      result.hidden = !context || !renderLineupList(result, context.ranked(), DIRECTION_OPTIONS);
+      result.hidden = !context || !renderLineupList(result, context.ranked(), directionOptions(context));
     },
   };
 }

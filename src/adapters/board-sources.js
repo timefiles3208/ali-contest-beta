@@ -1,3 +1,5 @@
+import { datajTeamCodes } from '../data/s18.18.7.dataj-team-codes.js';
+
 export const BOARD_SOURCES = [
   { id: 'datatft', host: 'datatft.com', game: '云顶之弈', file: './src/data/datatft/s18.18.7.comps.json', ratingsFile: './src/data/datatft/s18.18.7.ratings.json' },
   { id: 'dataj', host: 'dataj.cc', game: '金铲铲之战', file: './src/data/dataj/s18.18.7.json' },
@@ -59,7 +61,8 @@ export function adaptBoard(raw, { source, setData, items, ratings }) {
       id: `${config.id}-${row.id}`, name: row.title, units, items: gear, itemBuilds, stars, aimTraits, traits: Object.keys(aimTraits),
       core: [...new Set(main.length ? main : units.slice(0, 2))],
       carry: [...new Set(carry)], level: Math.min(10, units.length),
-      teamCode: source === 'datatft' && typeof row.tftCode === 'string' ? row.tftCode : '',
+      teamCode: source === 'dataj' && raw.version === '18.7' ? datajTeamCodes[row.id] || ''
+        : source === 'datatft' && typeof row.tftCode === 'string' ? row.tftCode : '',
       strength: top4 == null ? 0.7 : Math.max(0.55, Math.min(0.85, 0.7 + (top4 - 55) * 0.012)),
       rank: {
         source: config.host, boardTitle: row.title, tier: stats.tier || null,

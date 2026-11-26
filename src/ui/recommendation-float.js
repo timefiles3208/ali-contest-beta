@@ -1,6 +1,6 @@
-import { renderLineupList } from './lineup-list.js?v=opening-deadline';
+import { renderLineupList } from './lineup-list.js?v=lineup-picker';
 
-export function bindRecommendationFloat({ toggle, panel, status, ranked }) {
+export function bindRecommendationFloat({ toggle, panel, status, ranked, onSelect, selectedId }) {
   const parent = panel.parentNode;
   const controls = document.createElement('div');
   controls.className = 'float-controls';
@@ -28,7 +28,10 @@ export function bindRecommendationFloat({ toggle, panel, status, ranked }) {
 
   function refresh() {
     if (panel.hidden) return;
-    renderLineupList(body, ranked(), { label: '阵容方向', emptyHint: status.textContent, allowUnmatched: true });
+    renderLineupList(body, ranked(), {
+      label: '阵容方向', emptyHint: status.textContent, allowUnmatched: true,
+      onSelect: comp => { if (pip) window.focus(); onSelect(comp); }, selectedId: selectedId(),
+    });
   }
   function restore() {
     pip = null;
