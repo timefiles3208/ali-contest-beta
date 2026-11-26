@@ -26,7 +26,8 @@ function routeEvidence(comp, units, traits, profile, patch, unitById) {
   const linkedAugments = profile.augments.filter(aug => aug.traits.some(id => comp.aimTraits?.[id])
     || aug.units.some(id => comp.core?.includes(id) || comp.carry?.includes(id)));
   const dedicated = linkedAugments.some(aug => aug.grantsTraits.some(id => comp.aimTraits?.[id]));
-  const boardHits = hits + traitMatches.length;
+  const multipleCores = (comp.carry || []).filter(id => (profile.unitCopies.get(id) ?? 0) >= 2);
+  const boardHits = hits + traitMatches.length + multipleCores.length;
   const hasBoardEvidence = boardHits >= 2 || (linkedAugments.length && (boardHits || dedicated));
   const hasRouteEvidence = core || carries || opening.length >= 2 || traitMatches.length || linkedAugments.length;
   const equipped = profile.equipment.some(item => item.unit && comp.units.includes(item.unit));
@@ -57,11 +58,12 @@ function routeEvidence(comp, units, traits, profile, patch, unitById) {
     || (reroll && profile.benefits.grantsRolls) ? 2 : 0;
   const evidence = final.length * 2 + core * 4 + carries * 3 + opening.length * 2
     + traitMatches.reduce((sum, [, level]) => sum + Math.min(level, 5), 0)
-    + Math.min(8, linkedAugments.length * 5) + economy + economicAugment + equipmentScore;
+    + Math.min(8, linkedAugments.length * 5) + economy + economicAugment + equipmentScore
+    + Math.min(6, multipleCores.reduce((sum, id) => sum + profile.unitCopies.get(id), 0));
   return { comp, evidence, equippedMatch };
 }
 
-export function predictOpponentRoutes(comps, { units = [], traits = [], gold, economy, augments = [], artifacts = [] }, patch, { setData, itemsData, sourceItems } = {}) {
+export function predictOpponentRoutes(comps, { units = [], traits = [], gold, economy, augments = [], artifacts = [], unitCopies = new Map() }, patch, { setData, itemsData, sourceItems } = {}) {
   const knownTraits = new Set(traits);
   const roster = setData?.units || [];
   const unitById = new Map(roster.map(unit => [unit.id, unit]));
@@ -69,11 +71,11 @@ export function predictOpponentRoutes(comps, { units = [], traits = [], gold, ec
   const equipmentById = new Map(available.map(item => [item.id, item]));
   const equipment = artifacts.filter(item => equipmentById.has(item.id) && (!item.unit || unitById.has(item.unit)))
     .map(item => ({ ...item, baseId: equipmentById.get(item.id).baseId }));
-  const knownUnits = new Set([...units, ...equipment.map(item => item.unit).filter(Boolean)]);
+  const knownUnits = new Set([...units, ...unitCopies.keys(), ...equipment.map(item => item.unit).filter(Boolean)]);
   const traitsByName = new Map((setData?.traits || []).map(row => [row.name, row.id]));
   const unitsByName = new Map(roster.map(row => [row.name, row.id]));
   const profile = {
-    equipment, sourceItems,
+    equipment, sourceItems, unitCopies,
     economy: economy || opponentEconomy(gold),
     benefits: economyBenefits(augments.map(aug => aug.desc || '').join('\n')),
     augments: augments.map(aug => ({
@@ -90,21 +92,29 @@ export function predictOpponentRoutes(comps, { units = [], traits = [], gold, ec
     .slice(0, 3);
 }
 
-export function opponentPressure(comp, boards) {
+export function opponentPressure(comp, boards, chase = []) {
   const carries = new Set(comp.carry || []);
   let opponents = 0;
   let pressure = 0;
   let equippedOpponents = 0;
-  for (const { routes } of boards.values()) {
+  let contestedCopies = 0;
+  for (const { routes, unitCopies } of boards.values()) {
     const index = routes.findIndex(({ comp: other }) => other.id === comp.id || other.carry?.some(id => carries.has(id)));
-    if (index < 0) continue;
+    const copies = Math.max(0, ...chase.map(unit => unitCopies?.get(unit.id) ?? 0));
+    if (index < 0 && copies < 2) continue;
     opponents++;
-    const firstWithEvidence = routes.findIndex(row => row.evidence === routes[index].evidence);
-    pressure += RISK[firstWithEvidence];
+    if (index >= 0) {
+      const firstWithEvidence = routes.findIndex(row => row.evidence === routes[index].evidence);
+      pressure += RISK[firstWithEvidence];
+    }
+    if (copies >= 2) {
+      contestedCopies += copies;
+      pressure += Math.min(8, (copies - 1) * 2);
+    }
     if (routes.some(row => row.comp.id === comp.id && row.equippedMatch)) {
       equippedOpponents++;
       pressure += EQUIPPED_CONTEST_DISCOUNT;
     }
   }
-  return { opponents, discount: Math.min(28, pressure), ...(equippedOpponents ? { equippedOpponents } : {}) };
+  return { opponents, discount: Math.min(28, pressure), ...(equippedOpponents ? { equippedOpponents } : {}), ...(contestedCopies ? { contestedCopies } : {}) };
 }

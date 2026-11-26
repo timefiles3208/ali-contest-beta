@@ -1,21 +1,21 @@
-import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opening-deadline';
+import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opening-decision';
 import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=opponent-equipment';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=lineup-picker';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=opponent-equipment';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=opponent-equipment';
-import { bindOpeningPrompts } from './ui/opening-prompts.js?v=artifact-augment-notice';
-import { bindRecommendationFloat } from './ui/recommendation-float.js?v=lineup-picker';
+import { bindScreenReader } from './ui/screen-reader.js?v=opening-decision';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=opening-decision';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=opening-decision';
+import { bindOpeningPrompts } from './ui/opening-prompts.js?v=opening-decision';
+import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-decision';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=opponent-equipment';
+import { rankOpening } from './engine/opening.js?v=opening-decision';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
@@ -346,6 +346,7 @@ function openingContext() {
     ...state, itemsData: state.items, cities, augments, ranked,
     augmentRanked: choice ? [{ ...chosenRow, comp: choice, viable: true }] : ranked,
     city: cities.find(row => row.id === state.openingCity),
+    sourceItems: state.sourceId === 'dataj' ? state.board?.items : undefined,
     chosenAugments: augments.filter(row => state.chosen.has(row.id)),
   };
 }
@@ -1000,14 +1001,13 @@ function bind() {
       if (state.setData) renderResults();
     },
     onPick(id) {
-      const comp = state.lineupChoice || state.ranked?.find(row => row.viable)?.comp || state.ranked?.[0]?.comp;
       if (state.openingAugment) state.chosen.delete(state.openingAugment);
       state.openingAugment = id;
       state.chosen.add(id);
       openingPrompts.finish();
       renderResults();
       if (!el('screenFinish').disabled) el('screenFinish').click();
-      showEquipmentAugmentNotice(id, comp);
+      showEquipmentAugmentNotice(id, state.lineupChoice || state.ranked?.find(row => row.viable)?.comp || state.ranked?.[0]?.comp);
     },
     onShow(stage) {
       if (stage === '2-1') openingPrompts.beginAugments();
@@ -1061,6 +1061,7 @@ function bind() {
   });
   scout = bindOpponentScout({
     view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'), iconPhoto: el('scoutIconPhoto'),
+    heldUnit: el('scoutUnit'), copies: el('scoutCopies'),
     economy: el('scoutEconomy'), augment: el('scoutAugment'), saveProfile: el('scoutSaveProfile'),
     artifact: el('scoutArtifact'), artifactHolder: el('scoutArtifactHolder'), removeArtifact: el('scoutRemoveArtifact'),
     clear: el('scoutClear'), clearAll: el('scoutClearAll'), status: el('scoutStatus'), summary: el('scoutSummary'),

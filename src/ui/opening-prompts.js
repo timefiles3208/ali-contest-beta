@@ -1,5 +1,5 @@
 import { openingUnitDirection } from '../engine/opening-prompts.js';
-import { lineupSelectButton, recommendedLineups } from './lineup-list.js?v=lineup-picker';
+import { lineupSelectButton, recommendedLineups } from './lineup-list.js?v=opening-decision';
 
 const NOTICE_DURATION_MS = 8_000;
 const AUGMENT_NOTICE = '2-1 海克斯选择，正在识别选项。';

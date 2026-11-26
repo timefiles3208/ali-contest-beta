@@ -1,4 +1,4 @@
-import { renderLineupList } from './lineup-list.js?v=lineup-picker';
+import { renderLineupList } from './lineup-list.js?v=opening-decision';
 
 export function bindRecommendationFloat({ toggle, panel, status, ranked, onSelect, selectedId }) {
   const parent = panel.parentNode;

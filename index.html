@@ -73,8 +73,10 @@
         <button id="scoutClearAll" class="ghost" type="button" disabled>清空本局对手记录</button>
       </div>
       <details class="snap-model">
-        <summary>补充对手经济、海克斯和装备</summary>
+        <summary>补充对手来牌、经济、海克斯和装备</summary>
         <div class="snap-model-fields">
+          <label>已确认棋子 <select id="scoutUnit" disabled><option value="">选择棋子</option></select></label>
+          <label>持有张数 <input id="scoutCopies" type="number" min="0" max="9" step="1" placeholder="二星算 3 张，0 清除" disabled /></label>
           <label>经济预估
             <select id="scoutEconomy" disabled>
               <option value="">沿用记录</option><option value="low">偏低</option>
@@ -105,6 +107,7 @@
       </label>
       <label>持有棋子 <select id="openingUnit"></select></label>
       <button id="openingToggleUnit" class="ghost" type="button">登记或移除棋子</button>
+      <label>已选棋子的持有张数 <input id="openingUnitCopies" type="number" min="1" max="9" step="1" disabled /></label>
       <label>手上装备 <select id="openingItem"></select></label>
       <div class="opening-item-actions">
         <button id="openingAddItem" class="ghost" type="button">登记装备</button>
@@ -120,9 +123,8 @@
         <label>当前等级 <input id="openingRollLevel" type="number" min="1" max="10" step="1" placeholder="1–10" /></label>
         <label>可用金币 <input id="openingRollGold" type="number" min="0" max="200" step="1" placeholder="0–200" /></label>
         <label>当前等级已累积经验 <input id="openingRollXp" type="number" min="0" max="68" step="1" placeholder="默认 0" /></label>
-        <label>上方所选棋子的持有张数 <input id="openingUnitCopies" type="number" min="1" max="9" step="1" disabled /></label>
       </div>
-      <p class="fine">登记后默认持有 1 张，二星算 3 张、三星算 9 张。概率只覆盖首位主 C，按标准商店和付费刷新估算。已观察到的同名对手棋子按每家 1 张计入。</p>
+      <p class="fine">登记后默认持有 1 张，二星算 3 张、三星算 9 张。概率只覆盖首位主 C，按标准商店和付费刷新估算。优先使用已确认的对手张数，仅识别到名称时按每家至少 1 张计入。</p>
       <p id="openingHud" class="fine" hidden></p>
       <button id="openingApplyHud" class="ghost" type="button" hidden>应用识别数值</button>
     </fieldset>
@@ -302,6 +304,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=opponent-equipment"></script>
+<script type="module" src="./src/main.js?v=opening-decision"></script>
 </body>
 </html>

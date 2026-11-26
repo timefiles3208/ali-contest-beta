@@ -1,11 +1,13 @@
-import { renderLineupList } from './lineup-list.js?v=lineup-picker';
-import { rankOpeningAugments } from '../engine/opening.js?v=opponent-equipment';
+import { renderLineupList } from './lineup-list.js?v=opening-decision';
+import { rankOpeningAugments } from '../engine/opening.js?v=opening-decision';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
+import { artifactOptions, radiantOptions } from '../engine/artifacts.js?v=opponent-equipment';
 
 export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier, onShow, onChoices, onSelect }) {
   let detectedUnits = [];
   let detectedShop;
   let catalogIdentity;
+  let openingEquipment = [];
   let picksKey;
   let listTier;
   let previewing = false;
@@ -52,10 +54,13 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     if (catalogIdentity !== setData) {
       catalogIdentity = setData;
       options(city, cities, '未确认');
+      const patch = ctx.board?.version;
+      openingEquipment = [...(itemsData?.items || []), ...artifactOptions(patch, ctx.sourceItems),
+        ...radiantOptions(patch, itemsData, ctx.sourceItems)];
       options(item, [
         ...(itemsData?.components || []).map(row => ({ ...row, name: `${row.name} · 散件` })),
-        ...(itemsData?.items || []),
-      ], '选择散件或成装');
+        ...openingEquipment,
+      ], '选择装备');
       options(unitSelect, setData.units, '选择棋子');
       listTier = undefined;
     }
@@ -89,7 +94,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     const unitNames = setData.units.filter(unit => selected.has(unit.id)).map(unit => unit.name);
     const parts = (itemsData?.components || []).filter(row => owned.get(row.id))
       .map(row => `${row.name}×${owned.get(row.id)}`);
-    const itemNames = (itemsData?.items || []).filter(row => ownedItems.has(row.id)).map(row => row.name);
+    const itemNames = openingEquipment.filter(row => ownedItems.has(row.id)).map(row => row.name);
     ownedSummary.textContent = [
       unitNames.length ? `棋子 ${unitNames.join('、')}` : '尚未登记棋子',
       parts.length && `散件 ${parts.join('、')}`,

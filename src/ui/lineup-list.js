@@ -1,4 +1,5 @@
 import { rolldownSummary } from '../engine/rolldown.js';
+import { openingDecision } from '../engine/opening.js?v=opening-decision';
 
 export function recommendedLineups(ranked = [], { allowUnmatched = false } = {}) {
   return allowUnmatched || ranked.some(row => row.viable || row.hasOpponentEvidence || row.planning) ? ranked.slice(0, 3) : [];
@@ -50,13 +51,19 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
 
   const heading = document.createElement('strong');
   heading.textContent = label;
+  const planning = rows.some(row => row.planning);
+  const decision = openingDecision(rows);
+  const status = document.createElement('p');
+  status.className = 'fine opening-decision';
+  status.textContent = decision.label;
   const list = document.createElement('ol');
   list.className = 'ranked-lineups';
   for (const { comp, score, reasons, viable, hasOpponentEvidence, formation, roll } of rows) {
     const row = document.createElement('li');
     row.dataset.comp = comp.id;
     const name = document.createElement('strong');
-    name.textContent = comp.name;
+    const role = decision.comp?.id === comp.id ? '主推' : '备选';
+    name.textContent = (!planning && decision.comp ? role + ' · ' : '') + comp.name;
     const stats = document.createElement('span');
     stats.textContent = ` · ${comp.plannedEmblem && comp.rank ? '原榜单' : '榜单'} ${comp.rank?.tier || '未评级'} · 适配 ${score} 分 · 最终阵容 ${comp.level} 人口`;
     row.append(name, stats);
@@ -90,7 +97,7 @@ export function renderLineupList(container, ranked, { label = '推荐阵容', li
     }
     list.append(row);
   }
-  container.replaceChildren(heading, list);
+  container.replaceChildren(heading, ...(planning ? [] : [status]), list);
   if (link) {
     const more = document.createElement('a');
     more.href = '#comps';
