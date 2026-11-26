@@ -1,5 +1,8 @@
 import { openingUnitDirection } from '../engine/opening-prompts.js';
 
+const NOTICE_DURATION_MS = 8_000;
+const AUGMENT_NOTICE = '2-1 海克斯选择，正在识别选项。';
+
 export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, home, open, onMessage }) {
   const inline = dialog.querySelector('.opening-header');
   const prompted = new Set();
@@ -7,18 +10,34 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
   let text = '';
   let activeUnit;
   let dismissal = false;
+  let expired = false;
+  let hasChoices = false;
+  let timer;
   let lastInventory;
 
   function draw() {
     const anchor = dialog.open ? inline : home;
     if (notice.previousElementSibling !== anchor) anchor.after(notice);
     review.hidden = dialog.open;
-    notice.hidden = dismissal || !text;
+    notice.hidden = dismissal || expired || !text;
     const visibleMessage = notice.hidden ? '' : text;
     if (message.textContent !== visibleMessage) {
       message.textContent = visibleMessage;
       onMessage(visibleMessage);
     }
+  }
+
+  function scheduleHide() {
+    clearTimeout(timer);
+    expired = false;
+    timer = setTimeout(() => {
+      if (notice.contains(document.activeElement)) {
+        scheduleHide();
+        return;
+      }
+      expired = true;
+      draw();
+    }, NOTICE_DURATION_MS);
   }
 
   function updateInventory(context) {
@@ -32,6 +51,7 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
       prompted.add(activeUnit);
       dismissal = false;
       text = `已持有${hint.unit.name}，可考虑「${hint.row.comp.name}」。`;
+      scheduleHide();
     } else if (activeUnit && !context.selected.has(activeUnit)) {
       text = '';
       activeUnit = undefined;
@@ -43,7 +63,9 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
     if (phase === 'augments') return;
     phase = 'augments';
     dismissal = false;
-    text = '进入 2-1 海克斯选择。先查看阵容方向，核对本轮选项后再选。';
+    hasChoices = false;
+    text = AUGMENT_NOTICE;
+    scheduleHide();
     draw();
   }
 
@@ -51,20 +73,27 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
     if (phase !== 'augments') return;
     text = choices.length
       ? `2-1 海克斯 · 已匹配 ${choices.length} 项，优先考虑「${choices[0].aug.name}」。`
-      : '进入 2-1 海克斯选择。先查看阵容方向，核对本轮选项后再选。';
+      : AUGMENT_NOTICE;
+    if (choices.length && !hasChoices && !dismissal) {
+      hasChoices = true;
+      scheduleHide();
+    }
     draw();
   }
 
   function finish() {
+    clearTimeout(timer);
     phase = 'finished';
     text = '';
     draw();
   }
 
   function reset() {
+    clearTimeout(timer);
     phase = 'early';
     text = '';
     dismissal = false;
+    expired = false;
     activeUnit = undefined;
     lastInventory = undefined;
     prompted.clear();
@@ -72,7 +101,7 @@ export function bindOpeningPrompts({ notice, message, review, dismiss, dialog, h
   }
 
   review.onclick = open;
-  dismiss.onclick = () => { dismissal = true; draw(); };
+  dismiss.onclick = () => { clearTimeout(timer); dismissal = true; draw(); };
   dialog.addEventListener('close', draw);
   return { draw, updateInventory, beginAugments, updateAugments, finish, reset,
     start() { if (phase === 'finished') reset(); },

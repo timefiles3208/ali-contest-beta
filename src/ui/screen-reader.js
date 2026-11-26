@@ -18,7 +18,7 @@ function toCanvas(image, width, height, maxSize = 1600) {
   return canvas;
 }
 
-export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening, onOpeningEnd, onShareStart, isOpponentView }) {
+export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening, onLiveOpening, onOpeningEnd, onShareStart, isOpponentView }) {
   const supported = Boolean(navigator.mediaDevices?.getDisplayMedia);
   let active, finishedJob;
   let perspectiveRevision = 0;
@@ -49,6 +49,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     session.stream?.getTracks().forEach(track => track.stop());
     video.srcObject = null;
     video.hidden = true;
+    if (session.atOpening) onOpeningEnd();
     render();
   }
 
@@ -127,8 +128,8 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
             onStage(stage) {
               if (active !== session || opponent || perspectiveRevision !== revision || stage !== '2-1' || session.atOpening) return;
               session.atOpening = true;
-              onOpening(stage);
-              say('检测到 2-1，正在补读本轮海克斯。');
+              onLiveOpening();
+              showDirection(session.context, '检测到 2-1，正在补读本轮海克斯。');
             },
           },
         ), 14_000);
@@ -137,9 +138,11 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         const evidence = read.value;
         if (stageAfterOpening(evidence?.stage)) {
           release(session);
-          onOpeningEnd();
           if (session.atOpening) showDirection(session.context);
-          else say('已读到 2-1 之后的阶段，屏幕读取已停止。');
+          else {
+            onOpeningEnd();
+            say('已读到 2-1 之后的阶段，屏幕读取已停止。');
+          }
           return;
         }
         if (opponent) {
@@ -156,7 +159,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         } else {
           say(session.atOpening
             ? '检测到 2-1，可查看开局推荐。选完海克斯后结束共享。'
-            : result.hidden ? '正在读取画面文字，到 2-1 时会打开开局推荐。'
+            : result.hidden ? '正在读取画面文字，到 2-1 时会提示开局推荐。'
               : '尚未确认 2-1，已显示阵容参考，正在继续读取画面。');
         }
       } catch {
@@ -232,7 +235,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         if (active !== session || !result.hidden) return;
         showDirection(context, session.atOpening
           ? '已按当前记录给出 2-1 阵容方向，识别结果会继续补充。'
-          : '尚未确认 2-1，先显示阵容参考。检测到 2-1 后会打开推荐面板。');
+          : '尚未确认 2-1，先显示阵容参考。检测到 2-1 后会提示查看推荐。');
       }, DIRECTION_FALLBACK_MS);
       video.srcObject = stream;
       video.hidden = false;
@@ -252,10 +255,10 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
 
   finish.onclick = () => {
     if (!active?.stream) return;
-    const { context } = active;
-    release(active);
-    onOpeningEnd();
-    showDirection(context);
+    const session = active;
+    release(session);
+    if (!session.atOpening) onOpeningEnd();
+    showDirection(session.context);
   };
   stop.onclick = () => {
     if (active) release(active);

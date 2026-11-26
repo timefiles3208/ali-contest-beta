@@ -5,10 +5,10 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=opening-prompts';
+import { bindScreenReader } from './ui/screen-reader.js?v=compact-opening-notice';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=opponent-artifacts';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=opening-prompts';
-import { bindOpeningPrompts } from './ui/opening-prompts.js?v=opening-prompts';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=compact-opening-notice';
+import { bindOpeningPrompts } from './ui/opening-prompts.js?v=compact-opening-notice';
 import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-prompts';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
@@ -943,7 +943,14 @@ function bind() {
     isOpponentView: () => Boolean(el('scoutView').value),
     onEvidence: openingAdvice.receive,
     onOpening: openingAdvice.show,
-    onOpeningEnd: openingPrompts.finish,
+    onLiveOpening() {
+      openingPrompts.beginAugments();
+      openingAdvice.startPreview();
+    },
+    onOpeningEnd() {
+      openingAdvice.endPreview();
+      openingPrompts.finish();
+    },
     onShareStart: openingPrompts.start,
   });
   resultFloat = bindRecommendationFloat({

@@ -8,6 +8,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   let catalogIdentity;
   let picksKey;
   let listTier;
+  let previewing = false;
 
   function options(select, entries, label) {
     const previous = select.value;
@@ -19,6 +20,7 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     if (dialog.open) dialog.close();
     detectedUnits = [];
     detectedShop = null;
+    previewing = false;
     city.value = economy.value = item.value = unitSelect.value = '';
     tier.value = '';
     inputs.forEach(input => { input.value = ''; });
@@ -28,8 +30,18 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   function draw() {
     const ctx = getContext();
     open.disabled = !ctx?.comps.length;
-    if (!ctx || !dialog.open) return;
+    if (!ctx || (!dialog.open && !previewing)) return;
     const { setData, itemsData, selected, owned, ownedItems, cities, augments, ranked } = ctx;
+    const chosenTier = tier.value || ctx.city?.firstAugmentTier;
+    const offered = offeredIds(augments, chosenTier);
+    const effective = chosenTier || inferAugmentTier(offered);
+    const available = effective ? offered.filter(id => augmentTier(id) === effective) : [];
+    const chosen = rankOpeningAugments({
+      setData, augments, ranked, selected, owned, ownedItems, itemsData,
+      offered: available, tier: effective, city: ctx.city, economy: ctx.economy, augmentStats: ctx.board?.augments,
+    });
+    onChoices(chosen);
+    if (!dialog.open) return;
     const observed = ctx.opponentBoards.size;
     opponentCoverage.textContent = `对手已记录 ${observed} 家，${7 - observed} 家未知。2-1 推荐使用已有信息，可直接查看。`;
     if (catalogIdentity !== setData) {
@@ -54,14 +66,9 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       hud.textContent = [`截图识别 ${level} 级`, `${gold} 金`, xp != null && `经验 ${xp}`].filter(Boolean).join(' · ');
     }
     showCopies(ctx);
-    const chosenTier = tier.value || ctx.city?.firstAugmentTier;
-    const offered = offeredIds(augments, chosenTier);
-    const inferred = inferAugmentTier(offered);
-    const effective = chosenTier || inferred;
     const tierSource = tier.value ? '手动选择' : ctx.city?.firstAugmentTier
       ? `由「${ctx.city.name}」城邦确定` : '根据候选名称识别';
     const mismatch = offered.some(id => augmentTier(id) !== effective);
-    const available = effective ? offered.filter(id => augmentTier(id) === effective) : [];
     if (effective !== listTier) {
       const names = augments.filter(aug => !effective || augmentTier(aug.id) === effective).map(aug => aug.name);
       list.replaceChildren(...[...new Set(names)].map(name => new Option(name, name)));
@@ -99,11 +106,6 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
     renderLineupList(direction, ranked, {
       allowUnmatched: true,
     });
-    const chosen = rankOpeningAugments({
-      setData, augments, ranked, selected, owned, ownedItems, itemsData,
-      offered: available, tier: effective, city: ctx.city, economy: ctx.economy, augmentStats: ctx.board?.augments,
-    });
-    onChoices(chosen);
     const nextKey = JSON.stringify(chosen.map(({ aug, reasons }) => [aug.id, aug.name, reasons]));
     if (nextKey === picksKey) return;
     picksKey = nextKey;
@@ -190,5 +192,9 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
   };
   inputs.forEach(input => { input.oninput = draw; });
   tier.onchange = draw;
-  return { draw, show, receive, reset };
+  return {
+    draw, show, receive, reset,
+    startPreview() { previewing = true; draw(); },
+    endPreview() { previewing = false; },
+  };
 }
