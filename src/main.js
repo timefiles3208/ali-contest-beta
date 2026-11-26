@@ -1,12 +1,12 @@
 import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=recommendation-tools';
-import { recommendArtifacts } from './engine/artifacts.js?v=artifact-icons';
+import { recommendArtifacts } from './engine/artifacts.js?v=opponent-artifacts';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
 import { bindScreenReader } from './ui/screen-reader.js?v=share-ocr';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=share-ocr';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=opponent-artifacts';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=recommendation-tools';
 import { bindRecommendationFloat } from './ui/recommendation-float.js';
 import { solveBoardConstraints } from './engine/board-constraints.js';
@@ -20,7 +20,7 @@ import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
 import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=recommendation-tools';
 import { planItems } from './engine/items.js';
-import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=formation-plan';
+import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=opponent-artifacts';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=planning-tools';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=share-ocr';
@@ -936,10 +936,12 @@ function bind() {
   scout = bindOpponentScout({
     view: el('scoutView'), capture: el('scoutCapture'), photo: el('scoutPhoto'), iconPhoto: el('scoutIconPhoto'),
     economy: el('scoutEconomy'), augment: el('scoutAugment'), saveProfile: el('scoutSaveProfile'),
+    artifact: el('scoutArtifact'), artifactHolder: el('scoutArtifactHolder'), removeArtifact: el('scoutRemoveArtifact'),
     clear: el('scoutClear'), clearAll: el('scoutClearAll'), status: el('scoutStatus'), summary: el('scoutSummary'),
     getContext: () => !loadingSet && state.setData ? {
       setData: state.setData, comps: state.comps, boards: state.opponentBoards, patch: state.board?.version,
       augments: state.augs?.augments || [],
+      sourceItems: state.sourceId === 'dataj' ? state.board?.items : undefined,
     } : null,
     getFrame: screenReader.getFrame,
     hasSharedStream: screenReader.hasSharedStream,

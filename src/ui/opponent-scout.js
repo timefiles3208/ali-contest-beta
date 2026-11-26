@@ -1,16 +1,19 @@
 import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=share-ocr';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
-import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=formation-plan';
+import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=opponent-artifacts';
+import { artifactOptions } from '../engine/artifacts.js?v=opponent-artifacts';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 
 const SCOUT_BUDGET_MS = 5_000;
 const ECONOMY_NAMES = { low: '偏低', normal: '一般', high: '较高' };
 
-export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, augment, saveProfile, clear, clearAll, status, summary, getContext, getFrame, hasSharedStream, onChange, onViewChange }) {
+export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, augment, artifact, artifactHolder, removeArtifact, saveProfile, clear, clearAll, status, summary, getContext, getFrame, hasSharedStream, onChange, onViewChange }) {
   const pending = new Map();
   let liveQueue = Promise.resolve();
   let listedAugments;
+  let listedUnits, listedPatch, listedSourceItems;
+  let artifactsById = new Map();
   const signal = text => { status.textContent = text; };
 
   function render() {
@@ -24,13 +27,29 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
       const entries = [...(listedAugments || [])].sort((a, b) => a.name.localeCompare(b.name, 'zh'));
       augment.replaceChildren(new Option('沿用记录', ''), ...entries.map(row => new Option(row.name, row.id)));
     }
-    saveProfile.disabled = !available || (!economy.value && !augment.value);
+    if (listedPatch !== context?.patch || listedSourceItems !== context?.sourceItems) {
+      listedPatch = context?.patch;
+      listedSourceItems = context?.sourceItems;
+      const entries = artifactOptions(listedPatch, listedSourceItems).sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+      artifactsById = new Map(entries.map(row => [row.id, row]));
+      artifact.replaceChildren(new Option('选择已装备的神器', ''), ...entries.map(row => new Option(row.name, row.id)));
+      artifactHolder.value = '';
+    }
+    if (listedUnits !== context?.setData.units) {
+      listedUnits = context?.setData.units;
+      const units = [...(listedUnits || [])].sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+      artifactHolder.replaceChildren(new Option('佩戴者未知', ''), ...units.map(unit => new Option(unit.name, unit.id)));
+    }
+    artifact.disabled = !available || !artifactsById.size;
+    artifactHolder.disabled = artifact.disabled || !artifact.value;
+    removeArtifact.disabled = artifactHolder.disabled || !context.boards.get(slot)?.artifacts?.some(item => item.id === artifact.value);
+    saveProfile.disabled = !available || (!economy.value && !augment.value && !artifact.value);
     clear.disabled = !available || (!context.boards.has(slot) && !pending.has(slot));
     clearAll.disabled = !context?.boards.size && !pending.size;
     const names = new Map([...(context?.setData.units || []), ...(context?.setData.traits || [])].map(row => [row.id, row.name]));
     const augmentsById = new Map((context?.augments || []).map(row => [row.id, row.name]));
     const records = [...(context?.boards || [])].sort(([a], [b]) => Number(a) - Number(b));
-    summary.replaceChildren(...records.map(([number, { units, traits, routes, gold, economy, augmentIds }]) => {
+    summary.replaceChildren(...records.map(([number, { units, traits, routes, gold, economy, augmentIds, artifacts = [] }]) => {
       const item = document.createElement('li');
       const title = document.createElement('strong');
       title.textContent = '对手 ' + number;
@@ -41,6 +60,18 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
       const augments = augmentIds.map(id => augmentsById.get(id)).filter(Boolean);
       detail.textContent = ` · 棋子和羁绊 ${observed.join('、') || '未知'} · ${goldText} · 已选海克斯 ${augments.join('、') || '未知'}`;
       item.append(title, detail, ...augmentIds.map(augmentIconElement).filter(Boolean));
+      for (const record of artifacts) {
+        const artifact = artifactsById.get(record.id);
+        if (!artifact) continue;
+        const badge = document.createElement('span');
+        badge.className = 'artifact-choice';
+        const icon = new Image(22, 22);
+        icon.src = artifact.icon;
+        icon.alt = '';
+        icon.loading = 'lazy';
+        badge.append(icon, `${artifact.name}（${names.get(record.unit) || '佩戴者未知'}）`);
+        item.append(badge);
+      }
       if (routes.length) {
         const list = document.createElement('ol');
         for (const { comp } of routes) {
@@ -60,10 +91,11 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
   }
 
   function save(slot, observation, context) {
+    const artifacts = observation.artifacts ?? context.boards.get(slot)?.artifacts ?? [];
     const chosen = new Set(observation.augmentIds);
     const augments = context.augments.filter(row => chosen.has(row.id));
-    const routes = predictOpponentRoutes(context.comps, { ...observation, augments }, context.patch, context);
-    onChange(slot, { ...observation, routes });
+    const routes = predictOpponentRoutes(context.comps, { ...observation, artifacts, augments }, context.patch, context);
+    onChange(slot, { ...observation, artifacts, routes });
     return routes;
   }
 
@@ -139,7 +171,8 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
       const evidence = result.value || includeIcons(partial);
       const previous = context.boards.get(slot);
       const boardCount = evidence ? evidence.units.length + evidence.traits.length : 0;
-      if (evidence && (boardCount >= 2 || evidence.gold != null || evidence.augmentIds.length || (boardCount && previous?.augmentIds.length))) {
+      const hasProfile = previous?.augmentIds.length || previous?.artifacts?.length;
+      if (evidence && (boardCount >= 2 || evidence.gold != null || evidence.augmentIds.length || (boardCount && hasProfile))) {
         const routes = save(slot, {
           units: boardCount ? evidence.units : previous?.units || [],
           traits: boardCount ? evidence.traits : previous?.traits || [],
@@ -173,7 +206,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
   }
 
   view.onchange = () => {
-    economy.value = augment.value = '';
+    economy.value = augment.value = artifact.value = artifactHolder.value = '';
     onViewChange();
     render();
     if (view.value) {
@@ -183,21 +216,41 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
     else signal('当前是我的视角。');
   };
   economy.onchange = augment.onchange = render;
+  artifact.onchange = () => {
+    const saved = getContext()?.boards.get(view.value)?.artifacts?.find(item => item.id === artifact.value);
+    artifactHolder.value = saved?.unit || '';
+    render();
+  };
   saveProfile.onclick = () => {
     const slot = view.value;
     const context = getContext();
-    if (!slot || !context || (!economy.value && !augment.value)) return;
+    if (!slot || !context || saveProfile.disabled) return;
     pending.delete(slot);
     const previous = context.boards.get(slot);
+    const artifacts = previous?.artifacts || [];
     save(slot, {
       units: previous?.units || [],
       traits: previous?.traits || [],
       gold: economy.value ? null : previous?.gold ?? null,
       economy: economy.value || previous?.economy || '',
       augmentIds: augment.value ? [augment.value] : previous?.augmentIds || [],
+      artifacts: artifact.value ? [
+        ...artifacts.filter(item => item.id !== artifact.value),
+        { id: artifact.value, unit: artifactHolder.value },
+      ] : artifacts,
     }, context);
-    economy.value = augment.value = '';
+    economy.value = augment.value = artifact.value = artifactHolder.value = '';
     signal('已更新对手 ' + slot + ' 的补充信息。');
+    render();
+  };
+  removeArtifact.onclick = () => {
+    const slot = view.value;
+    const context = getContext();
+    const previous = context?.boards.get(slot);
+    if (!previous || removeArtifact.disabled) return;
+    save(slot, { ...previous, artifacts: previous.artifacts.filter(item => item.id !== artifact.value) }, context);
+    artifact.value = artifactHolder.value = '';
+    signal('已移除对手 ' + slot + ' 的神器记录。');
     render();
   };
   capture.onclick = readCurrent;
@@ -259,7 +312,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, economy, au
     render,
     reset() {
       pending.clear();
-      view.value = economy.value = augment.value = '';
+      view.value = economy.value = augment.value = artifact.value = artifactHolder.value = '';
       signal('当前是我的视角。');
       render();
     },

@@ -65,3 +65,21 @@ test('economy breaks close route ties and an aligned selected augment can resolv
   assert.deepEqual(predictOpponentRoutes(set, { gold: 23 }, '', options), []);
   assert.equal(predictOpponentRoutes(set, { units: ['a'], augments: [{ ...augment, grantUnits: [] }] }, '', options)[0].comp.id, costly.id);
 });
+
+test('an equipped artifact favors the carrier build that fits it over a higher-tier alternative', () => {
+  const spell = { ...first, id: 'spell', rank: { tier: 'A' }, items: { a: ['DA_SpearOfShojin'] } };
+  const attack = { ...first, id: 'attack', items: { a: ['DA_GuinsoosRageblade'] } };
+  const options = { setData: context.setData };
+  const routes = (observation, patch = '18.7') => predictOpponentRoutes([spell, attack], observation, patch, options);
+  const artifact = { id: 'manazane', unit: 'a' };
+  assert.equal(routes({ units: ['a', 'b'] })[0].comp.id, 'attack');
+  assert.deepEqual(routes({ units: ['a', 'b'], artifacts: [artifact] }).map(row => row.comp.id), ['spell', 'attack']);
+  assert.deepEqual(routes({ artifacts: [artifact] }).map(row => row.comp.id), ['spell']);
+  assert.deepEqual(routes({ artifacts: [{ id: 'manazane' }] }), []);
+  assert.deepEqual(routes({ artifacts: [{ id: 'manazane', unit: 'b' }] }), []);
+  const uncertain = routes({ units: ['a', 'b'], artifacts: [{ id: 'manazane' }] });
+  assert.equal(uncertain[0].evidence - uncertain[1].evidence, 1);
+  assert.equal(predictOpponentRoutes([spell, attack], { units: ['a', 'b'], artifacts: [artifact] },
+    '18.7', { ...options, sourceItems: new Map() })[0].comp.id, 'attack');
+  assert.equal(routes({ units: ['a', 'b'], artifacts: [artifact] }, '19.1')[0].comp.id, 'attack');
+});

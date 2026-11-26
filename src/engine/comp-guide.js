@@ -1,14 +1,8 @@
 import { buildAdaptiveTransitions } from './transition-fit.js';
 import { transitionGuides } from '../data/s18.18.7.transitions.js';
 import { traitBreakdown } from './recommend.js';
-import { formationPlan, TANK_ITEMS } from './formation.js';
+import { formationPlan, formationRow, FRONT_TRAITS, TANK_ITEMS } from './formation.js?v=opponent-artifacts';
 
-const FRONT_TRAITS = new Set([
-  'DA_18_Brawler', 'DA_18_Defender', 'DA_18_Vanguard', 'DA_Juggernaut18', 'DA_18_Battlemage',
-]);
-const BACK_TRAITS = new Set([
-  'DA_18_Hunter', 'DA_18_Rapidfire', 'DA_18_Spellweaver', 'DA_18_Invoker',
-]);
 const OUTSIDE_IN = [0, 6, 1, 5, 2, 4, 3];
 const CENTER_OUT = [3, 2, 4, 1, 5, 0, 6];
 
@@ -41,12 +35,7 @@ function sourcedTransitions(comp, setData, patch, byId) {
 export function buildCompGuide(comp, setData, patch, inventory) {
   const byId = new Map(setData.units.map(unit => [unit.id, unit]));
   const plan = formationPlan(comp, byId);
-  const units = plan.units.map(unit => {
-    const traits = unit.traits || [];
-    const front = unit.tank || traits.some(trait => FRONT_TRAITS.has(trait));
-    const back = !front && (unit.carry || traits.some(trait => BACK_TRAITS.has(trait)));
-    return { ...unit, row: front ? 0 : back ? 3 : 1 };
-  });
+  const units = plan.units.map(unit => ({ ...unit, row: formationRow(unit) }));
 
   const board = Array.from({ length: 4 }, () => Array(7).fill(null));
   for (const unit of [...units].sort((a, b) => Number(b.tank) - Number(a.tank) || Number(b.carry) - Number(a.carry))) {

@@ -1,4 +1,17 @@
 const ROLL_LEVEL = { 1: 5, 2: 6, 3: 7, 4: 8, 5: 9 };
+export const FRONT_TRAITS = new Set([
+  'DA_18_Brawler', 'DA_18_Defender', 'DA_18_Vanguard', 'DA_Juggernaut18', 'DA_18_Battlemage',
+]);
+const BACK_TRAITS = new Set([
+  'DA_18_Hunter', 'DA_18_Rapidfire', 'DA_18_Spellweaver', 'DA_18_Invoker',
+]);
+
+export function formationRow(unit) {
+  const traits = unit.traits || [];
+  if (unit.tank || traits.some(trait => FRONT_TRAITS.has(trait))) return 0;
+  return unit.carry || traits.some(trait => BACK_TRAITS.has(trait)) ? 3 : 1;
+}
+
 export const TANK_ITEMS = new Set([
   'DA_GargoyleStoneplate', 'DA_WarmogsArmor', 'DA_SpiritVisage', 'DA_BrambleVest',
   'DA_SteadfastHeart', 'DA_Evenshroud', 'DA_DragonsClaw', 'DA_Crownguard',

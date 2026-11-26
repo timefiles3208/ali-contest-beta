@@ -20,6 +20,19 @@ const attackItems = new Set(['DA_GuinsoosRageblade', 'DA_KrakensFury', 'DA_RedBu
 const physicalItems = new Set(['DA_Deathblade', 'DA_InfinityEdge', 'DA_LastWhisper', 'DA_Bloodthirster',
   'DA_TitansResolve', 'DA_SteraksGage', 'DA_StrikersFlail']);
 
+function artifactDetails(keys, sourceItems) {
+  return keys.flatMap(id => {
+    const [name, file, reason, folder, alias] = artifacts[id];
+    const sourceName = sourceItems?.has(name) ? name : alias && sourceItems?.has(alias) ? alias : null;
+    if (sourceItems && !sourceName) return [];
+    return [{ id, name: sourceName || name, icon: ICON_ROOT + (folder || 'tft/icons/items/hexcore/') + file + '.png', reason }];
+  });
+}
+
+export function artifactOptions(patch, sourceItems) {
+  return patch === '18.7' ? artifactDetails(Object.keys(artifacts), sourceItems) : [];
+}
+
 export function recommendArtifacts(unit, patch, sourceItems) {
   if (patch !== '18.7') return [];
   const items = unit.items || [];
@@ -30,10 +43,5 @@ export function recommendArtifacts(unit, patch, sourceItems) {
       ? ['manazane', 'dawncore', 'seekers'] : ['manazane', 'dawncore', 'lich'])
     : items.some(id => physicalItems.has(id)) ? ['force', 'navori', 'cannon']
     : [];
-  return keys.flatMap(key => {
-    const [name, file, reason, folder, alias] = artifacts[key];
-    const sourceName = sourceItems?.has(name) ? name : alias && sourceItems?.has(alias) ? alias : null;
-    if (sourceItems && !sourceName) return [];
-    return [{ name: sourceName || name, icon: ICON_ROOT + (folder || 'tft/icons/items/hexcore/') + file + '.png', reason }];
-  }).slice(0, 3);
+  return artifactDetails(keys, sourceItems).slice(0, 3);
 }

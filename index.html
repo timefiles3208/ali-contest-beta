@@ -64,7 +64,7 @@
         <button id="scoutClearAll" class="ghost" type="button" disabled>清空本局对手记录</button>
       </div>
       <details class="snap-model">
-        <summary>补充对手经济与已选海克斯</summary>
+        <summary>补充对手经济、海克斯和奥恩神器</summary>
         <div class="snap-model-fields">
           <label>经济预估
             <select id="scoutEconomy" disabled>
@@ -73,7 +73,10 @@
             </select>
           </label>
           <label>已选海克斯 <select id="scoutAugment" disabled><option value="">沿用记录</option></select></label>
+          <label>奥恩神器 <select id="scoutArtifact" disabled><option value="">选择已装备的神器</option></select></label>
+          <label>佩戴棋子 <select id="scoutArtifactHolder" disabled><option value="">佩戴者未知</option></select></label>
           <button id="scoutSaveProfile" class="ghost" type="button" disabled>更新对手信息</button>
+          <button id="scoutRemoveArtifact" class="ghost" type="button" disabled>移除神器记录</button>
         </div>
       </details>
       <p id="scoutStatus" class="snap-status" role="status">当前是我的视角。</p>
@@ -275,6 +278,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=artifact-icons"></script>
+<script type="module" src="./src/main.js?v=opponent-artifacts"></script>
 </body>
 </html>
