@@ -55,3 +55,16 @@
 .postgame-analysis h3 { margin: 0; }
 .postgame-analysis h4 { margin: 12px 0 6px; }
 .postgame-analysis details + details { margin-top: 6px; }
+.comparison-grid, .comparison-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.comparison-row { grid-column: 1 / -1; align-items: start; }
+.comparison-column { display: grid; align-content: start; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.comparison-source h3 { margin: 0 0 2px; font-size: 15px; }
+.comparison-source p { margin: 0; overflow-wrap: anywhere; }
+.comparison-empty { margin: 0; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; }
+@media (max-width: 520px) {
+  .reference-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; column-gap: 8px; }
+  .reference-filters :is(input, select) { width: 100%; min-width: 0; }
+  .comparison-grid .reference-card, .comparison-empty { padding: 8px; }
+  .comparison-grid .reference-lineup summary { padding: 8px; }
+  .comparison-grid .reference-lineup summary span { display: block; margin: 3px 0 0; }
+}

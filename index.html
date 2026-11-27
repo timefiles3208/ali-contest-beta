@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 版本资料与赛后复盘</title>
 <link rel="stylesheet" href="./styles.css?v=opening-workspace" />
-<link rel="stylesheet" href="./reference.css?v=lineup-analysis" />
+<link rel="stylesheet" href="./reference.css?v=compare-games" />
 </head>
 <body>
 <header class="bar reference-header">
@@ -56,8 +56,19 @@
           </select>
         </label>
         <label for="referenceSearch">搜索 <input id="referenceSearch" type="search" placeholder="输入名称" /></label>
+        <div id="comparisonFilter" hidden>
+          <label for="referenceMatch">对照范围
+            <select id="referenceMatch">
+              <option value="all">全部</option>
+              <option value="shared">两端同名</option>
+              <option value="datatft">仅云顶有此名称</option>
+              <option value="dataj">仅金铲铲有此名称</option>
+            </select>
+          </label>
+        </div>
       </div>
     </header>
+    <p id="comparisonHelp" class="fine" hidden>棋子、羁绊、装备和海克斯按名称对照。两端榜单分别按各自评级展示。</p>
     <p id="referenceCount" class="fine" role="status"></p>
     <div id="referenceResults" class="reference-results"></div>
     <div class="snap-actions"><button id="showMore" class="ghost" type="button" hidden>查看更多</button></div>
@@ -68,6 +79,6 @@
   <p class="fine">公网测试版。评级与统计沿用来源站口径。</p>
 </footer>
 
-<script type="module" src="./src/reference.js?v=review-benchmark"></script>
+<script type="module" src="./src/reference.js?v=compare-games"></script>
 </body>
 </html>
