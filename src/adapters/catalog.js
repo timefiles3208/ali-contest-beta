@@ -1,4 +1,4 @@
-import { loadJson } from '../ui/helpers.js';
+import { loadJson } from '../ui/helpers.js?v=fast-catalog';
 
 const LIVE_ROOT = 'https://raw.githubusercontent.com/timefiles3208/ali-contest-beta';
 const liveBundles = new Map();
@@ -42,7 +42,7 @@ function validPayload(payload, source, version, accepts) {
   return identityMatches && accepts(payload);
 }
 
-async function readDatabase(specs) {
+async function readDatabase(specs, signal) {
   const url = new URL(API);
   const clauses = specs.map(([dataset, source, version]) =>
     `and(dataset.eq.${dataset},source.eq.${source},season.eq.18,version.eq.${version})`);
@@ -53,7 +53,7 @@ async function readDatabase(specs) {
   const response = await fetch(url, {
     credentials: 'omit',
     headers: { apikey: PUBLISHABLE_KEY },
-    signal: AbortSignal.timeout(3_500),
+    signal: AbortSignal.any([signal, AbortSignal.timeout(3_500)]),
   });
   if (!response.ok) return null;
   const rows = await response.json();
@@ -88,32 +88,11 @@ async function loadLiveBundle(specs) {
   return result;
 }
 
-export async function loadCatalogBundle(paths, { optional = [], live = false } = {}) {
-  const specs = paths.map(path => snapshots.get(path));
-  if (paths.length && specs.every(Boolean)) {
-    if (live) {
-      const entry = await loadLiveBundle(specs);
-      if (entry) {
-        const values = specs.map(([dataset, source, version, accepts]) => {
-          const payload = entry.datasets[dataset];
-          return validPayload(payload, source, version, accepts) ? { ...payload, extractedAt: entry.updatedAt } : null;
-        });
-        if (values.every((value, index) => value || optional.includes(paths[index]))) {
-          return { values, location: 'live', updatedAt: entry.updatedAt };
-        }
-      }
-    }
-    try {
-      const values = await readDatabase(specs);
-      if (values) return { values, location: 'database' };
-    } catch {
-      // Keep dependencies together when the anonymous endpoint is unavailable.
-    }
-  }
+async function readBundled(paths, specs, optional, signal) {
   const values = await Promise.all(paths.map(async (path, index) => {
     if (!path) return null;
     try {
-      const payload = await loadJson(path);
+      const payload = await loadJson(path, { signal });
       const spec = specs[index];
       if (spec && !validPayload(payload, spec[1], spec[2], spec[3])) throw new Error(`数据快照校验失败 ${path}`);
       return payload;
@@ -123,4 +102,39 @@ export async function loadCatalogBundle(paths, { optional = [], live = false } =
     }
   }));
   return { values, location: 'bundled' };
+}
+
+export async function loadCatalogBundle(paths, { optional = [], live = false } = {}) {
+  const specs = paths.map(path => snapshots.get(path));
+  if (!paths.length || !specs.every(Boolean)) return readBundled(paths, specs, optional);
+
+  const pending = new AbortController();
+  const database = readDatabase(specs, pending.signal).then(values => {
+    if (!values) throw new Error('备用数据不完整');
+    return { values, location: 'database' };
+  });
+  const fallback = Promise.any([database, readBundled(paths, specs, optional, pending.signal)])
+    .catch(error => { throw error.errors.at(-1); });
+  let timer;
+  try {
+    if (!live) return await fallback;
+    const latest = loadLiveBundle(specs).then(entry => {
+      if (!entry) throw new Error('自动同步快照不可用');
+      const values = specs.map(([dataset, source, version, accepts]) => {
+        const payload = entry.datasets[dataset];
+        return validPayload(payload, source, version, accepts) ? { ...payload, extractedAt: entry.updatedAt } : null;
+      });
+      if (!values.every((value, index) => value || optional.includes(paths[index]))) throw new Error('自动同步快照不完整');
+      return { values, location: 'live', updatedAt: entry.updatedAt };
+    });
+    // Prefer a fresh snapshot during a short window, then show the first complete fallback.
+    const grace = new Promise(resolve => { timer = setTimeout(resolve, 1_200); });
+    const readyFallback = Promise.all([fallback, Promise.race([grace, latest.catch(() => {})])]).then(([bundle]) => bundle);
+    return await Promise.any([latest, readyFallback]);
+  } catch (error) {
+    throw error.errors?.at(-1) || error;
+  } finally {
+    clearTimeout(timer);
+    pending.abort();
+  }
 }

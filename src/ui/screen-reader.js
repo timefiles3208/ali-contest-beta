@@ -308,10 +308,6 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   const preparePhotoReader = () => { void warmOpeningOcr().catch(() => {}); };
   photo.addEventListener('pointerenter', preparePhotoReader, { once: true });
   photo.addEventListener('focus', preparePhotoReader, { once: true });
-  if (!navigator.connection?.saveData) {
-    if (window.requestIdleCallback) window.requestIdleCallback(preparePhotoReader, { timeout: 800 });
-    else setTimeout(preparePhotoReader, 800);
-  }
   const reset = () => {
     if (active) release(active);
     finishedJob = null;
@@ -321,8 +317,15 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
   };
   addEventListener('pagehide', reset);
   reset();
+  let scheduledWarmup = false;
   return {
     reset,
+    prepare() {
+      if (scheduledWarmup || navigator.connection?.saveData) return;
+      scheduledWarmup = true;
+      if (window.requestIdleCallback) window.requestIdleCallback(preparePhotoReader, { timeout: 1_200 });
+      else setTimeout(preparePhotoReader, 1_200);
+    },
     hasSharedStream: () => Boolean(active?.stream),
     getFrame: captureScoutFrame,
     perspectiveChanged() {

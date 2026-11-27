@@ -10,15 +10,15 @@ const unitPayload = { set: 18, source, units: [{ id: 'a', name: '棋子', cost: 
 const itemsPayload = { set: 18, source, items: [{ id: 'i', name: '装备' }], components: [{ id: 'p', name: '散件' }] };
 const row = (dataset, payload) => ({ dataset, source: 'riot', season: 18, version: '16.23.1', payload });
 
-test('loads a complete remote bundle from one anonymous request', async t => {
+test('loads a complete remote bundle with one anonymous database request', async t => {
   const fetch = t.mock.method(globalThis, 'fetch', async (url, options) => {
-    assert.match(String(url), /supabase\.co/);
+    if (!String(url).includes('supabase.co')) return new Response(null, { status: 404 });
     assert.equal(typeof options.headers.apikey, 'string');
     assert.equal(options.credentials, 'omit');
     return Response.json([row('items', itemsPayload), row('units-traits', unitPayload)]);
   });
   assert.deepEqual(await loadCatalogBundle(corePaths), { values: [unitPayload, itemsPayload], location: 'database' });
-  assert.equal(fetch.mock.callCount(), 1);
+  assert.equal(fetch.mock.calls.filter(call => String(call.arguments[0]).includes('supabase.co')).length, 1);
 });
 
 test('uses all local files when one remote payload is absent, malformed or stamped with another version', async t => {

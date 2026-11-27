@@ -3,9 +3,9 @@ import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } fro
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js?v=game-release-scope';
 import { catalogIcon, iconHtml } from './ui/helpers.js?v=game-release-scope';
-import { loadCatalogBundle } from './adapters/catalog.js?v=live-catalog';
+import { loadCatalogBundle } from './adapters/catalog.js?v=fast-catalog';
 import { bindModelReference } from './ui/model-reference.js?v=game-release-scope';
-import { bindScreenReader } from './ui/screen-reader.js?v=game-release-scope-2';
+import { bindScreenReader } from './ui/screen-reader.js?v=fast-catalog';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=game-release-scope';
 import { bindOpeningPrompts } from './ui/opening-prompts.js?v=scout-direction';
@@ -79,36 +79,12 @@ const state = {
   snap: freshSnapshot(),
 };
 
-async function loadBoard() {
-  resetLineupChoice();
-  state.opponentBoards.clear();
-  scout?.reset();
-  screenReader?.reset();
-  openingAdvice?.reset();
-  openingPrompts?.reset();
-  el('augmentTierFilter').value = '';
-  state.openingCity = state.economy = '';
-  state.openingEquipmentClosed = false;
-  const generation = ++boardLoad;
-  const source = sourceFor(state.sourceId);
+function applyBoard(release, source) {
   const badge = el('sourceBadge');
-  state.comps = [];
-  state.open.clear();
-  state.board = null;
-  state.ref = null;
-  state.issues = [];
-  badge.className = 'badge';
-  badge.textContent = `${source.host} · 读取中…`;
-  if (loadingSet || !state.setData) return;
-  state.issues = ['正在读取所选榜单…'];
-  renderResults();
   try {
-    if (state.setData.scope?.sourceId !== source.id || state.setData.scope.version !== source.version || !state.setData.units.length) {
-      throw new Error(`暂无 ${source.game} ${state.meta.version} 的阵容数据`);
-    }
-    const paths = source.ratingsFile ? [source.file, source.ratingsFile] : [source.file];
-    const { values: [raw, ratings = null], location, updatedAt } = await loadCatalogBundle(paths, { live: true, optional: [source.ratingsFile] });
-    if (generation !== boardLoad) return;
+    const { values: [raw, ratings = null], location, updatedAt, error } = release;
+    if (error) throw new Error(error);
+    if (!raw || !state.setData.units.length) throw new Error(`暂无 ${source.game} ${state.meta.version} 的阵容数据`);
     const board = adaptBoard(raw, { source: source.id, setData: state.setData, items: state.items, ratings });
     const valid = validateComps(board.comps, state.setData);
     state.board = board;
@@ -118,12 +94,12 @@ async function loadBoard() {
     badge.textContent = `${source.host} · ${board.version} · ${state.comps.length} 套 · ${catalogLocation(location)}${updatedAt ? ' ' + catalogTime.format(new Date(updatedAt)) : ''}`;
     badge.className = `badge ${state.comps.length ? 'ok' : 'warn'}`;
   } catch (error) {
-    if (generation !== boardLoad) return;
     state.issues = [`${source.host}：${error.message}`];
     badge.textContent = `${source.host} · 数据不可用`;
     badge.className = 'badge warn';
   }
   renderResults();
+  if (state.comps.length) screenReader?.prepare();
 }
 
 async function loadSet(version) {
@@ -146,6 +122,8 @@ async function loadSet(version) {
   state.setData = empty;
   state.items = state.augs = state.board = state.ref = state.ranked = null;
   state.comps = [];
+  state.issues = [];
+  el('augmentTierFilter').value = '';
   state.level = 7;
   modelReference?.setScope(source.id, null, source.game, meta.version);
   state.selected.clear();
@@ -164,6 +142,7 @@ async function loadSet(version) {
   state.snap = freshSnapshot();
   clearSnapshot();
   el('search').value = '';
+  el('sourceBadge').className = 'badge';
   el('sourceBadge').textContent = source.game + ' · ' + meta.version + ' · 读取中…';
   renderCostTabs();
   renderUnits();
@@ -173,12 +152,23 @@ async function loadSet(version) {
   catalogBadge.className = 'badge';
   catalogBadge.textContent = '卡池载入中…';
   const available = source.version === meta.version && source.season === meta.set;
-  const paths = source.catalogFile ? [source.catalogFile] : [meta.dataFile, meta.itemsFile, meta.augFile];
-  const release = available
-    ? await loadCatalogBundle(paths, { live: Boolean(source.catalogFile), optional: source.catalogFile ? [] : [meta.itemsFile, meta.augFile] })
-      .catch(error => ({ values: [], error: error.message }))
-    : { values: [] };
-  const [roster, items = source.catalogFile ? roster : null, augments = source.catalogFile ? roster : null] = release.values;
+  const boardPaths = source.ratingsFile ? [source.file, source.ratingsFile] : [source.file];
+  const safeLoad = (paths, options) => loadCatalogBundle(paths, options)
+    .catch(error => ({ values: [], error: error.message }));
+  let release = { values: [] };
+  let boardRelease = release;
+  if (available && source.catalogFile) {
+    const combined = await safeLoad([source.catalogFile, ...boardPaths], { live: true });
+    const [catalog, ...board] = combined.values;
+    release = { ...combined, values: [catalog, catalog, catalog] };
+    boardRelease = { ...combined, values: board };
+  } else if (available) {
+    [release, boardRelease] = await Promise.all([
+      safeLoad([meta.dataFile, meta.itemsFile, meta.augFile], { optional: [meta.itemsFile, meta.augFile] }),
+      safeLoad(boardPaths, { live: true, optional: [source.ratingsFile] }),
+    ]);
+  }
+  const [roster, items = null, augments = null] = release.values;
   const setData = roster ? { ...roster, set: meta.set, scope } : { ...empty, loadError: release.error };
   if (generation !== setLoad) return;
   loadingSet = false;
@@ -212,7 +202,7 @@ async function loadSet(version) {
 
   renderCostTabs();
   renderUnits();
-  void loadBoard();
+  applyBoard(boardRelease, source);
   renderSnapshot();
 }
 

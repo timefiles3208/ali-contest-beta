@@ -17,6 +17,35 @@ function page(rows, set, patch) {
   return '<script>self.__next_f.push(' + flight + ')</script>';
 }
 
+test('starts the full local fallback while remote release requests are pending', async t => {
+  const { loadCatalogBundle: loadFresh } = await import('../src/adapters/catalog.js?parallel-fallback');
+  const requests = [];
+  let releaseRemote;
+  const remote = new Promise(resolve => { releaseRemote = resolve; });
+  t.mock.method(globalThis, 'fetch', async url => {
+    const path = String(url);
+    requests.push(path);
+    if (path.startsWith('https://')) return remote;
+    return Response.json(path.endsWith('.catalog.json') ? catalog : rankings);
+  });
+  const paths = ['./src/data/dataj/s18.18.7.catalog.json', './src/data/dataj/s18.18.7.json'];
+  const loading = loadFresh(paths, { live: true });
+  try {
+    await new Promise(resolve => setImmediate(resolve));
+    assert.ok(paths.every(path => requests.includes(path)));
+    assert.ok(requests.some(path => path.includes('supabase.co')));
+    const result = await loading;
+    assert.equal(result.location, 'bundled');
+    assert.deepEqual(result.values, [catalog, rankings]);
+    releaseRemote(Response.json(dataj));
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(result.location, 'bundled');
+  } finally {
+    releaseRemote(new Response(null, { status: 503 }));
+    await loading.catch(() => {});
+  }
+});
+
 test('DataJ only parses a ranking page carrying the exact game version', () => {
   const rows = [{ compId: '85', heroes: [] }];
   assert.deepEqual(datajRows(page(rows, 18, '18.7')), rows);
@@ -45,22 +74,24 @@ test('validates the full DataJ bundle before use and falls back without mixing c
     if (String(url).includes('raw.githubusercontent.com')) {
       return Response.json({ ...dataj, datasets: { ...dataj.datasets, rankings: { ...rankings, version: '18.6' } } });
     }
-    return Response.json([fallback]);
+    return String(url).includes('supabase.co') ? Response.json([fallback]) : new Response(null, { status: 404 });
   });
   assert.deepEqual(await loadFresh([path], { live: true }), { values: [catalog], location: 'database' });
-  assert.equal(fetch.mock.callCount(), 2);
+  assert.equal(fetch.mock.callCount(), 3);
 });
 
 test('loads the native DataJ release from one shared request and keeps optional DataTFT ratings empty', async t => {
   const fetch = t.mock.method(globalThis, 'fetch', async url => {
     if (String(url).endsWith('live-dataj/18.7.json')) return Response.json(dataj);
-    assert.match(String(url), /live-datatft\/18\.7\.json$/);
-    return Response.json({ ...dataj, source: 'datatft', datasets: { compositions } });
+    if (String(url).endsWith('live-datatft/18.7.json')) {
+      return Response.json({ ...dataj, source: 'datatft', datasets: { compositions } });
+    }
+    return new Response(null, { status: 404 });
   });
   const options = { live: true };
   assert.equal((await loadCatalogBundle(['./src/data/dataj/s18.18.7.catalog.json'], options)).location, 'live');
   assert.equal((await loadCatalogBundle(['./src/data/dataj/s18.18.7.json'], options)).values[0].extractedAt, timestamp);
-  assert.equal(fetch.mock.callCount(), 1);
+  assert.equal(fetch.mock.calls.filter(call => String(call.arguments[0]).endsWith('live-dataj/18.7.json')).length, 1);
   const tier = './src/data/datatft/s18.18.7.ratings.json';
   const tft = await loadCatalogBundle(['./src/data/datatft/s18.18.7.comps.json', tier], { ...options, optional: [tier] });
   assert.equal(tft.location, 'live');

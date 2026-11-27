@@ -21,5 +21,5 @@ export function catalogIcon(url) {
   return url;
 }
 
-export const loadJson = (path) =>
-  fetch(path).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status} ${path}`))));
+export const loadJson = (path, options) =>
+  fetch(path, options).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status} ${path}`))));
