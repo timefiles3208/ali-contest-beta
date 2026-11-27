@@ -2,6 +2,7 @@ import { loadJson } from '../ui/helpers.js?v=fast-catalog';
 
 const LIVE_ROOT = 'https://raw.githubusercontent.com/timefiles3208/ali-contest-beta';
 const liveBundles = new Map();
+const LIVE_CACHE = 'tft-live-catalog';
 
 const API = 'https://dubfaazkkthmwwtkplwm.supabase.co/rest/v1/tft_catalog';
 const PUBLISHABLE_KEY = 'sb_publishable_AfgS6UsN9aDur-TYvK9d-w_M3UaILkp';
@@ -71,10 +72,8 @@ async function loadLiveBundle(specs) {
   const key = source + '/' + version;
   const cached = liveBundles.get(key);
   if (cached && Date.now() - cached.started < 60_000) return cached.result;
-  const result = (async () => {
-    const response = await fetch(`${LIVE_ROOT}/live-${source}/${version}.json`, { signal: AbortSignal.timeout(2_500) });
-    if (!response.ok) return null;
-    const entry = await response.json();
+  const url = `${LIVE_ROOT}/live-${source}/${version}.json`;
+  const validate = entry => {
     if (entry?.source !== source || entry.season !== 18 || entry.version !== version ||
       !Number.isFinite(Date.parse(entry.updatedAt))) return null;
     const mandatory = source === 'dataj' ? ['game-catalog', 'rankings'] : ['compositions'];
@@ -83,7 +82,25 @@ async function loadLiveBundle(specs) {
       if (!spec || !validPayload(entry.datasets?.[dataset], source, version, spec[3])) return null;
     }
     return entry;
-  })().catch(() => null);
+  };
+  const browserCache = globalThis.caches?.open(LIVE_CACHE).catch(() => null);
+  const stored = browserCache?.then(async cache => {
+    const response = await cache?.match(url);
+    const entry = response && validate(await response.json());
+    if (!entry) throw new Error('无可用缓存快照');
+    return entry;
+  });
+  const network = (async () => {
+    const response = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    const entry = response.ok ? validate(await response.json()) : null;
+    if (!entry) throw new Error('无可用同步快照');
+    const previous = await stored?.catch(() => null);
+    if (previous && Date.parse(previous.updatedAt) >= Date.parse(entry.updatedAt)) return previous;
+    void browserCache?.then(cache => cache?.put(url, Response.json(entry))).catch(() => {});
+    liveBundles.set(key, { result: Promise.resolve(entry), started: Date.now() });
+    return entry;
+  })();
+  const result = Promise.any(stored ? [stored, network] : [network]).catch(() => null);
   liveBundles.set(key, { result, started: Date.now() });
   return result;
 }

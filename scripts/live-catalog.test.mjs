@@ -46,6 +46,39 @@ test('starts the full local fallback while remote release requests are pending',
   }
 });
 
+test('a late verified snapshot is cached for the next load without changing the current result', async t => {
+  const { loadCatalogBundle: firstLoad } = await import('../src/adapters/catalog.js?cache-miss');
+  const { loadCatalogBundle: nextLoad } = await import('../src/adapters/catalog.js?cache-hit');
+  const cache = new Map();
+  Object.defineProperty(globalThis, 'caches', { configurable: true, value: {
+    async open() {
+      return {
+        async match(url) { return cache.get(url)?.clone(); },
+        async put(url, response) { cache.set(url, response); },
+      };
+    },
+  } });
+  t.after(() => { delete globalThis.caches; });
+  let finish;
+  const online = new Promise(resolve => { finish = resolve; });
+  t.mock.method(globalThis, 'fetch', async url => {
+    const path = String(url);
+    if (path.includes('raw.githubusercontent.com')) return online.then(response => response.clone());
+    if (path.includes('supabase.co')) return new Response(null, { status: 503 });
+    return Response.json(path.endsWith('.catalog.json') ? catalog : rankings);
+  });
+  const paths = ['./src/data/dataj/s18.18.7.catalog.json', './src/data/dataj/s18.18.7.json'];
+  const result = await firstLoad(paths, { live: true });
+  assert.equal(result.location, 'bundled');
+  finish(Response.json(dataj));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(cache.size, 1);
+  assert.equal(result.location, 'bundled');
+  const fresh = await nextLoad(paths, { live: true });
+  assert.equal(fresh.location, 'live');
+  assert.equal(fresh.updatedAt, timestamp);
+});
+
 test('DataJ only parses a ranking page carrying the exact game version', () => {
   const rows = [{ compId: '85', heroes: [] }];
   assert.deepEqual(datajRows(page(rows, 18, '18.7')), rows);

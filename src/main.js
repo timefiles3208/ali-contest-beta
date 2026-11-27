@@ -3,7 +3,7 @@ import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } fro
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js?v=game-release-scope';
 import { catalogIcon, iconHtml } from './ui/helpers.js?v=game-release-scope';
-import { loadCatalogBundle } from './adapters/catalog.js?v=fast-catalog';
+import { loadCatalogBundle } from './adapters/catalog.js?v=fast-catalog-2';
 import { bindModelReference } from './ui/model-reference.js?v=game-release-scope';
 import { bindScreenReader } from './ui/screen-reader.js?v=fast-catalog';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
