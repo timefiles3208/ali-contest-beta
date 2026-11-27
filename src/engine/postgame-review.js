@@ -4,7 +4,7 @@ import { traitBreakdown } from './recommend.js';
 const RESULT_TITLE = /对局结算|战绩结算|战绩详情|本局战绩|赛后结算|结算详情|返回大厅|再来一局/;
 const RANK_DIGITS = '一二三四五六七八';
 
-export function analyzePostgameLineup(units, equipment, { setData, comps = [] }) {
+export function analyzePostgameLineup(units, equipment, { setData, comps = [], stars = {} }) {
   const byUnit = new Map((setData?.units || []).map(unit => [unit.id, unit]));
   const selected = new Set(units.map(unit => unit.id).filter(id => byUnit.has(id)));
   if (!selected.size) return null;
@@ -24,13 +24,20 @@ export function analyzePostgameLineup(units, equipment, { setData, comps = [] })
     return {
       name: comp.name,
       tier: comp.rank?.tier,
+      stats: comp.rank,
       count: shared.length,
       total: reference.size,
       likeness: shared.length / (selected.size + missing.length),
+      exact: shared.length === selected.size && missing.length === 0,
       sharedCore: names(shared.filter(id => core.has(id))),
       missingCore: names(missing.filter(id => core.has(id))),
       missing: names(missing),
       extra: names([...selected].filter(id => !reference.has(id))),
+      starComparison: shared.flatMap(id => {
+        const actual = stars[id];
+        const listed = comp.stars?.[id];
+        return actual && listed ? [{ name: byUnit.get(id).name, actual, listed }] : [];
+      }),
       equipment: equipment.flatMap(item => {
         const holders = names(shared.filter(id => (comp.itemBuilds?.[id] || comp.items?.[id] || []).includes(item.id)));
         return holders.length ? [{ name: item.name, holders }] : [];
@@ -64,17 +71,28 @@ export function importPostgameLineup(value, { setData, comps = [] }) {
     return { units, name: match.name };
   }
 
-  const names = [...new Set(text.split(/[、,;\s]+/).filter(Boolean))];
-  const units = [];
+  const entries = [...new Set(text.split(/[、,;\s]+/).filter(Boolean))];
+  const selected = new Map();
+  const stars = {};
   const unmatched = [];
-  for (const name of names) {
+  for (const entry of entries) {
+    const annotated = /^(.+?)([1-4])星$/.exec(entry);
+    const name = annotated?.[1] || entry;
     const matches = setData.units.filter(unit => unit.name === name);
-    if (matches.length === 1) units.push(matches[0]);
-    else unmatched.push(matches.length ? `${name}（有同名棋子）` : name);
+    if (matches.length !== 1) {
+      unmatched.push(matches.length ? `${name}（有同名棋子）` : name);
+      continue;
+    }
+    const [unit] = matches;
+    selected.set(unit.id, unit);
+    if (!annotated) continue;
+    const value = Number(annotated[2]);
+    if (stars[unit.id] && stars[unit.id] !== value) return { error: `${name}填写了不同星级，请核对。` };
+    stars[unit.id] = value;
   }
   if (unmatched.length) return { error: `有棋子无法确认：${unmatched.join('、')}。请核对版本和名称。` };
-  if (!units.length) return { error: '请输入至少一个上阵棋子的名称。' };
-  return { units };
+  if (!selected.size) return { error: '请输入至少一个上阵棋子的名称。' };
+  return { units: [...selected.values()], stars };
 }
 
 export function postgameReview(text, { setData, items }) {

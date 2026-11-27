@@ -36,16 +36,20 @@ test('leaves unseen details blank and rejects explicitly different game and patc
 test('analyzes roster traits, closest lineups and equipment references', () => {
   const [ahri, sett, xayah, yunara] = ['阿狸', '瑟提', '霞', '芸阿娜'].map(name => catalog.units.find(unit => unit.name === name));
   const gear = catalog.items.find(item => item.name === '珠光护手');
-  const comp = { name: '莲华样例', rank: { tier: 'S' }, units: [ahri.id, sett.id, yunara.id],
-    core: [ahri.id, yunara.id], itemBuilds: { [ahri.id]: [gear.id], [yunara.id]: [gear.id] } };
+  const comp = { name: '莲华样例', rank: { tier: 'S', avg: 3.4, top4: 72, samples: 50 }, units: [ahri.id, sett.id, yunara.id],
+    core: [ahri.id, yunara.id], itemBuilds: { [ahri.id]: [gear.id], [yunara.id]: [gear.id] }, stars: { [ahri.id]: 3, [sett.id]: 2 } };
   const wider = { ...comp, name: '重合相同但差异更多', units: [...comp.units, units[0].id] };
-  const result = analyzePostgameLineup([ahri, sett, xayah, ahri], [gear], { ...context, comps: [wider, comp] });
+  const result = analyzePostgameLineup([ahri, sett, xayah, ahri], [gear], { ...context, comps: [wider, comp], stars: { [ahri.id]: 2 } });
   assert.equal(result.count, 3);
   assert.ok(result.near.some(trait => trait.name === '灵魂莲华' && trait.num === 2 && trait.next === 3));
   assert.ok(analyzePostgameLineup([ahri, sett, yunara], [], context).active.some(trait => trait.name === '灵魂莲华' && trait.tier === 3));
   assert.ok(result.near.some(trait => trait.name === '花仙子' && trait.num === 1 && trait.next === 2));
   const [best] = result.comparisons;
   assert.equal(best.name, comp.name);
+  assert.equal(best.exact, false);
+  assert.equal(best.stats.samples, 50);
+  assert.deepEqual(best.starComparison, [{ name: '阿狸', actual: 2, listed: 3 }]);
+  assert.equal(analyzePostgameLineup([ahri, sett, yunara], [], { ...context, comps: [comp] }).comparisons[0].exact, true);
   assert.deepEqual(best.sharedCore, ['阿狸']);
   assert.deepEqual(best.missing, ['芸阿娜']);
   assert.deepEqual(best.missingCore, ['芸阿娜']);
@@ -59,6 +63,8 @@ test('imports explicit names using only the selected Gold Spatula roster', () =>
   const review = importPostgameLineup('洛、阿狸，洛', context);
   assert.deepEqual(review.units.map(unit => unit.name), ['洛', '阿狸']);
   assert.match(importPostgameLineup('洛、陌生棋子', context).error, /陌生棋子/);
+  assert.deepEqual(importPostgameLineup('洛、阿狸３星、阿狸', context).stars, { [units[1].id]: 3 });
+  assert.match(importPostgameLineup('阿狸2星、阿狸3星', context).error, /不同星级/);
   assert.match(importPostgameLineup('洛', { setData: { ...context.setData, scope: { sourceId: 'datatft' } } }).error, /暂无卡池/);
 });
 

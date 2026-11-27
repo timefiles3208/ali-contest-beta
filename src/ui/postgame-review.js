@@ -1,7 +1,7 @@
 import { imageKind, MAX_SOURCE_BYTES } from '../adapters/snapshot.js?v=game-release-scope-2';
 import { readPostgameText } from '../adapters/local-ocr.js?v=postgame-review';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
-import { analyzePostgameLineup, importPostgameLineup, postgameReview } from '../engine/postgame-review.js?v=lineup-analysis';
+import { analyzePostgameLineup, importPostgameLineup, postgameReview } from '../engine/postgame-review.js?v=review-benchmark';
 
 export function bindPostgameReview({ panel, input, clear, status, output, getContext, lineupForm }) {
   let generation = 0;
@@ -65,13 +65,23 @@ export function bindPostgameReview({ panel, input, clear, status, output, getCon
       details.open = index === 0;
       const summary = document.createElement('summary');
       const tier = reference.tier ? ` · 榜单 ${reference.tier} 级` : '';
-      summary.textContent = `${reference.name}${tier} · 重合 ${reference.count}/${reference.total} 名`;
+      const match = reference.exact ? '棋子名单一致' : `部分重合 ${reference.count}/${reference.total} 名`;
+      summary.textContent = `${reference.name}${tier} · ${match}`;
       const rows = document.createElement('div');
       rows.className = 'reference-lineup-detail';
+      const stats = reference.stats || {};
+      const measures = [Number.isFinite(stats.avg) && `均位 ${stats.avg.toFixed(2)}`,
+        Number.isFinite(stats.top4) && `前四率 ${stats.top4}%`].filter(Boolean);
+      if (Number.isFinite(stats.samples) && stats.samples > 0) measures.push(`样本 ${stats.samples.toLocaleString('zh-CN')} 场`);
+      else if (measures.length) measures.push('样本量未提供');
+      if (measures.length) addResult('榜单统计', measures.join(' · '), rows);
       addResult('重合核心', reference.sharedCore.join('、') || '无', rows);
       if (reference.missingCore.length) addResult('榜单核心差异', reference.missingCore.join('、'), rows);
       if (reference.missing.length) addResult('仅榜单有', reference.missing.join('、'), rows);
       if (reference.extra.length) addResult('仅本局有', reference.extra.join('、'), rows);
+      if (reference.starComparison.length) {
+        addResult('星级对照', reference.starComparison.map(unit => `${unit.name} 本局 ${unit.actual} 星 / 榜单 ${unit.listed} 星`).join('、'), rows);
+      }
       if (hasEquipment) {
         const gear = reference.equipment.map(item => `${item.name} → ${item.holders.join('、')}`).join('；');
         addResult('截图装备在榜单的搭配', gear || '重合棋子的榜单装备暂无对应', rows);
@@ -89,9 +99,10 @@ export function bindPostgameReview({ panel, input, clear, status, output, getCon
     }
     const lineup = imported || screenshot;
     if (!lineup) return;
-    addResult(imported ? '导入阵容' : '棋子名称', lineup.units.map(unit => unit.name).join('、') || '未读到可归属本人的名称');
+    const names = lineup.units.map(unit => lineup.stars?.[unit.id] ? `${unit.name} ${lineup.stars[unit.id]} 星` : unit.name);
+    addResult(imported ? '导入阵容' : '棋子名称', names.join('、') || '未读到可归属本人的名称');
     const equipment = screenshot?.equipment || [];
-    renderAnalysis(context && analyzePostgameLineup(lineup.units, equipment, context), equipment.length > 0);
+    renderAnalysis(context && analyzePostgameLineup(lineup.units, equipment, { ...context, stars: lineup.stars }), equipment.length > 0);
   }
 
   if (lineupForm) {

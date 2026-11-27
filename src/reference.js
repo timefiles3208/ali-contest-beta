@@ -112,7 +112,7 @@ async function load() {
     if (!gold) return;
     try {
       if (!postgame) {
-        const { bindPostgameReview } = await import('./ui/postgame-review.js?v=lineup-analysis');
+        const { bindPostgameReview } = await import('./ui/postgame-review.js?v=review-benchmark');
         if (request !== releaseId) return;
         postgame = bindPostgameReview({ panel, input: upload, clear: el('clearPostgame'), status: el('postgameStatus'),
           output: el('postgameResult'), lineupForm: el('postgameLineup'), getContext: () => sourceInput.value === 'dataj' && !upload.disabled ? {
