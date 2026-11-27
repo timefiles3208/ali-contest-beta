@@ -415,7 +415,7 @@ export const AUGMENT_TIER_LABELS = { silver: '白银', gold: '黄金', prismatic
 const tierById = new Map(Object.entries(AUGMENTS_BY_TIER).flatMap(([tier, ids]) => ids.map(id => [id, tier])));
 
 export function augmentTier(id) {
-  return tierById.get(id) || null;
+  return /^jcc-augment:(silver|gold|prismatic):\d+$/.exec(id)?.[1] || tierById.get(id) || null;
 }
 
 export function inferAugmentTier(ids) {

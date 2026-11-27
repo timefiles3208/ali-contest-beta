@@ -1,13 +1,13 @@
 import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=scout-direction';
-import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=opponent-equipment';
+import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=game-release-scope';
 import { openingModel } from './data/s18.18.7.opening-model.js';
-import { SETS, findSet } from './data/sets.js';
-import { iconHtml } from './ui/helpers.js';
-import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
-import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=equipment-cutoff';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=scout-hold-evidence';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=scout-direction';
+import { SETS, findSet } from './data/sets.js?v=game-release-scope';
+import { catalogIcon, iconHtml } from './ui/helpers.js?v=game-release-scope';
+import { loadCatalogBundle } from './adapters/catalog.js?v=game-release-scope';
+import { bindModelReference } from './ui/model-reference.js?v=game-release-scope';
+import { bindScreenReader } from './ui/screen-reader.js?v=game-release-scope';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=game-release-scope';
 import { bindOpeningPrompts } from './ui/opening-prompts.js?v=scout-direction';
 import { bindRecommendationFloat } from './ui/recommendation-float.js?v=scout-direction';
 import { solveBoardConstraints } from './engine/board-constraints.js';
@@ -15,7 +15,7 @@ import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=transition-shortlist';
+import { rankOpening } from './engine/opening.js?v=game-release-scope';
 import { stageAfterOpening } from './engine/screen-insights.js?v=video-ocr';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
@@ -24,8 +24,8 @@ import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=lineup-augm
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=opponent-artifacts';
 import { validateComps } from './adapters/provider.js';
-import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=dataj-small-krug';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=augment-speed';
+import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=game-release-scope';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=game-release-scope';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -35,10 +35,17 @@ let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
 const SOURCE_KEY = 'tft-board-source';
+const RELEASE_KEY = 'tft-board-release';
 const catalogLocation = location => location === 'database' ? 'Supabase' : '本地快照';
+function savedRelease() {
+  try { return findSet(localStorage.getItem(RELEASE_KEY))?.version || SETS[0].version; } catch { return SETS[0].version; }
+}
+
 function savedSource() {
   try { return sourceFor(localStorage.getItem(SOURCE_KEY)).id; } catch { return BOARD_SOURCES[0].id; }
 }
+
+const freshSnapshot = () => ({ file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false });
 
 const state = {
   meta: null,
@@ -66,7 +73,7 @@ const state = {
   openingEquipmentClosed: false,
   lineupChoice: null,
   opponentBoards: new Map(),
-  snap: { file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false },
+  snap: freshSnapshot(),
 };
 
 async function loadBoard() {
@@ -93,7 +100,9 @@ async function loadBoard() {
   state.issues = ['正在读取所选榜单…'];
   renderResults();
   try {
-    if (state.setData.set !== 18) throw new Error('此赛季没有该数据源的快照');
+    if (state.setData.scope?.sourceId !== source.id || state.setData.scope.version !== source.version || !state.setData.units.length) {
+      throw new Error(`暂无 ${source.game} ${state.meta.version} 的阵容数据`);
+    }
     const paths = source.ratingsFile ? [source.file, source.ratingsFile] : [source.file];
     const { values: [raw, ratings = null], location } = await loadCatalogBundle(paths, { optional: [source.ratingsFile] });
     if (generation !== boardLoad) return;
@@ -114,19 +123,28 @@ async function loadBoard() {
   renderResults();
 }
 
-async function loadSet(setNum) {
+async function loadSet(version) {
+  const meta = findSet(version);
+  if (!meta) return;
+  const source = sourceFor(state.sourceId);
+  const scope = { sourceId: source.id, game: source.game, season: meta.set, version: meta.version };
+  const empty = { set: meta.set, costs: [], traits: [], units: [], scope };
+  loadingSet = true;
   resetLineupChoice();
+  openingAdvice?.reset();
   state.opponentBoards.clear();
   scout?.reset();
   screenReader?.reset();
   openingPrompts?.reset();
   iconMatch?.reset();
-  const meta = findSet(setNum);
   const generation = ++setLoad;
   boardLoad++;
-  loadingSet = true;
   state.meta = meta;
-  modelReference?.setScope(state.sourceId, null, sourceFor(state.sourceId).game);
+  state.setData = empty;
+  state.items = state.augs = state.board = state.ref = state.ranked = null;
+  state.comps = [];
+  state.level = 7;
+  modelReference?.setScope(source.id, null, source.game, meta.version);
   state.selected.clear();
   state.unitCopies.clear();
   state.rollBudget = {};
@@ -137,18 +155,28 @@ async function loadSet(setNum) {
   state.ownedItems.clear();
   state.chosen.clear();
   state.openingAugment = '';
-  state.snap.mapped = null;
-  state.snap.applied = false;
-  state.snap.error = null;
+  state.openingCity = state.economy = '';
+  state.openingEquipmentClosed = false;
+  if (state.snap.thumb) URL.revokeObjectURL(state.snap.thumb);
+  state.snap = freshSnapshot();
+  clearSnapshot();
   el('search').value = '';
+  el('sourceBadge').textContent = source.game + ' · ' + meta.version + ' · 读取中…';
+  renderCostTabs();
+  renderUnits();
+  renderResults();
 
   const catalogBadge = el('catalogBadge');
   catalogBadge.className = 'badge';
   catalogBadge.textContent = '卡池载入中…';
-  const release = await loadCatalogBundle([meta.dataFile, meta.itemsFile, meta.augFile], {
-    optional: [meta.itemsFile, meta.augFile],
-  }).catch(error => ({ values: [{ set: meta.set, costs: [], traits: [], units: [], source: {}, loadError: error.message }, null, null] }));
-  const [setData, items, augments] = release.values;
+  const available = source.version === meta.version && source.season === meta.set;
+  const paths = source.catalogFile ? [source.catalogFile] : [meta.dataFile, meta.itemsFile, meta.augFile];
+  const release = available
+    ? await loadCatalogBundle(paths, { optional: source.catalogFile ? [] : [meta.itemsFile, meta.augFile] })
+      .catch(error => ({ values: [], error: error.message }))
+    : { values: [] };
+  const [roster, items = source.catalogFile ? roster : null, augments = source.catalogFile ? roster : null] = release.values;
+  const setData = roster ? { ...roster, set: meta.set, scope } : { ...empty, loadError: release.error };
   if (generation !== setLoad) return;
   loadingSet = false;
   const coreReady = setData.units.length > 0;
@@ -156,7 +184,7 @@ async function loadSet(setNum) {
   catalogBadge.className = `badge ${complete ? 'ok' : 'warn'}`;
   catalogBadge.textContent = coreReady
     ? `卡池·装备·海克斯 · ${catalogLocation(release.location)}${complete ? '' : ' · 部分缺失'}`
-    : meta.status === 'preview' ? '卡池 · 赛季预览' : '卡池 · 数据不可用';
+    : '卡池 · 暂无所选版本数据';
   state.setData = setData;
   state.items = items;
   state.augs = augments;
@@ -177,7 +205,7 @@ async function loadSet(setNum) {
     option.dataset.unitId = id;
     return option;
   }));
-  modelReference?.setScope(state.sourceId, setData.units.length ? setData.set : null, sourceFor(state.sourceId).game);
+  modelReference?.setScope(source.id, setData.units.length ? setData.set : null, source.game, meta.version);
 
   renderCostTabs();
   renderUnits();
@@ -206,9 +234,7 @@ function traitName(id) {
 function renderUnits() {
   const version = state.setData.source?.ddragonVersion;
   if (!state.setData.units.length) {
-    el('unitGrid').innerHTML = `<div class="empty">${esc(state.meta.label)}：卡池数据尚未落地<br />
-      ${esc(state.setData.preview?.schedule || state.meta.window || '')}<br />
-      上线后跑 <code>node scripts/build-set-data.mjs --set ${state.meta.set}</code> 生成卡池再刷新。</div>`;
+    el('unitGrid').innerHTML = `<div class="empty">${esc(state.setData.scope.game)} ${esc(state.meta.version)} ${loadingSet ? '正在加载' : '暂无卡池数据'}</div>`;
     renderSelected();
     return;
   }
@@ -252,7 +278,7 @@ function renderCompGuide(comp) {
       : '<span class="guide-cell" aria-hidden="true"></span>').join('')}
   </div>`).join('');
   const sourceItems = state.sourceId === 'dataj' ? state.board?.items : undefined;
-  const artifactRows = units.map(unit => recommendArtifacts(unit, state.board?.version, sourceItems));
+  const artifactRows = units.map(unit => recommendArtifacts(unit, state.board?.version, sourceItems, state.items));
   const hasArtifacts = artifactRows.some(row => row.length);
   const targets = units.map((unit, i) => `<tr>
     <th scope="row">${esc(unit.name)} <small>${unit.cost}费</small></th>
@@ -339,8 +365,8 @@ function refreshPlanTiers() {
 }
 
 function openingContext() {
-  if (!state.setData) return null;
-  const cities = state.sourceId === 'datatft' && state.setData.set === 18 ? S18_OPENINGS : OPENING_EFFECTS;
+  if (loadingSet || !state.setData?.units.length) return null;
+  const cities = state.sourceId === 'datatft' && state.setData.scope.version === '18.7' ? S18_OPENINGS : OPENING_EFFECTS;
   const augments = state.augs?.augments || [];
   const ranked = state.ranked || [];
   const choice = state.lineupChoice;
@@ -438,7 +464,7 @@ function renderResults() {
   state.ranked = null;
 
   if (!state.setData.units.length) {
-    box.innerHTML = `<div class="empty">${esc(state.meta.label)} 的卡池尚未生成，推荐不可用。<br />${esc(state.setData.preview?.note || '')}</div>`;
+    box.innerHTML = `<div class="empty">${esc(state.setData.scope.game)} ${esc(state.meta.version)} ${loadingSet ? '正在加载' : '暂无可用卡池，推荐不可用。'}</div>`;
     renderSide();
     return;
   }
@@ -601,7 +627,7 @@ function renderHexes(top) {
   const chip = (a, kind) => {
     const stat = boardStat(state.board?.augments, a.name);
     const color = augmentTier(a.id);
-    return `<button class="hex ${kind || ''}" data-hex="${a.id}" title="${esc(a.desc)}"><b>${esc(a.name)}</b>${color ? `<span class="augment-tier" data-tier="${color}">${AUGMENT_TIER_LABELS[color]}</span>` : ''}${stat ? `<small class="board-stat">${esc(stat)}</small>` : ''}${kind === 'lib' ? '<em class="tag">库里推荐</em>' : ''}</button>`;
+    return `<button class="hex ${kind || ''}" data-hex="${a.id}" title="${esc(a.desc)}"><b>${catalogIcon(a.icon) ? `<img width="20" height="20" loading="lazy" src="${catalogIcon(a.icon)}" alt="">` : ''}${esc(a.name)}</b>${color ? `<span class="augment-tier" data-tier="${color}">${AUGMENT_TIER_LABELS[color]}</span>` : ''}${stat ? `<small class="board-stat">${esc(stat)}</small>` : ''}${kind === 'lib' ? '<em class="tag">库里推荐</em>' : ''}</button>`;
   };
 
   const chosenRow = [...state.chosen].map((id) => byId.get(id)).filter(Boolean);
@@ -667,11 +693,11 @@ function renderGear(top) {
 function renderFoot() {
   const d = state.setData;
   if (!d.units.length) {
-    el('footNote').textContent = `S${d.set} 卡池尚未生成（${d.preview?.schedule || '等待正式服数据落地'}）`;
+    el('footNote').textContent = `${d.scope.game} ${d.scope.version} · ${loadingSet ? '读取中' : '暂无卡池数据'}`;
     return;
   }
   el('footNote').textContent =
-    `S${d.set} 卡池 ${d.units.length} 个单位 / 羁绊 ${d.traits.length} 个（来源 Riot DDragon ${d.source?.ddragonVersion}）` +
+    `${d.scope.game} ${d.scope.version} · ${d.units.length} 个棋子 / ${d.traits.length} 个羁绊（${d.scope.sourceId === 'dataj' ? 'dataj.cc' : 'Riot DDragon ' + d.source?.ddragonVersion}）` +
     (state.board
       ? `；${sourceFor(state.sourceId).host} ${state.board.version} 快照（${state.board.extractedAt} 抓取），已映射 ${state.comps.length} 套${state.board.skipped.length ? `，${state.board.skipped.length} 套含未对应的棋子` : ''}`
       : '') +
@@ -744,7 +770,7 @@ function renderSnapshot() {
     preview.replaceChildren();
   }
   const locked = snap.busy || snap.importing;
-  el('snapRun').disabled = !snap.file || !state.setData?.units.length || locked;
+  el('snapRun').disabled = loadingSet || !snap.file || !state.setData?.units.length || locked;
   el('snapAi').disabled = el('snapRun').disabled;
   el('snapClear').disabled = !snap.file || locked;
   el('snapRotate').disabled = !snap.file || locked;
@@ -842,6 +868,7 @@ async function importSnapshot(read) {
     const preview = new Image();
     preview.src = thumb;
     try { await preview.decode(); } catch { throw new Error('图片无法解码，请换一张或转成 PNG 后再试。'); }
+    if (snap !== state.snap) return;
     if (snap.thumb) URL.revokeObjectURL(snap.thumb);
     Object.assign(snap, { file: source, thumb, rotation: 0, mapped: null, applied: false });
     thumb = null;
@@ -894,6 +921,7 @@ async function runRecognize(enhanced = false) {
   const generation = boardLoad;
   const { file, rotation } = state.snap;
   const request = {};
+  const snapshot = state.snap;
   state.snap.request = request;
   const current = () => state.meta === set && generation === boardLoad &&
     state.snap.request === request && state.snap.file === file && state.snap.rotation === rotation;
@@ -907,6 +935,11 @@ async function runRecognize(enhanced = false) {
   const accept = (result, late = false) => {
     if (!result || !current()) return;
     if (late && state.snap.applied) {
+      state.snap.ai = null;
+      return;
+    }
+    if (result.scopeMismatch) {
+      state.snap.error = { message: result.scopeMismatch };
       state.snap.ai = null;
       return;
     }
@@ -955,8 +988,10 @@ async function runRecognize(enhanced = false) {
   } catch (error) {
     if (current()) state.snap.error = { message: error?.message || '识别失败了。' };
   } finally {
-    state.snap.busy = false;
-    renderSnapshot();
+    if (state.snap === snapshot && state.snap.request === request) {
+      state.snap.busy = false;
+      renderSnapshot();
+    }
   }
 }
 
@@ -1132,16 +1167,20 @@ function bind() {
       renderResults();
     },
   });
-  el('setSelect').innerHTML = SETS.map((s) => `<option value="${s.set}">${esc(s.label)}${s.status === 'preview' ? ' · 待上线' : ''}</option>`).join('');
+  el('setSelect').replaceChildren(...SETS.map(s => new Option(`${s.version} · S${s.set}${s.status === 'preview' ? '（待上线）' : ''}`, s.version)));
+  el('setSelect').value = savedRelease();
   el('boardSource').replaceChildren(...BOARD_SOURCES.map(({ id, host, game }) => new Option(`${game} · ${host}`, id)));
   el('boardSource').value = state.sourceId;
   el('boardSource').onchange = (event) => {
     state.sourceId = sourceFor(event.target.value).id;
-    modelReference.setScope(state.sourceId, !loadingSet && state.setData?.units.length ? state.setData.set : null, sourceFor(state.sourceId).game);
     try { localStorage.setItem(SOURCE_KEY, state.sourceId); } catch { /* session choice still works */ }
-    void loadBoard();
+    void loadSet(el('setSelect').value);
   };
-  el('setSelect').onchange = (e) => loadSet(e.target.value);
+  el('setSelect').onchange = event => {
+    const version = event.target.value;
+    try { localStorage.setItem(RELEASE_KEY, version); } catch { /* session choice still works */ }
+    void loadSet(version);
+  };
   el('planTrait').onchange = () => { refreshPlanTiers(); renderResults(); };
   el('planTier').onchange = renderResults;
   el('planCap').onchange = renderResults;
@@ -1297,4 +1336,4 @@ function bind() {
 }
 
 bind();
-loadSet(SETS[0].set);
+loadSet(el('setSelect').value);

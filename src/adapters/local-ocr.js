@@ -1,3 +1,4 @@
+import { screenScopeMismatch } from '../engine/game-scope.js';
 import { contentFrame } from './game-frame.js';
 import { createOcrLane } from './ocr-lane.js';
 import { fillGoldCardSlots, warmGoldCardIcons } from './augment-icon-ocr.js?v=augment-speed';
@@ -169,7 +170,7 @@ async function openingSlots(canvas, setData, entries, isCurrent, onSlots) {
       slots[missing] = matchRegionLabel(text, comparable) || matchRepeatedCardTitle(text, comparable);
       publish(slots);
     }
-    if (setData.set === 18) slots = await fillGoldCardSlots(canvas, CARD_CENTERS, slots, entries, isCurrent, heightScale);
+    if (setData.set === 18 && setData.scope?.sourceId !== 'dataj') slots = await fillGoldCardSlots(canvas, CARD_CENTERS, slots, entries, isCurrent, heightScale);
     if (!isCurrent()) return null;
     const matches = slots.filter(Boolean);
     if (new Set(matches).size !== matches.length) continue;
@@ -204,14 +205,25 @@ export async function readOwnShopHud(canvas, isCurrent) {
   return null;
 }
 
+export async function readFrameScope(canvas, setData, isCurrent) {
+  if (!setData.scope) return null;
+  const header = cropForOcr(canvas, [0, 0, 1, 0.18], { zoom: 1.4, contrast: false });
+  return screenScopeMismatch(await readOcr(header, isCurrent), setData.scope);
+}
+
 export async function recognizeBoardText(canvas, setData, isCurrent = () => true, {
-  detailed = false, opening, readCards = true, fastOpening = false, stageOnly = false, readShop = false, onStage, onProgress,
+  detailed = false, checkScope = false, opening, readCards = true, fastOpening = false, stageOnly = false, readShop = false, onStage, onProgress,
 } = {}) {
   if (fastOpening) canvas = contentFrame(canvas);
   const landscape = canvas.width >= canvas.height;
   const ratio = canvas.width / canvas.height;
   const desktop = ratio >= 1.65 && ratio <= 1.95;
   const canReadCards = ratio >= 1.52 && ratio <= 2.12;
+  if (checkScope) {
+    const scopeMismatch = await readFrameScope(canvas, setData, isCurrent);
+    if (scopeMismatch) return { scopeMismatch };
+    if (!isCurrent()) return null;
+  }
   const hint = (fastOpening || detailed) && canReadCards ? await readHudStage(canvas, setData, isCurrent) : null;
   if (!isCurrent()) return null;
   let slots;
@@ -239,15 +251,17 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
   }
   let earlyShop;
   if (detailed && desktop && hint && hint !== '2-1') {
-    onProgress?.({ stage: hint, matchFrame: true, units: [], traits: [] });
+    if (!setData.scope) onProgress?.({ stage: hint, matchFrame: true, units: [], traits: [] });
     earlyShop = await readLabels(canvas, SHOP_LABELS, entriesForOcr(setData.units, setData.set), isCurrent, [{ threshold: 200 }]);
     if (!earlyShop || !isCurrent()) return null;
     earlyShop = earlyShop.filter(Boolean);
-    onProgress?.({ stage: hint, matchFrame: true, units: earlyShop, traits: [] });
+    if (!setData.scope) onProgress?.({ stage: hint, matchFrame: true, units: earlyShop, traits: [] });
   }
   const textCanvas = detailed ? scaledForText(canvas) : canvas;
   const text = await readOcr(textCanvas, isCurrent);
   if (text === null || !isCurrent()) return null;
+  const scopeMismatch = screenScopeMismatch(text, setData.scope);
+  if (scopeMismatch) return { scopeMismatch };
   const initial = screenEvidence(text, setData);
   if (stageOnly) return { stage: initial.stage };
   const reads = [initial];
@@ -259,6 +273,8 @@ export async function recognizeBoardText(canvas, setData, isCurrent = () => true
     // names in rows that sparse mode can fragment into unrelated glyphs.
     const block = await readOcr(textCanvas, isCurrent, '6');
     if (block === null || !isCurrent()) return null;
+    const mismatch = screenScopeMismatch(block, setData.scope);
+    if (mismatch) return { scopeMismatch: mismatch };
     fullText.push(block);
     reads.push(screenEvidence(block, setData));
   }
@@ -340,8 +356,14 @@ export async function recognizeOpponentLabels(canvas, setData, isCurrent, augmen
   const text = await scout.read(labels, isCurrent);
   if (text === null || !isCurrent()) return null;
   const profile = readOpponentProfile(text, augments);
+  const matched = openingNamesInText(text, [], entriesForOcr(setData.units, setData.set)).offered;
+  // A text label alone can't distinguish the two DataJ variants of a unit.
+  const units = setData.scope?.sourceId === 'dataj' ? matched.filter(id => {
+    const name = setData.units.find(unit => unit.id === id)?.name;
+    return name && setData.units.filter(unit => unit.name === name).length === 1;
+  }) : matched;
   const evidence = {
-    units: openingNamesInText(text, [], entriesForOcr(setData.units, setData.set)).offered,
+    units,
     traits: screenEvidence(text, setData).traits,
     ...profile,
   };

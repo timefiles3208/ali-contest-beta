@@ -1,6 +1,7 @@
-export function modelKey(source, season, unit) {
+export function modelKey(source, season, unit, version) {
   if (!['dataj', 'datatft'].includes(source) || !Number.isInteger(season) || !unit) return null;
-  return `${source}:${season}:${unit}`;
+  if (source === 'datatft' && season === 18 && version === '18.7') return `${source}:${season}:${unit}`;
+  return version ? `${source}:${season}:${version}:${unit}` : null;
 }
 
 let opening;
@@ -29,12 +30,9 @@ export const readModel = (key) => modelRequest('readonly', (store) => store.get(
 export const saveModel = (key, file) => modelRequest('readwrite', (store) => store.put(file, key));
 export const deleteModel = (key) => modelRequest('readwrite', (store) => store.delete(key));
 
-export async function findModel(source, season, unit, read = readModel) {
-  const key = modelKey(source, season, unit);
+export async function findModel(source, season, unit, version, read = readModel) {
+  const key = modelKey(source, season, unit, version);
   if (!key) return null;
   const file = await read(key);
-  if (file) return { file, source };
-  if (source !== 'dataj') return null;
-  const fallback = await read(modelKey('datatft', season, unit));
-  return fallback ? { file: fallback, source: 'datatft' } : null;
+  return file ? { file, source } : null;
 }

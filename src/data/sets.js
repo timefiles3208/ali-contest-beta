@@ -1,8 +1,9 @@
-// 赛季注册表：一个赛季一份卡池 + 一份阵容库，切换赛季等于换数据命名空间。
+// 发布版本注册表。每个游戏端只加载自己已收录的精确版本。
 // status: live(正式服可用) / preview(数据未落地，界面降级说明)
 export const SETS = [
   {
     set: 18,
+    version: '18.7',
     label: 'S18 自然之力',
     status: 'live',
     window: '2026-08-27 国服上线 · 2026-12-03 被 S19 替换',
@@ -14,6 +15,7 @@ export const SETS = [
   },
   {
     set: 19,
+    version: '19.1',
     label: 'S19 棱彩音乐盛典',
     status: 'preview',
     window: '国际服 2026-12-01 / 国服 2026-12-03 上线',
@@ -24,4 +26,4 @@ export const SETS = [
   },
 ];
 
-export const findSet = (num) => SETS.find((s) => s.set === Number(num)) || SETS[0];
+export const findSet = version => SETS.find(release => release.version === String(version));

@@ -35,8 +35,12 @@ export function artifactOptions(patch, sourceItems) {
   return patch === '18.7' ? artifactDetails(Object.keys(artifacts), sourceItems) : [];
 }
 
-export function recommendArtifacts(unit, patch, sourceItems) {
+export function recommendArtifacts(unit, patch, sourceItems, itemsData) {
   if (patch !== '18.7') return [];
+  if (itemsData?.source === 'dataj.cc') {
+    const builds = new Set(unit.items || []);
+    return itemsData.items.filter(item => item.kind === 'artifact' && builds.has(item.id)).slice(0, 3);
+  }
   const items = unit.items || [];
   const keys = unit.id === 'DA_18_Ornn' ? ['idol', 'crest', 'duskShield', 'dawnShield']
     : unit.tank || unit.row === 0 ? ['crest', 'dawnShield', 'duskShield']
@@ -62,9 +66,11 @@ function equipmentChoices({ comp, setData, selected }, itemsForUnit) {
 }
 
 export function artifactAugmentChoices(id, context) {
-  const { comp, patch, sourceItems } = context;
-  if (!ARTIFACT_AUGMENTS.has(id) || patch !== '18.7' || !comp) return [];
-  return equipmentChoices(context, unit => recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, sourceItems));
+  const { comp, patch, sourceItems, itemsData } = context;
+  const native = itemsData?.source === 'dataj.cc';
+  const isForge = native ? ['jcc-augment:silver:1093', 'jcc-augment:gold:3093', 'jcc-augment:prismatic:3270'].includes(id) : ARTIFACT_AUGMENTS.has(id);
+  if (!isForge || patch !== '18.7' || !comp) return [];
+  return equipmentChoices(context, unit => recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, sourceItems, itemsData));
 }
 
 const RADIANT_PROMPTS = new Map([
@@ -83,6 +89,7 @@ const RADIANT_ALIASES = { DA_Deathblade: '光明版锐利之刃', DA_GiantSlayer
 
 export function radiantOptions(patch, itemsData, sourceItems) {
   if (patch !== '18.7') return [];
+  if (itemsData?.source === 'dataj.cc') return itemsData.items.filter(item => item.kind === 'radiant' && item.baseId);
   // S18's craftable equipment has radiant counterparts, except the three crowns.
   return (itemsData?.items || []).flatMap(item => {
     if (item.kind !== 'completed' || RADIANT_EXCLUDED.has(item.id)) return [];
@@ -96,7 +103,7 @@ export function radiantOptions(patch, itemsData, sourceItems) {
 
 export function radiantAugmentChoices(id, context) {
   const { comp, patch, sourceItems, itemsData, ownedItems } = context;
-  const prompt = RADIANT_PROMPTS.get(id);
+  const prompt = itemsData?.source === 'dataj.cc' ? (id === 'jcc-augment:prismatic:3132' ? '若刷到' : null) : RADIANT_PROMPTS.get(id);
   if (!prompt || patch !== '18.7' || !comp) return null;
   const upgrade = RADIANT_UPGRADES.has(id);
   const radiantByBase = new Map(radiantOptions(patch, itemsData, sourceItems)

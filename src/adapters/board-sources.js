@@ -1,8 +1,8 @@
 import { datajTeamCodes } from '../data/s18.18.7.dataj-team-codes.js';
 
 export const BOARD_SOURCES = [
-  { id: 'datatft', host: 'datatft.com', game: '云顶之弈', file: './src/data/datatft/s18.18.7.comps.json', ratingsFile: './src/data/datatft/s18.18.7.ratings.json' },
-  { id: 'dataj', host: 'dataj.cc', game: '金铲铲之战', file: './src/data/dataj/s18.18.7.json' },
+  { id: 'datatft', season: 18, version: '18.7', host: 'datatft.com', game: '云顶之弈', file: './src/data/datatft/s18.18.7.comps.json', ratingsFile: './src/data/datatft/s18.18.7.ratings.json' },
+  { id: 'dataj', season: 18, version: '18.7', catalogFile: './src/data/dataj/s18.18.7.catalog.json', host: 'dataj.cc', game: '金铲铲之战', file: './src/data/dataj/s18.18.7.json' },
 ];
 
 export const sourceFor = (id) => BOARD_SOURCES.find((source) => source.id === id) || BOARD_SOURCES[0];
@@ -14,13 +14,18 @@ const round = (x) => Number.isFinite(x) ? x : null;
 export function adaptBoard(raw, { source, setData, items, ratings }) {
   const config = sourceFor(source);
   if (raw?.source !== config.host) throw new Error('数据源标识不匹配');
-  if (raw.season !== setData.set || !String(raw.version || '').startsWith(`${setData.set}.`)) throw new Error('榜单赛季不匹配');
+  if (raw.season !== setData.set || raw.version !== config.version || (setData.scope &&
+    (setData.scope.sourceId !== config.id || setData.scope.version !== raw.version))) throw new Error('榜单与所选游戏版本不匹配');
   if (ratings && (ratings.source !== raw.source || ratings.season !== raw.season || ratings.version !== raw.version)) {
     throw new Error('评级数据源或版本不匹配');
   }
 
   const byId = new Map(setData.units.map((unit) => [unit.id, unit]));
-  const unitByName = new Map(setData.units.map((unit) => [normalize(unit.name), unit]));
+  const unitByName = new Map();
+  for (const unit of setData.units) {
+    const name = normalize(unit.name);
+    unitByName.set(name, unitByName.has(name) && setData.scope?.sourceId === 'dataj' ? null : unit);
+  }
   const itemByName = new Map((items?.items || []).map((item) => [normalize(item.name), item.id]));
   const itemIds = new Set(itemByName.values());
   // DataJ S18 can export the split Krug with heroType 0, like a shop unit.
@@ -30,8 +35,11 @@ export function adaptBoard(raw, { source, setData, items, ratings }) {
   const skipped = [];
   for (const row of raw.comps || []) {
     const entries = (row.heroes || row.heros || []).filter((hero) => !hero.summon && !isSmallKrug(hero)).map((hero) => {
-      const unit = hero.key ? byId.get(hero.key) : unitByName.get(normalize(hero.name));
-      const gear = hero.tftEquips || (hero.items || []).map((name) => itemByName.get(normalize(itemAliases[name] || name)));
+      const unit = setData.scope?.sourceId === 'dataj'
+        ? (hero.id == null ? unitByName.get(normalize(hero.name)) : byId.get('jcc-unit:' + hero.id))
+        : hero.key ? byId.get(hero.key) : unitByName.get(normalize(hero.name));
+      const gear = hero.tftEquips || (hero.items || []).map((name) =>
+        itemByName.get(normalize(name)) || itemByName.get(normalize(itemAliases[name])));
       const stars = Number.isInteger(hero.stars) && hero.stars >= 1 && hero.stars <= 4 ? hero.stars : null;
       return { unit, gear: gear.filter(id => itemIds.has(id)), core: hero.core, carry: hero.carry, stars };
     });

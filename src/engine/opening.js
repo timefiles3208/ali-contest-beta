@@ -1,11 +1,11 @@
 import { cityFit, formationPlan, formationRow } from './formation.js?v=scout-direction';
-import { opponentPressure } from './opponent-scout.js?v=scout-hold-evidence';
+import { opponentPressure } from './opponent-scout.js?v=game-release-scope';
 import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
 import { economyBenefits, rankAugments } from './augments.js?v=lineup-augment-guides';
 import { augmentTier } from '../data/augment-tiers.js';
 import { estimateRolldown, validRollBudget } from './rolldown.js';
-import { recommendArtifacts, radiantOptions } from './artifacts.js?v=opponent-equipment';
+import { recommendArtifacts, radiantOptions } from './artifacts.js?v=game-release-scope';
 
 const TIERS = { 'S+': 7, S: 6, A: 5, B: 4, C: 3, D: 2, E: 1 };
 
@@ -25,12 +25,12 @@ function equipmentFit(comp, itemById, owned, ownedItems) {
   return { held, parts, points: Math.min(36, held.length * 12 + parts.length * 5) };
 }
 
-function coreEquipment(formation, itemById, owned, ownedItems, radiant, sourceItems, patch) {
+function coreEquipment(formation, itemById, owned, ownedItems, radiant, sourceItems, patch, itemsData) {
   if (!owned.size && !ownedItems.size) return { carry: false, tank: false };
   const pool = new Map(owned);
   const held = new Set(ownedItems);
   const matchingItem = unit => {
-    const artifacts = recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, sourceItems);
+    const artifacts = recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, sourceItems, itemsData);
     const upgraded = radiant.find(item => unit.items.includes(item.baseId) && (held.has(item.id) || held.has(item.name)));
     if (upgraded) {
       held.delete(upgraded.id);
@@ -83,15 +83,16 @@ function transitionSupport(comp, context) {
     return '已有迅捷射手纹章和两名迅捷射手，可过渡到厄斐琉斯';
   }
   // DataJ's 18.7 神谕狐狸 board uses these two early Invokers, with Jeweled Gauntlet on the late carries.
-  if (sourceId === 'dataj' && comp.id === 'dataj-111' && comp.carry?.includes('DA_18_Ahri')
-      && comp.aimTraits?.DA_18_Invoker >= 4 && ownedItems.has('DA_JeweledGauntlet')
-      && ['DA_KogMaw18_AD', 'DA_18_Sentry'].every(id => comp.units.includes(id) && heldCopies(id) === 1)) {
+  if (sourceId === 'dataj' && comp.id === 'dataj-111' && comp.carry?.includes('jcc-unit:4511')
+      && comp.aimTraits?.['jcc-trait:350'] >= 4 && ownedItems.has('jcc-item:2038')
+      && ['jcc-unit:3513', 'jcc-unit:1511'].every(id => comp.units.includes(id) && heldCopies(id) === 1)) {
     return '克格莫与苍蓝哨戒可带珠光护手过渡到高费神谕';
   }
   return '';
 }
 
 export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model, opponentBoards = new Map(), rollBudget, unitCopies = new Map(), sourceId = 'datatft', sourceItems }) {
+  if (setData.scope && (setData.scope.sourceId !== sourceId || setData.scope.version !== patch)) return [];
   const itemById = new Map((itemsData?.items || []).map(row => [row.id, row]));
   const unitById = new Map(setData.units.map(row => [row.id, row]));
   const radiant = ownedItems.size ? radiantOptions(patch, itemsData, sourceItems) : [];
@@ -105,7 +106,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
   const stableOpener = transition.length >= 2 && transition.some(unit => heldCopies(unit.id) >= 3);
   const baseline = recommend({ setData, comps, selected, level });
   const hasOpponentEvidence = [...opponentBoards.values()].some(({ routes, unitCopies }) => routes.length || unitCopies?.size);
-  const isTrained = supportsOpeningModel(setData.set, patch, model);
+  const isTrained = sourceId === 'datatft' && supportsOpeningModel(setData.set, patch, model);
   const useRolldown = sourceId === 'datatft' && setData.set === 18 && patch === '18.7' && validRollBudget(rollBudget);
   const rollCache = new Map();
   const ranked = baseline.map(row => {
@@ -115,7 +116,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
     const gear = equipmentFit(comp, itemById, owned, ownedItems);
     const formation = formationPlan(comp, unitById);
     const cityPoints = cityFit(city, comp, gear.points, unitById, formation);
-    const openingReady = coreEquipment(formation, itemById, owned, ownedItems, radiant, sourceItems, patch);
+    const openingReady = coreEquipment(formation, itemById, owned, ownedItems, radiant, sourceItems, patch, itemsData);
     const gearPoints = gear.points + Number(openingReady.carry) * 3 + Number(openingReady.tank) * 2;
     const chase = formation.chase.filter(unit => unit.cost <= 3);
     const chaseHeld = chase.filter(unit => selected.has(unit.id));

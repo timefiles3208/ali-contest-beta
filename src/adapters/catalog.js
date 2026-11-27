@@ -22,6 +22,12 @@ const snapshots = new Map([
     p => nonempty(p.comps, composition)]],
   ['./src/data/datatft/s18.18.7.ratings.json', ['ratings', 'datatft', '18.7',
     p => nonempty(p.ratings?.items, namedStats) && nonempty(p.ratings?.augments, namedStats)]],
+  ['./src/data/dataj/s18.18.7.catalog.json', ['game-catalog', 'dataj', '18.7',
+    p => nonempty(p.units, row => named(row) && row.id.startsWith('jcc-unit:') && Number.isInteger(row.cost) && Array.isArray(row.traits))
+      && nonempty(p.traits, row => named(row) && row.id.startsWith('jcc-trait:') && Array.isArray(row.tiers))
+      && nonempty(p.items, row => named(row) && row.id.startsWith('jcc-item:') && Array.isArray(row.from))
+      && nonempty(p.components, row => named(row) && row.id.startsWith('jcc-item:'))
+      && nonempty(p.augments, row => named(row) && row.id.startsWith('jcc-augment:'))]],
   ['./src/data/dataj/s18.18.7.json', ['rankings', 'dataj', '18.7',
     p => nonempty(p.comps, composition) && nonempty(p.items, namedStats) && nonempty(p.augments, namedStats)]],
 ]);

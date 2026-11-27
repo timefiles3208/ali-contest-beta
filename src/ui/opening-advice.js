@@ -1,7 +1,7 @@
 import { renderLineupList } from './lineup-list.js?v=scout-direction';
 import { rankOpeningAugments } from '../engine/opening.js?v=scout-direction';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
-import { artifactOptions, radiantOptions } from '../engine/artifacts.js?v=opponent-equipment';
+import { artifactOptions, radiantOptions } from '../engine/artifacts.js?v=game-release-scope';
 
 export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, removeItem, unitSelect, toggleUnit, ownedSummary, candidates, inputs, list, tier, tierStatus, direction, picks, opponentCoverage, rollFields, rollLevel, rollGold, rollXp, copies, hud, applyHud, getContext, onChange, onPick, onTier, onShow, onChoices, onSelect }) {
   let detectedUnits = [];
@@ -55,8 +55,8 @@ export function bindOpeningAdvice({ dialog, open, city, economy, item, addItem, 
       catalogIdentity = setData;
       options(city, cities, '未确认');
       const patch = ctx.board?.version;
-      openingEquipment = [...(itemsData?.items || []), ...artifactOptions(patch, ctx.sourceItems),
-        ...radiantOptions(patch, itemsData, ctx.sourceItems)];
+      openingEquipment = itemsData?.source === 'dataj.cc' ? itemsData.items
+        : [...(itemsData?.items || []), ...artifactOptions(patch, ctx.sourceItems), ...radiantOptions(patch, itemsData, ctx.sourceItems)];
       options(item, [
         ...(itemsData?.components || []).map(row => ({ ...row, name: `${row.name} · 散件` })),
         ...openingEquipment,

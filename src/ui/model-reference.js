@@ -1,4 +1,4 @@
-import { deleteModel, findModel, modelKey, saveModel } from './model-library.js';
+import { deleteModel, findModel, modelKey, saveModel } from './model-library.js?v=game-release-scope';
 
 const VIEWER_MODULE = '../vendor/model-viewer/model-viewer.min.js';
 const MAX_MODEL_BYTES = 25 * 1024 * 1024;
@@ -107,13 +107,12 @@ export function bindModelReference({ file, unit, display, angle, use, useAll, cl
   let scope, currentFile, storedModel, assignedKey, modelSource;
   const setStatus = (message) => { status.textContent = message; };
   const unitId = () => unit.selectedOptions[0]?.dataset.unitId;
-  const currentKey = () => modelKey(scope?.source, scope?.season, unitId());
+  const currentKey = () => modelKey(scope?.source, scope?.season, unitId(), scope?.version);
   const hasOwnModel = () => !!storedModel && storedModel.source === scope?.source;
-  const usesFallback = () => modelSource === 'datatft' && scope?.source === 'dataj';
   function refreshButtons() {
-    save.disabled = !currentKey() || !currentFile || !viewer?.loaded || usesFallback();
+    save.disabled = !currentKey() || !currentFile || !viewer?.loaded;
     save.textContent = hasOwnModel() ? '替换本机模型' : '保存到本机';
-    load.textContent = storedModel && !hasOwnModel() ? '载入云顶参考' : '载入本机模型';
+    load.textContent = '载入本机模型';
     load.disabled = !storedModel;
     remove.disabled = !hasOwnModel();
   }
@@ -124,7 +123,7 @@ export function bindModelReference({ file, unit, display, angle, use, useAll, cl
     refreshButtons();
     if (!key) return;
     try {
-      const saved = await findModel(activeScope.source, activeScope.season, unitId());
+      const saved = await findModel(activeScope.source, activeScope.season, unitId(), activeScope.version);
       if (scope === activeScope && key === currentKey()) {
         storedModel = saved || null;
         refreshButtons();
@@ -181,7 +180,7 @@ export function bindModelReference({ file, unit, display, angle, use, useAll, cl
         currentFile = selected;
         setControls(false);
         refreshButtons();
-        setStatus(usesFallback() ? '已载入云顶模型参考，可旋转查看并生成参考图。' : '可拖动旋转模型，选择棋子后生成参考图。');
+        setStatus('可拖动旋转模型，选择棋子后生成参考图。');
       }, { once: true });
       viewer.addEventListener('error', () => {
         if (current !== revision) return;
@@ -219,7 +218,7 @@ export function bindModelReference({ file, unit, display, angle, use, useAll, cl
   save.onclick = async () => {
     const key = currentKey();
     const activeScope = scope;
-    if (!key || !currentFile || usesFallback()) return;
+    if (!key || !currentFile) return;
     const activeFile = currentFile;
     try {
       await saveModel(key, activeFile);
@@ -264,7 +263,7 @@ export function bindModelReference({ file, unit, display, angle, use, useAll, cl
       preview.replaceChildren(image);
       preview.hidden = false;
       const viewpoint = angles.length ? '六视角' : '单视角';
-      setStatus(`当前参考：${name}（${usesFallback() ? '云顶模型，' : ''}${viewpoint}），可对照截图核对棋子。`);
+      setStatus(`当前参考：${name}（${viewpoint}），可对照截图核对棋子。`);
     } catch (error) {
       if (current === revision) setStatus(error.message || '模型参考图生成失败，请重试。');
     } finally {
@@ -276,13 +275,13 @@ export function bindModelReference({ file, unit, display, angle, use, useAll, cl
   clear.onclick = () => { reset(); setStatus('已移除模型和识别参考。'); };
   return {
     get: () => reference,
-    setScope(source, season, label) {
-      scope = { source, season };
+    setScope(source, season, label, version) {
+      scope = { source, season, version };
       storedModel = null;
       file.disabled = unit.disabled = !season;
       unit.value = '';
       reset();
-      game.textContent = season ? `${label} · S${season}` : label;
+      game.textContent = season ? `${label} · ${version}` : label;
       setStatus('');
     },
   };

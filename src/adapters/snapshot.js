@@ -1,6 +1,6 @@
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { mergeNeuralEvidence, readNeuralText } from './paddle-ocr.js?v=share-ocr';
-import { readOwnShopHud, recognizeBoardText } from './local-ocr.js?v=augment-speed';
+import { readOwnShopHud, recognizeBoardText } from './local-ocr.js?v=game-release-scope';
 
 export class SnapshotError extends Error {
   constructor(code, message, { status = 0, loginUrl = '' } = {}) {
@@ -141,6 +141,7 @@ export function snapshotFromEvidence(evidence, setData, opening) {
 export async function recognizeSnapshot(file, rotation, setData, isCurrent, opening, enhanced = false, onEnhanced) {
   let base, items, size, shop, neural, neuralSettled = false;
   const result = (ai, timedOut) => {
+    if (base?.scopeMismatch) return { scopeMismatch: base.scopeMismatch };
     const empty = { stage: null, matchFrame: false, units: [], traits: [] };
     const evidence = items ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : { ...(base || empty) };
     if (evidence.stage && evidence.stage !== '2-1' && shop) evidence.shop = shop;
@@ -161,7 +162,8 @@ export async function recognizeSnapshot(file, rotation, setData, isCurrent, open
       }
       settleEnhanced();
     };
-    const readShop = readOwnShopHud(canvas, active).then(profile => {
+    const shopRead = setData.scope?.sourceId === 'dataj' ? Promise.resolve(null) : readOwnShopHud(canvas, active);
+    const readShop = shopRead.then(profile => {
       if (active()) shop = profile;
     }).catch(() => {}).finally(() => {
       shopReady = true;

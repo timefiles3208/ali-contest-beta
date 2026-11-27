@@ -1,8 +1,10 @@
-import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=augment-speed';
+import { readFrameScope, recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=game-release-scope';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
-import { opponentEconomy, predictOpponentRoutes, scoutEquipmentOptions } from '../engine/opponent-scout.js?v=scout-hold-evidence';
+import { opponentEconomy, predictOpponentRoutes, scoutEquipmentOptions } from '../engine/opponent-scout.js?v=game-release-scope';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
+
+const hasTftIcons = context => context?.setData.scope?.sourceId === 'datatft' && context.patch === '18.7';
 
 const SCOUT_BUDGET_MS = 5_000;
 const ROUTE_CONFIDENCE = { strong: '强线索', likely: '较可能', tentative: '待观察' };
@@ -23,7 +25,8 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
     const available = Boolean(context?.comps.length && slot);
     capture.disabled = photo.disabled = economy.disabled = augment.disabled = heldUnit.disabled = !available;
     copies.disabled = !available || !heldUnit.value;
-    iconPhoto.disabled = !available || context?.setData.set !== 18;
+    iconPhoto.disabled = !available || !hasTftIcons(context);
+    iconPhoto.parentElement.hidden = context?.setData.scope?.sourceId === 'dataj';
     if (listedAugments !== context?.augments) {
       listedAugments = context?.augments;
       const entries = [...(listedAugments || [])].sort((a, b) => a.name.localeCompare(b.name, 'zh'));
@@ -163,7 +166,12 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
             canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
           }
           const active = () => current() && isLatest();
-          const icons = context.setData.set === 18 ? readSelectedAugmentIcons(contentFrame(canvas), context.augments, active)
+          if (!live) {
+            const mismatch = await readFrameScope(canvas, context.setData, active);
+            if (mismatch) return { scopeMismatch: mismatch };
+            if (!active()) return null;
+          }
+          const icons = hasTftIcons(context) ? readSelectedAugmentIcons(contentFrame(canvas), context.augments, active)
             .then(ids => { if (active()) visualIds = ids; }).catch(() => {}) : Promise.resolve();
           const desktop = canvas.width / canvas.height >= 1.65 && canvas.width / canvas.height <= 1.95;
           const traits = desktop ? await recognizeOpponentTraitStrip(canvas, context.setData, active, [], 0, true)
@@ -194,6 +202,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
       if (live) liveQueue = work.catch(() => {});
       const result = await work;
       if (!isLatest()) return;
+      if (result.value?.scopeMismatch) { report(result.value.scopeMismatch); return; }
       const evidence = result.value || includeIcons(partial);
       const previous = context.boards.get(slot);
       const boardCount = evidence ? evidence.units.length + evidence.traits.length : 0;
@@ -224,7 +233,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
   function readCurrent() {
     if (!hasSharedStream()) {
       void warmScoutOcr().catch(() => {});
-      if (getContext()?.setData.set === 18) void warmOpponentAugmentIcons();
+      if (hasTftIcons(getContext())) void warmOpponentAugmentIcons();
       signal('可共享游戏窗口，或导入该对手的截图。');
       return;
     }
@@ -236,7 +245,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
     onViewChange();
     render();
     if (view.value) {
-      if (getContext()?.setData.set === 18) void warmOpponentAugmentIcons();
+      if (hasTftIcons(getContext())) void warmOpponentAugmentIcons();
       readCurrent();
     }
     else signal('当前是我的视角。');
@@ -306,7 +315,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
     iconPhoto.value = '';
     const slot = view.value;
     const context = getContext();
-    if (!file || !slot || context?.setData.set !== 18 || !context.comps.length) return;
+    if (!file || !slot || !hasTftIcons(context) || !context.comps.length) return;
     if (file.size > 5 * 1024 * 1024) { signal('请选择 5 MB 以内的单枚海克斯图标。'); return; }
     const job = {};
     pending.set(slot, job);

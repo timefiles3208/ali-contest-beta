@@ -15,8 +15,8 @@
     </div>
   </div>
   <div class="controls">
-    <label for="boardSource">数据来源 <select id="boardSource"></select></label>
-    <label for="setSelect">赛季 <select id="setSelect" aria-label="赛季"></select></label>
+    <label for="boardSource">游戏端 <select id="boardSource"></select></label>
+    <label for="setSelect">版本 <select id="setSelect" aria-label="版本"></select></label>
     <div class="catalog-status">
       <span id="sourceBadge" class="badge" role="status">数据源载入中…</span>
       <span id="catalogBadge" class="badge" role="status">卡池载入中…</span>
@@ -42,7 +42,7 @@
       <div class="opening-upload">
         <label for="screenPhoto">导入开局或 2-1 截图</label>
         <input id="screenPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" />
-        <p class="fine">截图文字在浏览器内识别。</p>
+        <p class="fine">按所选游戏端和版本匹配。画面有清晰的游戏名或版本标识时，会先核对。</p>
       </div>
     </div>
     <p id="screenStatus" class="snap-status" role="status">正在检查屏幕共享支持…</p>
@@ -209,7 +209,7 @@
         </details>
         <details class="snap-model">
           <summary>棋子 3D 模型参考（可选）</summary>
-          <p class="fine"><strong id="modelGame"></strong>。GLB 模型可保存到当前浏览器。金铲铲缺少已保存的模型时，可载入同赛季同棋子的云顶模型作为参考。</p>
+          <p class="fine"><strong id="modelGame"></strong>。GLB 模型可保存到当前浏览器。请上传所选游戏和版本的模型。</p>
           <div class="snap-model-fields">
             <label>GLB 模型 <input id="modelFile" type="file" accept=".glb" /></label>
             <label>模型对应棋子 <select id="modelUnit"></select></label>
@@ -317,6 +317,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=transition-shortlist"></script>
+<script type="module" src="./src/main.js?v=game-release-scope"></script>
 </body>
 </html>

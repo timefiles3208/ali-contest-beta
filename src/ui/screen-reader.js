@@ -1,6 +1,6 @@
 import { renderLineupList } from './lineup-list.js?v=scout-direction';
 import { stageAfterOpening } from '../engine/screen-insights.js?v=video-ocr';
-import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=augment-speed';
+import { recognizeBoardText, warmOpeningOcr, warmScoutOcr } from '../adapters/local-ocr.js?v=game-release-scope';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { boardFrameStamp, sameBoardFrame, waitForVideoFrame } from '../adapters/video-frame.js';
 const FRAME_INTERVAL_MS = 400;
@@ -62,7 +62,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
 
   async function captureScoutFrame(slot) {
     const session = active;
-    if (!session?.stream) return null;
+    if (!session?.stream || !session.scopeChecked) return null;
     const revision = perspectiveRevision;
     session.frameRequest?.abort();
     const request = new AbortController();
@@ -123,6 +123,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         const read = await withinRecognitionBudget(current => recognizeBoardText(
           canvas, session.context.setData, () => active === session && perspectiveRevision === revision && current(), {
             opening: opponent ? undefined : session.context.opening, fastOpening: true, stageOnly: opponent, readCards: !opponent && !session.cardsRead,
+            checkScope: !session.scopeChecked,
             readShop: !opponent && session.context.readShop,
             onProgress(evidence) {
               if (!opponent && active === session && perspectiveRevision === revision && evidence.opening) onEvidence(evidence);
@@ -138,6 +139,13 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         if (active !== session) return;
         if (perspectiveRevision !== revision) { retry(); return; }
         const evidence = read.value;
+        if (evidence?.scopeMismatch) {
+          release(session);
+          clearResult();
+          say(evidence.scopeMismatch);
+          return;
+        }
+        if (evidence) session.scopeChecked = true;
         if (stageAfterOpening(evidence?.stage)) {
           release(session);
           if (session.atOpening) showDirection(session.context);
@@ -185,7 +193,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       try {
         if (finishedJob !== job || !current()) return null;
         return await recognizeBoardText(toCanvas(bitmap, bitmap.width, bitmap.height, 2160), context.setData,
-          () => finishedJob === job && current(), { fastOpening: true, opening: context.opening, readShop: context.readShop });
+          () => finishedJob === job && current(), { fastOpening: true, checkScope: true, opening: context.opening, readShop: context.readShop });
       } finally {
         bitmap.close();
       }
@@ -196,6 +204,11 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       return;
     }
     const evidence = read.value;
+    if (evidence?.scopeMismatch) {
+      clearResult();
+      say(evidence.scopeMismatch);
+      return;
+    }
     if (evidence?.stage?.startsWith('1-') && evidence.shop) {
       onEvidence(evidence);
       onOpening(evidence.stage);

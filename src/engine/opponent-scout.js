@@ -1,6 +1,6 @@
 import { economyBenefits } from './augments.js?v=formation-plan';
 import { cityFit, formationPlan, formationRow } from './formation.js?v=scout-direction';
-import { artifactOptions, radiantOptions, recommendArtifacts } from './artifacts.js?v=opponent-equipment';
+import { artifactOptions, radiantOptions, recommendArtifacts } from './artifacts.js?v=game-release-scope';
 import { transitionGuides } from '../data/s18.18.7.transitions.js';
 
 const RISK = [12, 8, 5];
@@ -16,6 +16,9 @@ export function opponentEconomy(gold) {
 export function scoutEquipmentOptions(patch, itemsData, sourceItems) {
   const completed = (itemsData?.items || []).filter(item => item.kind === 'completed')
     .map(item => ({ ...item, baseId: item.id }));
+  if (itemsData?.source === 'dataj.cc') {
+    return [...completed, ...itemsData.items.filter(item => ['artifact', 'radiant'].includes(item.kind))];
+  }
   return [...completed, ...artifactOptions(patch, sourceItems), ...radiantOptions(patch, itemsData, sourceItems)];
 }
 
@@ -44,7 +47,7 @@ function routeEvidence(comp, units, traits, profile, patch, unitById) {
       if (!units.has(unit.id) || unit.tank || formationRow(unit) === 0) continue;
       const candidates = profile.equipment.filter(item => item.unit === unit.id && !item.baseId && !GENERAL_ARTIFACTS.has(item.id));
       if (!candidates.length) continue;
-      const recommended = recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, profile.sourceItems);
+      const recommended = recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, profile.sourceItems, profile.itemsData);
       for (const item of candidates) {
         if (recommended.some(option => option.id === item.id)) matchingArtifacts.add(item.id);
       }
@@ -92,7 +95,7 @@ export function predictOpponentRoutes(comps, { units = [], traits = [], gold, ec
   const traitsByName = new Map((setData?.traits || []).map(row => [row.name, row.id]));
   const unitsByName = new Map(roster.map(row => [row.name, row.id]));
   const profile = {
-    equipment, sourceItems, unitCopies, city,
+    equipment, sourceItems, itemsData, unitCopies, city,
     economy: economy || opponentEconomy(gold),
     benefits: economyBenefits(augments.map(aug => aug.desc || '').join('\n')),
     augments: augments.map(aug => ({

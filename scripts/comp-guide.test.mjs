@@ -31,17 +31,20 @@ test('retains source stars and separates reroll at 7 from an eight-unit finish',
 
 test('both release snapshots produce complete, nonoverlapping boards and valid equipment guides', () => {
   const read = path => JSON.parse(readFileSync(new URL(`../src/data/${path}`, import.meta.url), 'utf8'));
-  const setData = read('set18.json');
-  const items = read('set18.items.json');
+  const dataj = read('dataj/s18.18.7.catalog.json');
   for (const [source, path, count] of [
     ['datatft', 'datatft/s18.18.7.comps.json', 36],
-    ['dataj', 'dataj/s18.18.7.json', 26],
+    ['dataj', 'dataj/s18.18.7.json', 33],
   ]) {
-    const { comps } = adaptBoard(read(path), { source, setData, items });
+    const roster = source === 'dataj' ? dataj : read('set18.json');
+    const items = source === 'dataj' ? dataj : read('set18.items.json');
+    const setData = { ...roster, set: 18, scope: { sourceId: source, version: '18.7' } };
+    const { comps, skipped } = adaptBoard(read(path), { source, setData, items });
+    assert.deepEqual(skipped, []);
     assert.equal(comps.length, count);
     if (source === 'dataj') {
       const { units } = buildCompGuide(comps.find(comp => comp.name === '野怪小红'), setData);
-      assert.equal(units.find(unit => unit.name === '苍蓝哨戒').items.filter(id => id === 'DA_ArchangelsStaff').length, 2);
+      assert.equal(units.find(unit => unit.name === '苍蓝哨戒').items.filter(id => id === 'jcc-item:2017').length, 2);
     }
     for (const comp of comps) {
       const { board, units, rolls } = buildCompGuide(comp, setData);
