@@ -5,7 +5,7 @@ import { SETS, findSet } from './data/sets.js?v=game-release-scope';
 import { catalogIcon, iconHtml } from './ui/helpers.js?v=game-release-scope';
 import { loadCatalogBundle } from './adapters/catalog.js?v=game-release-scope';
 import { bindModelReference } from './ui/model-reference.js?v=game-release-scope';
-import { bindScreenReader } from './ui/screen-reader.js?v=game-release-scope';
+import { bindScreenReader } from './ui/screen-reader.js?v=game-release-scope-2';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=game-release-scope';
 import { bindOpeningPrompts } from './ui/opening-prompts.js?v=scout-direction';
@@ -25,7 +25,7 @@ import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=opponent-artifacts';
 import { validateComps } from './adapters/provider.js';
 import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=game-release-scope';
-import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=game-release-scope';
+import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=game-release-scope-2';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

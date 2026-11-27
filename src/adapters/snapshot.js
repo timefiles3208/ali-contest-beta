@@ -143,7 +143,7 @@ export async function recognizeSnapshot(file, rotation, setData, isCurrent, open
   const result = (ai, timedOut) => {
     if (base?.scopeMismatch) return { scopeMismatch: base.scopeMismatch };
     const empty = { stage: null, matchFrame: false, units: [], traits: [] };
-    const evidence = items ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : { ...(base || empty) };
+    const evidence = items && (!setData.scope || base) ? mergeNeuralEvidence(base || empty, items, size, setData, opening) : { ...(base || empty) };
     if (evidence.stage && evidence.stage !== '2-1' && shop) evidence.shop = shop;
     return { ...snapshotFromEvidence(evidence, setData, opening), ai, timedOut };
   };

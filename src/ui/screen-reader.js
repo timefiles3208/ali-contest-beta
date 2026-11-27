@@ -169,7 +169,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
         if (evidence?.opening || evidence?.shop) onEvidence(evidence);
         if (evidence?.stage === '2-1' && evidence.opening?.offeredSlots?.every(Boolean)) session.cardsRead = true;
         if (read.timedOut) {
-          showDirection(session.context, '画面识别暂未完成，已先按确认的开局条件给出方向。');
+          showDirection(session.context, '画面读取暂未完成，已按当前确认的开局信息提供阵容参考。');
         } else {
           say(session.atOpening
             ? '检测到 2-1，可查看开局推荐。选完海克斯后结束共享。'
@@ -200,7 +200,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     });
     if (finishedJob !== job) return;
     if (read.timedOut) {
-      showDirection(context, '截图识别已到等待上限，已先按确认的开局条件给出方向。');
+      showDirection(context, '截图校验超时，未使用这张图。已按当前手动记录提供阵容参考。');
       return;
     }
     const evidence = read.value;
@@ -305,6 +305,13 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
     }
   };
   video.addEventListener('loadeddata', render);
+  const preparePhotoReader = () => { void warmOpeningOcr().catch(() => {}); };
+  photo.addEventListener('pointerenter', preparePhotoReader, { once: true });
+  photo.addEventListener('focus', preparePhotoReader, { once: true });
+  if (!navigator.connection?.saveData) {
+    if (window.requestIdleCallback) window.requestIdleCallback(preparePhotoReader, { timeout: 800 });
+    else setTimeout(preparePhotoReader, 800);
+  }
   const reset = () => {
     if (active) release(active);
     finishedJob = null;
