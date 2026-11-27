@@ -3,6 +3,11 @@ import test from 'node:test';
 import { openingDecision, rankOpening } from '../src/engine/opening.js';
 import { opponentPressure } from '../src/engine/opponent-scout.js';
 
+import { readFileSync } from 'node:fs';
+import { adaptBoard } from '../src/adapters/board-sources.js';
+import { openingModel } from '../src/data/s18.18.7.opening-model.js';
+const load = path => JSON.parse(readFileSync(new URL('../src/data/' + path, import.meta.url), 'utf8'));
+
 const unit = (id, cost) => ({ id, name: id, cost, traits: [] });
 const roster = [unit('cheap', 2), unit('front', 2), unit('late', 4), unit('bench', 1), unit('other', 3)];
 const chase = {
@@ -70,4 +75,29 @@ test('verified copies increase contest pressure on the exact chased unit and pre
   assert.equal(openingDecision(ranked).status, 'lean');
   assert.match(ranked.find(row => row.comp.id === chase.id).reasons.join(' '), /对手.*3 张/);
   assert.equal(openingDecision(rankOpening(base)).status, 'reference');
+});
+
+test('documented item holders and a matching emblem keep fast-eight routes in the shortlist', () => {
+  const setData = load('set18.json'), itemsData = load('set18.items.json');
+  const raw = load('datatft/s18.18.7.comps.json');
+  const { comps } = adaptBoard(raw, { source: 'datatft', setData, items: itemsData });
+  const rank = (units, gear, copies = {}, patch = '18.7') => rankOpening({
+    setData, itemsData, comps, patch, model: openingModel, level: 4,
+    selected: new Set(units), owned: new Map(), ownedItems: new Set(gear), unitCopies: new Map(Object.entries(copies)),
+  });
+  const fixtures = [
+    ['datatft-16266', ['DA_Karma18','DA_18_Yorick','DA_18_Yunara'], ['DA_SpearOfShojin'], { DA_18_Yorick: 3 }, /卡尔玛.*过渡/],
+    ['datatft-16271', ['DA_18_Varus','DA_18_Kayle','DA_18_Leona'], ['DA_InfinityEdge','DA_18_EmblemRapidfire'], {}, /迅捷射手纹章/],
+  ];
+  for (const [id, units, gear, copies, label] of fixtures) {
+    const rows = rank(units, gear, copies);
+    assert.ok(rows.slice(0, 3).some(row => row.comp.id === id));
+    const target = rows.find(row => row.comp.id === id);
+    assert.match(target.reasons.join(' '), label);
+    assert.equal(target.canCommit, false);
+    for (const control of [rank([], gear, copies), rank(units, [], copies), rank(units, gear, copies, '19.1')]) {
+      assert.doesNotMatch(control.find(row => row.comp.id === id).reasons.join(' '), label);
+    }
+  }
+  assert.doesNotMatch(rank(fixtures[1][1], ['DA_InfinityEdge']).find(row => row.comp.id === 'datatft-16271').reasons.join(' '), /迅捷射手纹章/);
 });

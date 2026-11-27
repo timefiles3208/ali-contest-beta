@@ -65,6 +65,32 @@ export function openingDecision(ranked) {
   return { status: 'lean', label: '建议保留备选', comp: lead.comp };
 }
 
+function transitionSupport(comp, context) {
+  const { set, patch, sourceId, selected, unitById, heldCopies, ownedItems, gearReady } = context;
+  if (set !== 18 || patch !== '18.7' || !gearReady) return '';
+  // S18.18.7 opening boards documented by TFT Academy's Ahri Morgana and Aphelios Rapidfire guides.
+  const heldTrait = trait => [...selected].filter(id => unitById.get(id)?.traits?.includes(trait));
+  if (sourceId === 'datatft' && comp.id === 'datatft-16266' && comp.carry?.includes('DA_18_Ahri')
+      && selected.has('DA_Karma18') && ownedItems.has('DA_SpearOfShojin')) {
+    const blossom = heldTrait('DA_18_Blossom');
+    if (blossom.length >= 3 && blossom.some(id => id !== 'DA_Karma18' && heldCopies(id) >= 3)) {
+      return '三灵魂莲华开局，卡尔玛可带朔极之矛过渡到阿狸';
+    }
+  }
+  if (sourceId === 'datatft' && comp.id === 'datatft-16271' && comp.carry?.includes('DA_18_Aphelios')
+      && comp.aimTraits?.DA_18_Rapidfire >= 4 && ownedItems.has('DA_18_EmblemRapidfire')
+      && heldTrait('DA_18_Rapidfire').length >= 2) {
+    return '已有迅捷射手纹章和两名迅捷射手，可过渡到厄斐琉斯';
+  }
+  // DataJ's 18.7 神谕狐狸 board uses these two early Invokers, with Jeweled Gauntlet on the late carries.
+  if (sourceId === 'dataj' && comp.id === 'dataj-111' && comp.carry?.includes('DA_18_Ahri')
+      && comp.aimTraits?.DA_18_Invoker >= 4 && ownedItems.has('DA_JeweledGauntlet')
+      && ['DA_KogMaw18_AD', 'DA_18_Sentry'].every(id => comp.units.includes(id) && heldCopies(id) === 1)) {
+    return '克格莫与苍蓝哨戒可带珠光护手过渡到高费神谕';
+  }
+  return '';
+}
+
 export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model, opponentBoards = new Map(), rollBudget, unitCopies = new Map(), sourceId = 'datatft', sourceItems }) {
   const itemById = new Map((itemsData?.items || []).map(row => [row.id, row]));
   const unitById = new Map(setData.units.map(row => [row.id, row]));
@@ -123,7 +149,11 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
     const goldAfterLevel = scenario ? rollBudget.gold - scenario.levelGold : null;
     const nearTarget = scenario && carry.rollLevel <= rollBudget.level + 1;
     const funded = nearTarget && (scenario.missing === 0 || goldAfterLevel >= scenario.buyGold + 4);
-    const viable = Boolean(units || gearPoints || cityPoints || econ > 0 || aug || learned || rollPoints);
+    const transitionReason = transitionSupport(comp, {
+      set: setData.set, patch, sourceId, selected, unitById, heldCopies, ownedItems, gearReady: openingReady.carry,
+    });
+    const transitionPoints = transitionReason ? 12 : 0;
+    const viable = Boolean(units || gearPoints || cityPoints || econ > 0 || aug || learned || rollPoints || transitionPoints);
     const { opponents: opponentCount, discount, contestedCopies } = opponentPressure(comp, opponentBoards, chase);
     const primaryChase = chase.find(unit => unit.carry) ?? chase[0];
     const enoughCopies = primaryChase && heldCopies(primaryChase.id) >= 3;
@@ -132,7 +162,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       : highCost ? stableOpener && rich && openingReady.carry && Boolean(funded)
         : dedicated && openingReady.carry && row.detail.coreHit.length >= 2);
     const budgetPoints = highCost && nearTarget ? funded ? 4 : -6 : 0;
-    const fit = units + gearPoints + cityPoints + econ + aug + learned + chasePoints + rollPoints + budgetPoints - discount;
+    const fit = units + gearPoints + cityPoints + econ + aug + learned + chasePoints + rollPoints + budgetPoints + transitionPoints - discount;
     const reasons = [
       units && `持有 ${current.length} 名阵容棋子`,
       gear.held.length && `${gear.held.length} 件成装匹配`,
@@ -140,6 +170,7 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       cityPoints && `契合${city.name}`,
       openingReady.carry && '主 C 装备已持有或可合成',
       openingReady.tank && '主坦装备已持有或可合成',
+      transitionReason,
       highCost && econ > 0 && (stableOpener ? '经济和已升星过渡棋子支持高费方向' : '经济支持考虑高费方向'),
       !highCost && econ > 0 && '已选海克斯提供额外刷新',
       highCost && nearTarget && (funded ? `到 ${scenario.level} 级后约剩 ${goldAfterLevel} 金用于搜牌买牌` : `现有预算到 ${scenario.level} 级后，买牌或刷新金币不足`),

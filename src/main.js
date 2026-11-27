@@ -15,7 +15,7 @@ import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=scout-hold-evidence';
+import { rankOpening } from './engine/opening.js?v=transition-shortlist';
 import { stageAfterOpening } from './engine/screen-insights.js?v=video-ocr';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
