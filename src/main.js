@@ -5,7 +5,7 @@ import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=scout-direction';
+import { bindScreenReader } from './ui/screen-reader.js?v=equipment-cutoff';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=scout-direction';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=scout-direction';
 import { bindOpeningPrompts } from './ui/opening-prompts.js?v=scout-direction';
@@ -16,6 +16,7 @@ import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
 import { rankOpening } from './engine/opening.js?v=scout-direction';
+import { stageAfterOpening } from './engine/screen-insights.js?v=video-ocr';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
@@ -62,6 +63,7 @@ const state = {
   openingCity: '',
   economy: '',
   openingAugment: '',
+  openingEquipmentClosed: false,
   lineupChoice: null,
   opponentBoards: new Map(),
   snap: { file: null, thumb: '', busy: false, importing: false, rotation: 0, error: null, mapped: null, applied: false },
@@ -76,6 +78,7 @@ async function loadBoard() {
   openingPrompts?.reset();
   el('augmentTierFilter').value = '';
   state.openingCity = state.economy = '';
+  state.openingEquipmentClosed = false;
   const generation = ++boardLoad;
   const source = sourceFor(state.sourceId);
   const badge = el('sourceBadge');
@@ -919,6 +922,10 @@ async function runRecognize(enhanced = false) {
     if (result.matchFrame && result.level != null && result.gold != null) {
       openingAdvice.receive({ shop: { level: result.level, gold: result.gold, xp: result.xp } });
     }
+    if (result.matchFrame && stageAfterOpening(result.stage)) {
+      state.openingEquipmentClosed = true;
+      openingPrompts.finish();
+    }
     if (result.stage === '2-1' && result.matchFrame) {
       openingAdvice.receive({
         units: state.snap.mapped.candidates.map(row => row.id).filter(Boolean), opening: result.opening,
@@ -1004,13 +1011,17 @@ function bind() {
       if (state.setData) renderResults();
     },
     onPick(id) {
+      const showEquipment = !state.openingEquipmentClosed;
+      state.openingEquipmentClosed = true;
       if (state.openingAugment) state.chosen.delete(state.openingAugment);
       state.openingAugment = id;
       state.chosen.add(id);
       openingPrompts.finish();
       renderResults();
       if (!el('screenFinish').disabled) el('screenFinish').click();
-      showEquipmentAugmentNotice(id, state.lineupChoice || state.ranked?.find(row => row.viable)?.comp || state.ranked?.[0]?.comp);
+      if (showEquipment) {
+        showEquipmentAugmentNotice(id, state.lineupChoice || state.ranked?.find(row => row.viable)?.comp || state.ranked?.[0]?.comp);
+      }
     },
     onShow(stage) {
       if (stage === '2-1') openingPrompts.beginAugments();
@@ -1053,9 +1064,11 @@ function bind() {
       openingAdvice.startPreview();
     },
     onOpeningEnd() {
+      state.openingEquipmentClosed = true;
       openingAdvice.endPreview();
       openingPrompts.finish();
     },
+    onEarlyStage() { state.openingEquipmentClosed = false; },
     onShareStart: openingPrompts.start,
   });
   resultFloat = bindRecommendationFloat({
@@ -1194,12 +1207,10 @@ function bind() {
     const b = e.target.closest('.hex');
     if (!b) return;
     const id = b.dataset.hex;
-    const comp = state.lineupChoice || state.ranked?.find(row => row.viable)?.comp || state.ranked?.[0]?.comp;
     const added = !state.chosen.delete(id);
     if (added) state.chosen.add(id);
-    renderResults();
-    if (added) showEquipmentAugmentNotice(id, comp);
     else openingPrompts.clearEquipment(id);
+    renderResults();
   };
   el('gear').onclick = (e) => {
     const b = e.target.closest('.gi');

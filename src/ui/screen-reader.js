@@ -20,7 +20,7 @@ function toCanvas(image, width, height, maxSize = 1600) {
   return canvas;
 }
 
-export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening, onLiveOpening, onOpeningEnd, onShareStart, isOpponentView }) {
+export function bindScreenReader({ start, finish, stop, photo, video, status, result, getContext, onEvidence, onOpening, onLiveOpening, onOpeningEnd, onEarlyStage, onShareStart, isOpponentView }) {
   const supported = Boolean(navigator.mediaDevices?.getDisplayMedia);
   let active, finishedJob;
   let perspectiveRevision = 0;
@@ -147,6 +147,10 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
           }
           return;
         }
+        if (!opponent && !session.atOpening && !session.earlyStageSeen && /^1-\d+$/.test(evidence?.stage || '')) {
+          session.earlyStageSeen = true;
+          onEarlyStage();
+        }
         if (opponent) {
           if (evidence?.stage === '2-1' && result.hidden) {
             showDirection(session.context, '检测到 2-1，已按当前记录给出阵容方向。');
@@ -199,6 +203,7 @@ export function bindScreenReader({ start, finish, stop, photo, video, status, re
       return;
     }
     if (evidence?.stage !== '2-1') {
+      if (stageAfterOpening(evidence?.stage)) onOpeningEnd();
       if (evidence?.stage) say(`截图读到 ${evidence.stage}。请导入 2-1 的海克斯选择画面。`);
       else showDirection(context, '截图未确认 2-1，已显示阵容参考。可导入包含回合栏的原图继续识别。');
       return;
