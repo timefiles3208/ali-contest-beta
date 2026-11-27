@@ -1,5 +1,8 @@
 import { loadJson } from '../ui/helpers.js';
 
+const LIVE_ROOT = 'https://raw.githubusercontent.com/timefiles3208/ali-contest-beta';
+const liveBundles = new Map();
+
 const API = 'https://dubfaazkkthmwwtkplwm.supabase.co/rest/v1/tft_catalog';
 const PUBLISHABLE_KEY = 'sb_publishable_AfgS6UsN9aDur-TYvK9d-w_M3UaILkp';
 
@@ -62,9 +65,44 @@ async function readDatabase(specs) {
   return values.every(Boolean) ? values : null;
 }
 
-export async function loadCatalogBundle(paths, { optional = [] } = {}) {
+async function loadLiveBundle(specs) {
+  const [, source, version] = specs[0];
+  if (!['datatft', 'dataj'].includes(source) || !specs.every(([, id, release]) => id === source && release === version)) return null;
+  const key = source + '/' + version;
+  const cached = liveBundles.get(key);
+  if (cached && Date.now() - cached.started < 60_000) return cached.result;
+  const result = (async () => {
+    const response = await fetch(`${LIVE_ROOT}/live-${source}/${version}.json`, { signal: AbortSignal.timeout(2_500) });
+    if (!response.ok) return null;
+    const entry = await response.json();
+    if (entry?.source !== source || entry.season !== 18 || entry.version !== version ||
+      !Number.isFinite(Date.parse(entry.updatedAt))) return null;
+    const mandatory = source === 'dataj' ? ['game-catalog', 'rankings'] : ['compositions'];
+    for (const dataset of mandatory) {
+      const spec = [...snapshots.values()].find(row => row[0] === dataset && row[1] === source && row[2] === version);
+      if (!spec || !validPayload(entry.datasets?.[dataset], source, version, spec[3])) return null;
+    }
+    return entry;
+  })().catch(() => null);
+  liveBundles.set(key, { result, started: Date.now() });
+  return result;
+}
+
+export async function loadCatalogBundle(paths, { optional = [], live = false } = {}) {
   const specs = paths.map(path => snapshots.get(path));
   if (paths.length && specs.every(Boolean)) {
+    if (live) {
+      const entry = await loadLiveBundle(specs);
+      if (entry) {
+        const values = specs.map(([dataset, source, version, accepts]) => {
+          const payload = entry.datasets[dataset];
+          return validPayload(payload, source, version, accepts) ? { ...payload, extractedAt: entry.updatedAt } : null;
+        });
+        if (values.every((value, index) => value || optional.includes(paths[index]))) {
+          return { values, location: 'live', updatedAt: entry.updatedAt };
+        }
+      }
+    }
     try {
       const values = await readDatabase(specs);
       if (values) return { values, location: 'database' };

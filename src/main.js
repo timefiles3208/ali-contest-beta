@@ -3,7 +3,7 @@ import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } fro
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js?v=game-release-scope';
 import { catalogIcon, iconHtml } from './ui/helpers.js?v=game-release-scope';
-import { loadCatalogBundle } from './adapters/catalog.js?v=game-release-scope';
+import { loadCatalogBundle } from './adapters/catalog.js?v=live-catalog';
 import { bindModelReference } from './ui/model-reference.js?v=game-release-scope';
 import { bindScreenReader } from './ui/screen-reader.js?v=game-release-scope-2';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
@@ -24,7 +24,7 @@ import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=lineup-augm
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=opponent-artifacts';
 import { validateComps } from './adapters/provider.js';
-import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=game-release-scope';
+import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=live-catalog';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=game-release-scope-2';
 
 const el = (id) => document.getElementById(id);
@@ -36,7 +36,10 @@ let setLoad = 0;
 let loadingSet = false;
 const SOURCE_KEY = 'tft-board-source';
 const RELEASE_KEY = 'tft-board-release';
-const catalogLocation = location => location === 'database' ? 'Supabase' : '本地快照';
+const catalogLocation = location => ({ live: '自动同步', database: 'Supabase', bundled: '本地快照' })[location];
+const catalogTime = new Intl.DateTimeFormat('zh-CN', {
+  timeZone: 'Asia/Shanghai', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+});
 function savedRelease() {
   try { return findSet(localStorage.getItem(RELEASE_KEY))?.version || SETS[0].version; } catch { return SETS[0].version; }
 }
@@ -104,7 +107,7 @@ async function loadBoard() {
       throw new Error(`暂无 ${source.game} ${state.meta.version} 的阵容数据`);
     }
     const paths = source.ratingsFile ? [source.file, source.ratingsFile] : [source.file];
-    const { values: [raw, ratings = null], location } = await loadCatalogBundle(paths, { optional: [source.ratingsFile] });
+    const { values: [raw, ratings = null], location, updatedAt } = await loadCatalogBundle(paths, { live: true, optional: [source.ratingsFile] });
     if (generation !== boardLoad) return;
     const board = adaptBoard(raw, { source: source.id, setData: state.setData, items: state.items, ratings });
     const valid = validateComps(board.comps, state.setData);
@@ -112,7 +115,7 @@ async function loadBoard() {
     state.comps = valid.comps;
     state.ref = summarizeBoard(valid.comps);
     state.issues = valid.issues;
-    badge.textContent = `${source.host} · ${board.version} · ${state.comps.length} 套 · ${catalogLocation(location)}`;
+    badge.textContent = `${source.host} · ${board.version} · ${state.comps.length} 套 · ${catalogLocation(location)}${updatedAt ? ' ' + catalogTime.format(new Date(updatedAt)) : ''}`;
     badge.className = `badge ${state.comps.length ? 'ok' : 'warn'}`;
   } catch (error) {
     if (generation !== boardLoad) return;
@@ -172,7 +175,7 @@ async function loadSet(version) {
   const available = source.version === meta.version && source.season === meta.set;
   const paths = source.catalogFile ? [source.catalogFile] : [meta.dataFile, meta.itemsFile, meta.augFile];
   const release = available
-    ? await loadCatalogBundle(paths, { optional: source.catalogFile ? [] : [meta.itemsFile, meta.augFile] })
+    ? await loadCatalogBundle(paths, { live: Boolean(source.catalogFile), optional: source.catalogFile ? [] : [meta.itemsFile, meta.augFile] })
       .catch(error => ({ values: [], error: error.message }))
     : { values: [] };
   const [roster, items = source.catalogFile ? roster : null, augments = source.catalogFile ? roster : null] = release.values;

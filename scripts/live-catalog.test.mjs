@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+import { datajRows, datajRankings, validateUpdate } from './refresh-catalog.mjs';
+import { loadCatalogBundle } from '../src/adapters/catalog.js';
+
+const read = path => JSON.parse(readFileSync(new URL('../src/data/' + path, import.meta.url)));
+const compositions = read('datatft/s18.18.7.comps.json');
+const rankings = read('dataj/s18.18.7.json');
+const catalog = read('dataj/s18.18.7.catalog.json');
+const timestamp = '2026-11-27T02:42:00.000Z';
+const dataj = { source: 'dataj', season: 18, version: '18.7', updatedAt: timestamp,
+  datasets: { rankings, 'game-catalog': catalog } };
+
+function page(rows, set, patch) {
+  const flight = JSON.stringify([1, JSON.stringify({ initialRows: rows, initialSetId: set, initialGameVersion: patch })]);
+  return '<script>self.__next_f.push(' + flight + ')</script>';
+}
+
+test('DataJ only parses a ranking page carrying the exact game version', () => {
+  const rows = [{ compId: '85', heroes: [] }];
+  assert.deepEqual(datajRows(page(rows, 18, '18.7')), rows);
+  assert.throws(() => datajRows(page(rows, 18, '18.6')), /version mismatch/);
+  assert.throws(() => datajRows(page(rows, 19, '18.7')), /version mismatch/);
+  assert.throws(() => datajRows('<html>empty</html>'), /rows missing/);
+});
+
+test('preserves separate source equipment and augments and rejects partial or foreign teams', async () => {
+  const comp = { compId: 1, name: '队伍', heroes: [{ id: 'a', heroId: 4511, heroName: '阿狸', heroType: 0, isCarry: true }],
+    equips: [{ compHeroId: 'a', equipId: 42 }, { compHeroId: 'a', equipId: 42 }] };
+  const mapped = datajRankings([comp], [{ equipId: 42, name: '装备' }], [{ hexId: 43, name: '海克斯' }]);
+  assert.deepEqual(mapped.comps[0].heroes[0].items, ['装备', '装备']);
+  assert.equal(mapped.augments[0].id, '43');
+  await validateUpdate('dataj', dataj.datasets);
+  await assert.rejects(validateUpdate('dataj', { ...dataj.datasets, rankings: { ...rankings, comps: [] } }), /baseline/);
+  await assert.rejects(validateUpdate('datatft', { compositions: rankings }));
+  await validateUpdate('datatft', { compositions });
+});
+
+test('validates the full DataJ bundle before use and falls back without mixing catalogs', async t => {
+  const path = './src/data/dataj/s18.18.7.catalog.json';
+  const fallback = { dataset: 'game-catalog', source: 'dataj', season: 18, version: '18.7', payload: catalog };
+  const { loadCatalogBundle: loadFresh } = await import('../src/adapters/catalog.js?invalid-live');
+  const fetch = t.mock.method(globalThis, 'fetch', async url => {
+    if (String(url).includes('raw.githubusercontent.com')) {
+      return Response.json({ ...dataj, datasets: { ...dataj.datasets, rankings: { ...rankings, version: '18.6' } } });
+    }
+    return Response.json([fallback]);
+  });
+  assert.deepEqual(await loadFresh([path], { live: true }), { values: [catalog], location: 'database' });
+  assert.equal(fetch.mock.callCount(), 2);
+});
+
+test('loads the native DataJ release from one shared request and keeps optional DataTFT ratings empty', async t => {
+  const fetch = t.mock.method(globalThis, 'fetch', async url => {
+    if (String(url).endsWith('live-dataj/18.7.json')) return Response.json(dataj);
+    assert.match(String(url), /live-datatft\/18\.7\.json$/);
+    return Response.json({ ...dataj, source: 'datatft', datasets: { compositions } });
+  });
+  const options = { live: true };
+  assert.equal((await loadCatalogBundle(['./src/data/dataj/s18.18.7.catalog.json'], options)).location, 'live');
+  assert.equal((await loadCatalogBundle(['./src/data/dataj/s18.18.7.json'], options)).values[0].extractedAt, timestamp);
+  assert.equal(fetch.mock.callCount(), 1);
+  const tier = './src/data/datatft/s18.18.7.ratings.json';
+  const tft = await loadCatalogBundle(['./src/data/datatft/s18.18.7.comps.json', tier], { ...options, optional: [tier] });
+  assert.equal(tft.location, 'live');
+  assert.equal(tft.values[1], null);
+});
