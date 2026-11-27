@@ -1,11 +1,11 @@
 import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=augment-speed';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
-import { opponentEconomy, predictOpponentRoutes } from '../engine/opponent-scout.js?v=opening-decision';
-import { artifactOptions, radiantOptions } from '../engine/artifacts.js?v=opponent-equipment';
+import { opponentEconomy, predictOpponentRoutes, scoutEquipmentOptions } from '../engine/opponent-scout.js?v=scout-direction';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 
 const SCOUT_BUDGET_MS = 5_000;
+const ROUTE_CONFIDENCE = { strong: '强线索', likely: '较可能', tentative: '待观察' };
 const ECONOMY_NAMES = { low: '偏低', normal: '一般', high: '较高' };
 
 export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, copies, economy, augment, artifact, artifactHolder, removeArtifact, saveProfile, clear, clearAll, status, summary, getContext, getFrame, hasSharedStream, onChange, onViewChange }) {
@@ -33,10 +33,10 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
       listedPatch = context?.patch;
       listedSourceItems = context?.sourceItems;
       listedItems = context?.itemsData;
-      const entries = [...artifactOptions(listedPatch, listedSourceItems), ...radiantOptions(listedPatch, listedItems, listedSourceItems)]
+      const entries = scoutEquipmentOptions(listedPatch, listedItems, listedSourceItems)
         .sort((a, b) => a.name.localeCompare(b.name, 'zh'));
       artifactsById = new Map(entries.map(row => [row.id, row]));
-      artifact.replaceChildren(new Option('选择已装备的神器或光明装备', ''), ...entries.map(row => new Option(row.name, row.id)));
+      artifact.replaceChildren(new Option('选择已确认的装备', ''), ...entries.map(row => new Option(row.name, row.id)));
       artifactHolder.value = '';
     }
     if (listedUnits !== context?.setData.units) {
@@ -86,9 +86,9 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
       }
       if (routes.length) {
         const list = document.createElement('ol');
-        for (const { comp, equippedMatch } of routes) {
+        for (const { comp, confidence, reasons } of routes) {
           const route = document.createElement('li');
-          route.textContent = comp.name + (equippedMatch ? '（装备契合）' : '');
+          route.textContent = [comp.name, ROUTE_CONFIDENCE[confidence], ...reasons].join(' · ');
           list.append(route);
         }
         item.append(list);
@@ -102,13 +102,25 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
     summary.hidden = !records.length;
   }
 
+  function routesFor(observation, context) {
+    const chosen = new Set(observation.augmentIds);
+    const augments = context.augments.filter(row => chosen.has(row.id));
+    return predictOpponentRoutes(context.comps, { ...observation, augments }, context.patch, context);
+  }
+
+  function refreshRoutes() {
+    const context = getContext();
+    if (!context) return;
+    for (const [slot, observation] of context.boards) {
+      context.boards.set(slot, { ...observation, routes: routesFor(observation, context) });
+    }
+  }
+
   function save(slot, observation, context) {
     const previous = context.boards.get(slot);
     const artifacts = observation.artifacts ?? previous?.artifacts ?? [];
     const unitCopies = observation.unitCopies ?? previous?.unitCopies ?? new Map();
-    const chosen = new Set(observation.augmentIds);
-    const augments = context.augments.filter(row => chosen.has(row.id));
-    const routes = predictOpponentRoutes(context.comps, { ...observation, artifacts, augments, unitCopies }, context.patch, context);
+    const routes = routesFor({ ...observation, artifacts, unitCopies }, getContext() ?? context);
     onChange(slot, { ...observation, artifacts, unitCopies, routes });
     return routes;
   }
@@ -338,6 +350,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
   };
   return {
     render,
+    refreshRoutes,
     reset() {
       pending.clear();
       view.value = heldUnit.value = copies.value = economy.value = augment.value = artifact.value = artifactHolder.value = '';

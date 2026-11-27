@@ -1,5 +1,5 @@
 import { rolldownSummary } from '../engine/rolldown.js';
-import { openingDecision } from '../engine/opening.js?v=opening-decision';
+import { openingDecision } from '../engine/opening.js?v=scout-direction';
 
 export function recommendedLineups(ranked = [], { allowUnmatched = false } = {}) {
   return allowUnmatched || ranked.some(row => row.viable || row.hasOpponentEvidence || row.planning) ? ranked.slice(0, 3) : [];

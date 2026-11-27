@@ -17,6 +17,21 @@ export const TANK_ITEMS = new Set([
   'DA_SteadfastHeart', 'DA_Evenshroud', 'DA_DragonsClaw', 'DA_Crownguard',
 ]);
 
+export function cityFit(city, comp, itemPoints, unitById, plan) {
+  const high = plan.chase.length ? Math.min(1, plan.levelingDemand) : plan.levelingDemand;
+  const core = comp.core?.length ? comp.core : comp.units;
+  const lowCost = core.filter(id => (unitById.get(id)?.cost ?? 9) <= 3).length / Math.max(core.length, 1);
+  switch (city?.effect) {
+    case 'level': return high * 5;
+    case 'gold': return high * 3;
+    case 'rerolls': return plan.chase.length ? 8 : Math.round(lowCost * 4);
+    case 'early': return Math.round(lowCost * 4);
+    case 'items': return Math.min(8, Math.round(itemPoints / 3));
+    case 'emblems': return Math.min(8, Math.max(0, ...Object.values(comp.aimTraits || {})));
+    default: return 0;
+  }
+}
+
 export function formationPlan(comp, unitById) {
   const units = comp.units.flatMap(id => {
     const unit = unitById.get(id);

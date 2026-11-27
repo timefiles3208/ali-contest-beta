@@ -1,5 +1,5 @@
-import { formationPlan, formationRow } from './formation.js';
-import { opponentPressure } from './opponent-scout.js?v=opening-decision';
+import { cityFit, formationPlan, formationRow } from './formation.js?v=scout-direction';
+import { opponentPressure } from './opponent-scout.js?v=scout-direction';
 import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
 import { economyBenefits, rankAugments } from './augments.js?v=lineup-augment-guides';
@@ -63,21 +63,6 @@ export function openingDecision(ranked) {
     return { status: 'commit', label: '可以定阵', comp: lead.comp };
   }
   return { status: 'lean', label: '建议保留备选', comp: lead.comp };
-}
-
-function cityFit(city, comp, itemPoints, unitById, plan) {
-  const high = plan.chase.length ? Math.min(1, plan.levelingDemand) : plan.levelingDemand;
-  const core = comp.core?.length ? comp.core : comp.units;
-  const lowCost = core.filter(id => (unitById.get(id)?.cost ?? 9) <= 3).length / Math.max(core.length, 1);
-  switch (city?.effect) {
-    case 'level': return high * 5;
-    case 'gold': return high * 3;
-    case 'rerolls': return plan.chase.length ? 8 : Math.round(lowCost * 4);
-    case 'early': return Math.round(lowCost * 4);
-    case 'items': return Math.min(8, Math.round(itemPoints / 3));
-    case 'emblems': return Math.min(8, Math.max(0, ...Object.values(comp.aimTraits || {})));
-    default: return 0;
-  }
 }
 
 export function rankOpening({ setData, comps, itemsData, selected, level, owned, ownedItems, city, economy, chosenAugments = [], patch, model, opponentBoards = new Map(), rollBudget, unitCopies = new Map(), sourceId = 'datatft', sourceItems }) {

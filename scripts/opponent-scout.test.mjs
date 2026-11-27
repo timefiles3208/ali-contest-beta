@@ -110,3 +110,26 @@ test('confirmed fitting equipment adds one contest deduction and keeps build var
     { opponents: 1, discount: 12 });
   assert.deepEqual(opponentPressure(spell, boards([], [{ id: 'DA_PortableForge' }])), { opponents: 1, discount: 12 });
 });
+
+test('opponent route confidence uses shared encounters, confirmed builds and current copy counts', () => {
+  const late = { id: 'late', name: 'late', cost: 4, traits: [] };
+  const reroll = { ...first, id: 'reroll', stars: { a: 3 }, items: { a: ['spell'] } };
+  const level = { ...first, id: 'level', units: ['late', 'a', 'b'], carry: ['late'], items: { late: ['spell'] } };
+  const comps = [reroll, level];
+  const city = { effect: 'rerolls', name: '刷新次数订阅' };
+  const options = { setData: { ...context.setData, units: [...roster, late] },
+    itemsData: { items: [{ id: 'spell', name: '回蓝装', kind: 'completed' }] }, city };
+  const predict = (profile, ctx = options) => predictOpponentRoutes(comps, profile, '18.7', ctx);
+  assert.deepEqual(predict({ gold: 24 }), []);
+  const weak = predict({ artifacts: [{ id: 'spell' }] });
+  assert.equal(weak[0].comp.id, 'reroll');
+  assert.equal(weak[0].confidence, 'tentative');
+  assert.equal(opponentPressure(reroll, new Map([[1, { routes: weak }]])).discount, 6);
+  const strong = predict({ unitCopies: new Map([['a', 3]]), artifacts: [{ id: 'spell', unit: 'a' }] });
+  assert.equal(strong[0].comp.id, 'reroll');
+  assert.equal(strong[0].confidence, 'strong');
+  assert.match(strong[0].reasons.join(' '), /3 张.*装备.*刷新次数订阅/);
+  const board = { units: ['a', 'b'], gold: 24 };
+  assert.ok(predict(board).find(row => row.comp.id === 'reroll').evidence >
+    predict(board, { ...options, city: null }).find(row => row.comp.id === 'reroll').evidence);
+});

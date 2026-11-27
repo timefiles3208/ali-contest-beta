@@ -1,5 +1,5 @@
-import { renderLineupList } from './lineup-list.js?v=opening-decision';
-import { rankOpeningAugments } from '../engine/opening.js?v=opening-decision';
+import { renderLineupList } from './lineup-list.js?v=scout-direction';
+import { rankOpeningAugments } from '../engine/opening.js?v=scout-direction';
 import { AUGMENT_TIER_LABELS, augmentTier, inferAugmentTier } from '../data/augment-tiers.js';
 import { artifactOptions, radiantOptions } from '../engine/artifacts.js?v=opponent-equipment';
 

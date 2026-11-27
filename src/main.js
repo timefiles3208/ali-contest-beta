@@ -1,21 +1,21 @@
-import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=opening-decision';
+import { formationRoles, recommendedLineups, renderLineupList } from './ui/lineup-list.js?v=scout-direction';
 import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } from './engine/artifacts.js?v=opponent-equipment';
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js';
 import { iconHtml } from './ui/helpers.js';
 import { loadCatalogBundle } from './adapters/catalog.js?v=catalog-alignment';
 import { bindModelReference } from './ui/model-reference.js?v=screenshot-ocr';
-import { bindScreenReader } from './ui/screen-reader.js?v=opening-decision';
-import { bindOpponentScout } from './ui/opponent-scout.js?v=opening-decision';
-import { bindOpeningAdvice } from './ui/opening-advice.js?v=opening-decision';
-import { bindOpeningPrompts } from './ui/opening-prompts.js?v=opening-decision';
-import { bindRecommendationFloat } from './ui/recommendation-float.js?v=opening-decision';
+import { bindScreenReader } from './ui/screen-reader.js?v=scout-direction';
+import { bindOpponentScout } from './ui/opponent-scout.js?v=scout-direction';
+import { bindOpeningAdvice } from './ui/opening-advice.js?v=scout-direction';
+import { bindOpeningPrompts } from './ui/opening-prompts.js?v=scout-direction';
+import { bindRecommendationFloat } from './ui/recommendation-float.js?v=scout-direction';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
 import { OPENING_EFFECTS, S18_OPENINGS } from './data/opening-encounters.js?v=city-augments';
 import { AUGMENT_TIER_LABELS, augmentTier } from './data/augment-tiers.js';
-import { rankOpening } from './engine/opening.js?v=opening-decision';
+import { rankOpening } from './engine/opening.js?v=scout-direction';
 import { rolldownSummary } from './engine/rolldown.js';
 import { recommend, traitBreakdown } from './engine/recommend.js';
 import { traitPaths } from './engine/paths.js';
@@ -981,7 +981,10 @@ function bind() {
     rollGold: el('openingRollGold'), rollXp: el('openingRollXp'), copies: el('openingUnitCopies'),
     hud: el('openingHud'), applyHud: el('openingApplyHud'),
     onChange({ city, economy, item, delta, unit, selected, rollBudget, unitCopies }) {
-      if (city != null) state.openingCity = city;
+      if (city != null && city !== state.openingCity) {
+        state.openingCity = city;
+        scout?.refreshRoutes();
+      }
       if (economy != null) state.economy = economy;
       if (rollBudget) Object.assign(state.rollBudget, rollBudget);
       if (unitCopies && state.selected.has(unitCopies.id)) state.unitCopies.set(unitCopies.id, unitCopies.count);
@@ -1069,6 +1072,7 @@ function bind() {
       setData: state.setData, comps: state.comps, boards: state.opponentBoards, patch: state.board?.version,
       augments: state.augs?.augments || [],
       itemsData: state.items,
+      city: openingContext()?.city,
       sourceItems: state.sourceId === 'dataj' ? state.board?.items : undefined,
     } : null,
     getFrame: screenReader.getFrame,
