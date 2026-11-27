@@ -105,17 +105,55 @@ test('preserves separate source equipment and augments and rejects partial or fo
 });
 
 test('validates the full DataJ bundle before use and falls back without mixing catalogs', async t => {
-  const path = './src/data/dataj/s18.18.7.catalog.json';
-  const fallback = { dataset: 'game-catalog', source: 'dataj', season: 18, version: '18.7', payload: catalog };
+  const paths = ['./src/data/dataj/s18.18.7.catalog.json', './src/data/dataj/s18.18.7.json'];
+  const base = { source: 'dataj', season: 18, version: '18.7' };
+  const legacy = [
+    { ...base, dataset: 'game-catalog', payload: catalog },
+    { ...base, dataset: 'rankings', payload: rankings },
+  ];
   const { loadCatalogBundle: loadFresh } = await import('../src/adapters/catalog.js?invalid-live');
   const fetch = t.mock.method(globalThis, 'fetch', async url => {
     if (String(url).includes('raw.githubusercontent.com')) {
       return Response.json({ ...dataj, datasets: { ...dataj.datasets, rankings: { ...rankings, version: '18.6' } } });
     }
-    return String(url).includes('supabase.co') ? Response.json([fallback]) : new Response(null, { status: 404 });
+    if (String(url).includes('supabase.co')) return Response.json(legacy);
+    return Response.json(String(url).endsWith('.catalog.json') ? catalog : rankings);
   });
-  assert.deepEqual(await loadFresh([path], { live: true }), { values: [catalog], location: 'database' });
-  assert.equal(fetch.mock.callCount(), 3);
+  assert.deepEqual(await loadFresh(paths, { live: true }), { values: [catalog, rankings], location: 'bundled' });
+  const databaseUrl = new URL(fetch.mock.calls.find(call => String(call.arguments[0]).includes('supabase.co')).arguments[0]);
+  assert.equal(databaseUrl.searchParams.get('dataset'), 'eq.recommendation-release');
+});
+
+test('reads a complete backup release as one record and rejects a broken batch', async t => {
+  const { loadCatalogBundle: loadFresh } = await import('../src/adapters/catalog.js?batch-backup');
+  const paths = ['./src/data/dataj/s18.18.7.catalog.json', './src/data/dataj/s18.18.7.json'];
+  const digest = 'a'.repeat(64);
+  const payload = { ...dataj, digest };
+  const row = { source: 'dataj', season: 18, version: '18.7', dataset: 'recommendation-release',
+    content_sha256: digest, payload };
+  let candidate = row;
+  t.mock.method(globalThis, 'fetch', async url => {
+    if (String(url).includes('supabase.co')) return Response.json([candidate]);
+    if (String(url).includes('raw.githubusercontent.com')) return new Response(null, { status: 503 });
+    await new Promise(resolve => setImmediate(resolve));
+    return Response.json(String(url).endsWith('.catalog.json') ? catalog : rankings);
+  });
+  const good = await loadFresh(paths, { live: true });
+  assert.equal(good.location, 'database');
+  assert.equal(good.revision, digest);
+  assert.equal(good.values[0].extractedAt, timestamp);
+  assert.equal(good.values[1].extractedAt, timestamp);
+
+  for (const invalid of [
+    { ...row, content_sha256: 'b'.repeat(64) },
+    { ...row, payload: { ...payload, datasets: { rankings } } },
+    { ...row, payload: { ...payload, version: '18.6' } },
+  ]) {
+    candidate = invalid;
+    const fallback = await loadFresh(paths, { live: true });
+    assert.equal(fallback.location, 'bundled');
+    assert.deepEqual(fallback.values, [catalog, rankings]);
+  }
 });
 
 test('loads the native DataJ release from one shared request and keeps optional DataTFT ratings empty', async t => {

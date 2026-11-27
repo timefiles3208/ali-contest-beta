@@ -3,6 +3,7 @@ import { loadJson } from '../ui/helpers.js?v=fast-catalog';
 const LIVE_ROOT = 'https://raw.githubusercontent.com/timefiles3208/ali-contest-beta';
 const liveBundles = new Map();
 const LIVE_CACHE = 'tft-live-catalog';
+const BACKUP_DATASET = 'recommendation-release';
 
 const API = 'https://dubfaazkkthmwwtkplwm.supabase.co/rest/v1/tft_catalog';
 const PUBLISHABLE_KEY = 'sb_publishable_AfgS6UsN9aDur-TYvK9d-w_M3UaILkp';
@@ -58,21 +59,24 @@ export function validReleaseDatasets(source, datasets) {
     validPayload(datasets?.[dataset], id, version, accepts)) === true;
 }
 
-async function readDatabase(specs, signal) {
+async function fetchDatabase(query, signal) {
   const url = new URL(API);
-  const clauses = specs.map(([dataset, source, version]) =>
-    `and(dataset.eq.${dataset},source.eq.${source},season.eq.18,version.eq.${version})`);
-  url.search = new URLSearchParams({
-    select: 'dataset,source,season,version,payload',
-    or: `(${clauses.join(',')})`,
-  }).toString();
+  url.search = new URLSearchParams(query).toString();
   const response = await fetch(url, {
     credentials: 'omit',
     headers: { apikey: PUBLISHABLE_KEY },
     signal: AbortSignal.any([signal, AbortSignal.timeout(3_500)]),
   });
-  if (!response.ok) return null;
-  const rows = await response.json();
+  return response.ok ? response.json() : null;
+}
+
+async function readDatabase(specs, signal) {
+  const clauses = specs.map(([dataset, source, version]) =>
+    `and(dataset.eq.${dataset},source.eq.${source},season.eq.18,version.eq.${version})`);
+  const rows = await fetchDatabase({
+    select: 'dataset,source,season,version,payload',
+    or: `(${clauses.join(',')})`,
+  }, signal);
   if (!Array.isArray(rows) || rows.length !== specs.length) return null;
   const values = specs.map(([dataset, source, version, accepts]) => {
     const row = rows.find(row => row?.dataset === dataset && row.source === source && row.version === version && row.season === 18);
@@ -81,22 +85,45 @@ async function readDatabase(specs, signal) {
   return values.every(Boolean) ? values : null;
 }
 
-async function loadLiveBundle(specs) {
+function releaseScope(specs) {
   const rankingSpec = specs.find(([, id]) => Object.hasOwn(releaseDatasets, id));
   if (!rankingSpec) return null;
   const [, source, version] = rankingSpec;
   const compatible = specs.every(([, id, release]) =>
     (id === source && release === version) || (source === 'datatft' && id === 'riot' && release === '16.23.1'));
-  if (!compatible) return null;
+  return compatible ? { source, version } : null;
+}
+
+function validReleaseEntry(entry, { source, version }) {
+  return entry?.source === source && entry.season === 18 && entry.version === version &&
+    Number.isFinite(Date.parse(entry.updatedAt)) && validReleaseDatasets(source, entry.datasets);
+}
+
+async function readReleaseBackup(scope, signal) {
+  if (!scope) return null;
+  const { source, version } = scope;
+  const rows = await fetchDatabase({
+    select: 'dataset,source,season,version,payload,content_sha256',
+    dataset: 'eq.' + BACKUP_DATASET,
+    source: 'eq.' + source,
+    season: 'eq.18',
+    version: 'eq.' + version,
+  }, signal);
+  if (!Array.isArray(rows) || rows.length !== 1) return null;
+  const [row] = rows;
+  if (row?.dataset !== BACKUP_DATASET || row.source !== source || row.season !== 18 || row.version !== version ||
+      !/^[a-f0-9]{64}$/.test(row.content_sha256) || row.content_sha256 !== row.payload?.digest) return null;
+  return validReleaseEntry(row.payload, scope) ? row.payload : null;
+}
+
+async function loadLiveBundle(scope) {
+  if (!scope) return null;
+  const { source, version } = scope;
   const key = source + '/' + version;
   const cached = liveBundles.get(key);
   if (cached && Date.now() - cached.started < 60_000) return cached.result;
   const url = `${LIVE_ROOT}/live-${source}/${version}.json`;
-  const validate = entry => {
-    if (entry?.source !== source || entry.season !== 18 || entry.version !== version ||
-      !Number.isFinite(Date.parse(entry.updatedAt))) return null;
-    return validReleaseDatasets(source, entry.datasets) ? entry : null;
-  };
+  const validate = entry => validReleaseEntry(entry, scope) ? entry : null;
   const browserCache = globalThis.caches?.open(LIVE_CACHE).catch(() => null);
   const stored = browserCache?.then(async cache => {
     const response = await cache?.match(url);
@@ -140,24 +167,28 @@ export async function loadCatalogBundle(paths, { optional = [], live = false } =
   if (!paths.length || !specs.every(Boolean)) return readBundled(paths, specs, optional);
 
   const pending = new AbortController();
-  const database = readDatabase(specs, pending.signal).then(values => {
-    if (!values) throw new Error('备用数据不完整');
-    return { values, location: 'database' };
-  });
+  const scope = live ? releaseScope(specs) : null;
+  const unpack = (entry, location) => {
+    if (!entry) throw new Error('发布批次不可用');
+    const values = specs.map(([dataset, source, version, accepts]) => {
+      const payload = entry.datasets[dataset];
+      return validPayload(payload, source, version, accepts) ? { ...payload, extractedAt: entry.updatedAt } : null;
+    });
+    if (!values.every((value, index) => value || optional.includes(paths[index]))) throw new Error('发布批次不完整');
+    return { values, location, updatedAt: entry.updatedAt, revision: entry.digest };
+  };
+  const database = live
+    ? readReleaseBackup(scope, pending.signal).then(entry => unpack(entry, 'database'))
+    : readDatabase(specs, pending.signal).then(values => {
+      if (!values) throw new Error('备用数据不完整');
+      return { values, location: 'database' };
+    });
   const fallback = Promise.any([database, readBundled(paths, specs, optional, pending.signal)])
     .catch(error => { throw error.errors.at(-1); });
   let timer;
   try {
     if (!live) return await fallback;
-    const latest = loadLiveBundle(specs).then(entry => {
-      if (!entry) throw new Error('自动同步快照不可用');
-      const values = specs.map(([dataset, source, version, accepts]) => {
-        const payload = entry.datasets[dataset];
-        return validPayload(payload, source, version, accepts) ? { ...payload, extractedAt: entry.updatedAt } : null;
-      });
-      if (!values.every((value, index) => value || optional.includes(paths[index]))) throw new Error('自动同步快照不完整');
-      return { values, location: 'live', updatedAt: entry.updatedAt, revision: entry.digest };
-    });
+    const latest = loadLiveBundle(scope).then(entry => unpack(entry, 'live'));
     // Prefer a fresh snapshot during a short window, then show the first complete fallback.
     const grace = new Promise(resolve => { timer = setTimeout(resolve, 1_200); });
     const readyFallback = Promise.all([fallback, Promise.race([grace, latest.catch(() => {})])]).then(([bundle]) => bundle);
