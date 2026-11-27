@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 版本资料与赛后复盘</title>
 <link rel="stylesheet" href="./styles.css?v=opening-workspace" />
-<link rel="stylesheet" href="./reference.css?v=compare-games" />
+<link rel="stylesheet" href="./reference.css?v=postgame-icons" />
 </head>
 <body>
 <header class="bar reference-header">
@@ -37,6 +37,19 @@
       </fieldset>
       <p class="snap-status" role="status"></p>
     </form>
+    <details id="postgameIcons">
+      <summary>用图标补录棋子或装备</summary>
+      <fieldset disabled>
+        <p class="fine">从本人的结算图裁出单个头像或装备图标。核对识别候选后再加入复盘。</p>
+        <div class="snap-actions">
+          <select aria-label="图标类型"><option value="unit">棋子头像</option><option value="item">装备图标</option></select>
+          <input type="file" accept="image/*" aria-label="选择裁好的图标" />
+          <button class="ghost" type="button" data-confirm-icon disabled>确认加入</button>
+          <button class="ghost" type="button" data-clear-icons disabled>清除已确认图标</button>
+        </div>
+      </fieldset>
+      <p class="snap-status" role="status"></p>
+    </details>
     <div id="postgameResult"></div>
   </section>
   <section class="panel" aria-labelledby="referenceTitle">
@@ -60,7 +73,7 @@
           <label for="referenceMatch">对照范围
             <select id="referenceMatch">
               <option value="all">全部</option>
-              <option value="shared">两端同名</option>
+              <option value="shared">两端有对应条目</option>
               <option value="datatft">仅云顶有此名称</option>
               <option value="dataj">仅金铲铲有此名称</option>
             </select>
@@ -68,7 +81,7 @@
         </div>
       </div>
     </header>
-    <p id="comparisonHelp" class="fine" hidden>棋子、羁绊、装备和海克斯按名称对照。两端榜单分别按各自评级展示。</p>
+    <p id="comparisonHelp" class="fine" hidden>棋子、羁绊、装备和海克斯按同名或已核实的异名对照。两端榜单分别按各自评级展示。</p>
     <p id="referenceCount" class="fine" role="status"></p>
     <div id="referenceResults" class="reference-results"></div>
     <div class="snap-actions"><button id="showMore" class="ghost" type="button" hidden>查看更多</button></div>
@@ -79,6 +92,6 @@
   <p class="fine">公网测试版。评级与统计沿用来源站口径。</p>
 </footer>
 
-<script type="module" src="./src/reference.js?v=compare-games"></script>
+<script type="module" src="./src/reference.js?v=postgame-icons"></script>
 </body>
 </html>

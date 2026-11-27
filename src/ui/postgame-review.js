@@ -3,10 +3,13 @@ import { readPostgameText } from '../adapters/local-ocr.js?v=postgame-review';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 import { analyzePostgameLineup, importPostgameLineup, postgameReview } from '../engine/postgame-review.js?v=review-benchmark';
 
-export function bindPostgameReview({ panel, input, clear, status, output, getContext, lineupForm }) {
+export function bindPostgameReview({ panel, input, clear, status, output, getContext, lineupForm, iconTools }) {
   let generation = 0;
   let screenshot = null;
   let imported = null;
+  const confirmedUnits = new Map();
+  const confirmedItems = new Map();
+  let resetIcons;
 
   function resetImage() {
     generation++;
@@ -21,6 +24,9 @@ export function bindPostgameReview({ panel, input, clear, status, output, getCon
     resetImage();
     panel.hidden = !enabled;
     imported = null;
+    confirmedUnits.clear();
+    confirmedItems.clear();
+    resetIcons?.();
     lineupForm?.reset();
     const lineupStatus = lineupForm?.querySelector('[role="status"]');
     if (lineupStatus) lineupStatus.textContent = '';
@@ -98,11 +104,69 @@ export function bindPostgameReview({ panel, input, clear, status, output, getCon
       addResult('截图装备', screenshot.equipment.map(item => item.name).join('、') || '未读到可归属本人的名称');
     }
     const lineup = imported || screenshot;
-    if (!lineup) return;
-    const names = lineup.units.map(unit => lineup.stars?.[unit.id] ? `${unit.name} ${lineup.stars[unit.id]} 星` : unit.name);
+    if (confirmedItems.size) addResult('已确认图标装备', [...confirmedItems.values()].map(item => item.name).join('、'));
+    if (!lineup && !confirmedUnits.size && !confirmedItems.size) return;
+    const units = [...new Map([...(lineup?.units || []).map(unit => [unit.id, unit]), ...confirmedUnits]).values()];
+    const names = units.map(unit => lineup?.stars?.[unit.id] ? `${unit.name} ${lineup.stars[unit.id]} 星` : unit.name);
     addResult(imported ? '导入阵容' : '棋子名称', names.join('、') || '未读到可归属本人的名称');
-    const equipment = screenshot?.equipment || [];
-    renderAnalysis(context && analyzePostgameLineup(lineup.units, equipment, { ...context, stars: lineup.stars }), equipment.length > 0);
+    const equipment = [...new Map([...(screenshot?.equipment || []).map(item => [item.id, item]), ...confirmedItems]).values()];
+    renderAnalysis(context && analyzePostgameLineup(units, equipment, { ...context, stars: lineup?.stars }), equipment.length > 0);
+  }
+
+  if (iconTools) {
+    const kind = iconTools.querySelector('select');
+    const fileInput = iconTools.querySelector('input');
+    const confirm = iconTools.querySelector('[data-confirm-icon]');
+    const remove = iconTools.querySelector('[data-clear-icons]');
+    const feedback = iconTools.querySelector('[role="status"]');
+    let candidate, revision = 0;
+    resetIcons = () => {
+      revision++;
+      candidate = null;
+      fileInput.value = '';
+      confirm.disabled = true;
+      remove.disabled = !confirmedUnits.size && !confirmedItems.size;
+      feedback.textContent = '';
+    };
+    kind.onchange = resetIcons;
+    fileInput.onchange = async () => {
+      const [file] = fileInput.files;
+      resetIcons();
+      const context = getContext();
+      if (!file || !context) return;
+      const entries = kind.value === 'unit' ? context.setData.units : [...(context.items?.components || []), ...(context.items?.items || [])];
+      const id = revision;
+      feedback.textContent = '正在比对本版本图标…';
+      try {
+        if (file.size > 5 * 1024 * 1024 || !await imageKind(file)) throw new Error('请选择 5 MB 以内的图片。');
+        const { recognizePostgameIcon } = await import('../adapters/icon-match.js?v=postgame-icons');
+        const unique = [...new Map((entries || []).map(entry => [entry.id, entry])).values()];
+        const { value, timedOut } = await withinRecognitionBudget(active => recognizePostgameIcon(file, unique, () => id === revision && active()));
+        if (id !== revision) return;
+        if (timedOut) throw new Error('模板加载超时，请重试。');
+        candidate = value;
+        confirm.disabled = !candidate;
+        feedback.textContent = candidate ? `候选：${candidate.name}。请核对后确认。` : '未找到足够明确的候选。请裁掉边框，或手动补录。';
+      } catch (error) {
+        if (id === revision) feedback.textContent = error.message || '图标识别失败。';
+      }
+    };
+    confirm.onclick = () => {
+      const context = getContext();
+      if (!candidate || !context) return;
+      const selected = kind.value === 'unit' ? confirmedUnits : confirmedItems;
+      selected.set(candidate.id, candidate);
+      const name = candidate.name;
+      resetIcons();
+      feedback.textContent = `已确认 ${name}。`;
+      render(context);
+    };
+    remove.onclick = () => {
+      confirmedUnits.clear();
+      confirmedItems.clear();
+      resetIcons();
+      render(getContext());
+    };
   }
 
   if (lineupForm) {

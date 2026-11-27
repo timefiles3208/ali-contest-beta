@@ -55,6 +55,11 @@
 .postgame-analysis h3 { margin: 0; }
 .postgame-analysis h4 { margin: 12px 0 6px; }
 .postgame-analysis details + details { margin-top: 6px; }
+#postgameIcons { margin-top: 12px; }
+#postgameIcons summary { cursor: pointer; }
+#postgameIcons fieldset { min-width: 0; border: 0; margin: 0; padding: 0; }
+#postgameIcons input { max-width: 100%; }
+#postgameIcons [role='status']:not(:empty) { margin-top: 8px; }
 .comparison-grid, .comparison-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .comparison-row { grid-column: 1 / -1; align-items: start; }
 .comparison-column { display: grid; align-content: start; gap: 8px; min-width: 0; overflow-wrap: anywhere; }

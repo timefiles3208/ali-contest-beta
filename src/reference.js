@@ -2,7 +2,7 @@ import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor } from './adapters/boar
 import { loadCatalogBundle } from './adapters/catalog.js?v=bounded-fallback';
 import { SETS, findSet } from './data/sets.js?v=game-release-scope';
 import { augmentTier, AUGMENT_TIER_LABELS } from './data/augment-tiers.js';
-import { catalogName, compareCatalogEntries } from './engine/catalog-comparison.js';
+import { catalogName, compareCatalogEntries } from './engine/catalog-comparison.js?v=postgame-icons';
 import { iconHtml } from './ui/helpers.js?v=game-release-scope';
 
 const el = id => document.getElementById(id);
@@ -106,7 +106,8 @@ function renderComparison(category, query) {
     showMore.hidden = Math.max(...rows.map(entries => entries.length)) <= shown;
     return;
   }
-  const pairs = compareCatalogEntries(left.data?.[category] || [], right.data?.[category] || [], query, canFilter ? matchInput.value : 'all');
+  const pairs = compareCatalogEntries(left.data?.[category] || [], right.data?.[category] || [], query,
+    canFilter ? matchInput.value : 'all', { category, version: versionInput.value });
   function cell(entries, column) {
     if (entries.length) return `<div class="comparison-column">${entries.map(entry => entryCard(entry, category, column.data)).join('')}</div>`;
     return `<p class="fine comparison-empty">${column.data ? '此版本未收录同名条目' : h(column.message)}</p>`;
@@ -161,6 +162,8 @@ async function load() {
   const upload = el('postgameImage');
   const panel = el('postgameReview');
   const lineupFields = el('postgameLineupFields');
+  const iconTools = el('postgameIcons');
+  const iconFields = iconTools.querySelector('fieldset');
   catalog = null;
   comparisons = null;
   shown = PAGE_SIZE;
@@ -168,6 +171,7 @@ async function load() {
   panel.hidden = !gold;
   upload.disabled = true;
   lineupFields.disabled = true;
+  iconFields.disabled = true;
   el('referenceTitle').textContent = compare ? '云顶与金铲铲数据对照' : '版本资料';
   el('comparisonFilter').hidden = true;
   el('comparisonHelp').hidden = !compare;
@@ -204,10 +208,10 @@ async function load() {
     if (!gold) return;
     try {
       if (!postgame) {
-        const { bindPostgameReview } = await import('./ui/postgame-review.js?v=review-benchmark');
+        const { bindPostgameReview } = await import('./ui/postgame-review.js?v=postgame-icons');
         if (request !== releaseId) return;
         postgame = bindPostgameReview({ panel, input: upload, clear: el('clearPostgame'), status: el('postgameStatus'),
-          output: el('postgameResult'), lineupForm: el('postgameLineup'), getContext: () => sourceInput.value === 'dataj' && !upload.disabled ? {
+          output: el('postgameResult'), lineupForm: el('postgameLineup'), iconTools, getContext: () => sourceInput.value === 'dataj' && !upload.disabled ? {
             setData: catalog?.roster || { scope },
             items: catalog?.itemData, comps: catalog?.lineups,
           } : null });
@@ -215,6 +219,7 @@ async function load() {
       if (request === releaseId) {
         upload.disabled = false;
         lineupFields.disabled = !catalog?.roster.units.length;
+        iconFields.disabled = lineupFields.disabled;
       }
     } catch {
       if (request === releaseId) el('postgameStatus').textContent = '截图组件加载失败，请刷新页面。';

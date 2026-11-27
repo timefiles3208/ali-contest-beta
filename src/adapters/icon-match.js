@@ -1,9 +1,12 @@
+import { catalogIcon } from '../ui/helpers.js?v=game-release-scope';
+
 const ATLAS = 'https://ddragon.leagueoflegends.com/cdn';
 const SAMPLE_SIZE = 12;
 const MAX_DISTANCE = 0.105;
 const MIN_MARGIN = 0.014;
 const sheets = new Map();
 const templates = new Map();
+const catalogTemplates = new Map();
 let alignmentOffsets;
 
 export function matchIconSignature(sample, candidates) {
@@ -116,4 +119,47 @@ export async function recognizeCroppedIcon(file, entries, version) {
   } finally {
     image.close();
   }
+}
+
+function goldSpatulaTemplate(url) {
+  if (!catalogTemplates.has(url)) {
+    const request = fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(5_000) }).then(async response => {
+      if (!response.ok) throw new Error('图标模板暂不可用。');
+      const bitmap = await createImageBitmap(await response.blob());
+      try { return signature(bitmap, 0, 0, bitmap.width, bitmap.height); }
+      finally { bitmap.close(); }
+    }).catch(error => {
+      catalogTemplates.delete(url);
+      throw error;
+    });
+    catalogTemplates.set(url, request);
+  }
+  return catalogTemplates.get(url);
+}
+
+export async function recognizePostgameIcon(file, entries, isCurrent) {
+  const image = await createImageBitmap(file);
+  let sample;
+  try {
+    const ratio = image.width / image.height;
+    if (Math.min(image.width, image.height) < 16 || ratio < 0.75 || ratio > 1.33) {
+      throw new Error('请裁出一枚近似正方形的图标（至少 16×16 像素）。');
+    }
+    sample = signature(image, 0, 0, image.width, image.height);
+  } finally { image.close(); }
+  const valid = entries.flatMap(entry => {
+    const url = catalogIcon(entry.icon);
+    return url ? [{ entry, url }] : [];
+  });
+  const refs = [];
+  for (let start = 0; start < valid.length && isCurrent(); start += 12) {
+    const group = await Promise.allSettled(valid.slice(start, start + 12).map(async ({ entry, url }) => ({
+      id: entry.id, signature: await goldSpatulaTemplate(url),
+    })));
+    refs.push(...group.flatMap(result => result.status === 'fulfilled' ? [result.value] : []));
+  }
+  if (!isCurrent()) return null;
+  if (!refs.length || refs.length < valid.length * 0.9) throw new Error('本版本图标模板暂不可用，请稍后重试。');
+  const result = matchIconSignature(sample, refs)[0];
+  return entries.find(entry => entry.id === result?.id) || null;
 }
