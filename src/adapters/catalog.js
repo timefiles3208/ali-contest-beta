@@ -1,9 +1,12 @@
+import { adaptBoard } from './board-sources.js?v=live-catalog';
 import { loadJson } from '../ui/helpers.js?v=fast-catalog';
 
 const LIVE_ROOT = 'https://raw.githubusercontent.com/timefiles3208/ali-contest-beta';
 const liveBundles = new Map();
 const LIVE_CACHE = 'tft-live-catalog';
 const BACKUP_DATASET = 'recommendation-release';
+const RELEASE_GRACE_MS = 1_200;
+const SNAPSHOT_TIMEOUT_MS = 8_000;
 
 const API = 'https://dubfaazkkthmwwtkplwm.supabase.co/rest/v1/tft_catalog';
 const PUBLISHABLE_KEY = 'sb_publishable_AfgS6UsN9aDur-TYvK9d-w_M3UaILkp';
@@ -55,8 +58,16 @@ function releaseSpecs(source) {
 }
 
 export function validReleaseDatasets(source, datasets) {
-  return releaseSpecs(source)?.every(([dataset, id, version, accepts]) =>
-    validPayload(datasets?.[dataset], id, version, accepts)) === true;
+  if (!releaseSpecs(source)?.every(([dataset, id, version, accepts]) =>
+    validPayload(datasets?.[dataset], id, version, accepts))) return false;
+
+  const native = source === 'dataj';
+  const raw = datasets[native ? 'rankings' : 'compositions'];
+  const roster = datasets[native ? 'game-catalog' : 'units-traits'];
+  const items = native ? roster : datasets.items;
+  const setData = { ...roster, set: 18, scope: { sourceId: source, version: raw.version } };
+  const { comps, skipped } = adaptBoard(raw, { source, setData, items });
+  return comps.length > 0 && !skipped.length;
 }
 
 async function fetchDatabase(query, signal) {
@@ -125,14 +136,19 @@ async function loadLiveBundle(scope) {
   const url = `${LIVE_ROOT}/live-${source}/${version}.json`;
   const validate = entry => validReleaseEntry(entry, scope) ? entry : null;
   const browserCache = globalThis.caches?.open(LIVE_CACHE).catch(() => null);
-  const stored = browserCache?.then(async cache => {
+  const cachedRead = browserCache?.then(async cache => {
     const response = await cache?.match(url);
     const entry = response && validate(await response.json());
     if (!entry) throw new Error('无可用缓存快照');
     return entry;
   });
+  let cacheTimer;
+  const stored = cachedRead && Promise.race([
+    cachedRead,
+    new Promise((_, reject) => { cacheTimer = setTimeout(() => reject(new Error('缓存读取超时')), 400); }),
+  ]).finally(() => clearTimeout(cacheTimer));
   const network = (async () => {
-    const response = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    const response = await fetch(url, { signal: AbortSignal.timeout(SNAPSHOT_TIMEOUT_MS) });
     const entry = response.ok ? validate(await response.json()) : null;
     if (!entry) throw new Error('无可用同步快照');
     const previous = await stored?.catch(() => null);
@@ -141,16 +157,21 @@ async function loadLiveBundle(scope) {
     liveBundles.set(key, { result: Promise.resolve(entry), started: Date.now() });
     return entry;
   })();
-  const result = Promise.any(stored ? [stored, network] : [network]).catch(() => null);
+  const result = Promise.any(stored ? [stored, network] : [network]).catch(() => {
+    if (liveBundles.get(key)?.result === result) liveBundles.delete(key);
+    return null;
+  });
   liveBundles.set(key, { result, started: Date.now() });
   return result;
 }
 
 async function readBundled(paths, specs, optional, signal) {
+  const timeout = AbortSignal.timeout(SNAPSHOT_TIMEOUT_MS);
+  const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
   const values = await Promise.all(paths.map(async (path, index) => {
     if (!path) return null;
     try {
-      const payload = await loadJson(path, { signal });
+      const payload = await loadJson(path, { signal: requestSignal });
       const spec = specs[index];
       if (spec && !validPayload(payload, spec[1], spec[2], spec[3])) throw new Error(`数据快照校验失败 ${path}`);
       return payload;
@@ -183,16 +204,18 @@ export async function loadCatalogBundle(paths, { optional = [], live = false } =
       if (!values) throw new Error('备用数据不完整');
       return { values, location: 'database' };
     });
-  const fallback = Promise.any([database, readBundled(paths, specs, optional, pending.signal)])
-    .catch(error => { throw error.errors.at(-1); });
+  const bundled = readBundled(paths, specs, optional, pending.signal);
   let timer;
   try {
-    if (!live) return await fallback;
+    if (!live) return await Promise.any([database, bundled]);
     const latest = loadLiveBundle(scope).then(entry => unpack(entry, 'live'));
-    // Prefer a fresh snapshot during a short window, then show the first complete fallback.
-    const grace = new Promise(resolve => { timer = setTimeout(resolve, 1_200); });
-    const readyFallback = Promise.all([fallback, Promise.race([grace, latest.catch(() => {})])]).then(([bundle]) => bundle);
-    return await Promise.any([latest, readyFallback]);
+    // Give preferred sources the same short window without starting requests in series.
+    const grace = new Promise(resolve => { timer = setTimeout(resolve, RELEASE_GRACE_MS); });
+    const backupReady = Promise.all([database, Promise.race([grace, latest.catch(() => {})])])
+      .then(([bundle]) => bundle);
+    const localReady = Promise.all([bundled, Promise.race([grace, Promise.allSettled([latest, database])])])
+      .then(([bundle]) => bundle);
+    return await Promise.any([latest, backupReady, localReady]);
   } catch (error) {
     throw error.errors?.at(-1) || error;
   } finally {

@@ -156,6 +156,50 @@ test('reads a complete backup release as one record and rejects a broken batch',
   }
 });
 
+test('prefers a valid complete backup that arrives within the existing wait window', async t => {
+  const { loadCatalogBundle: loadFresh } = await import('../src/adapters/catalog.js?backup-priority');
+  const paths = ['./src/data/dataj/s18.18.7.catalog.json', './src/data/dataj/s18.18.7.json'];
+  const digest = 'c'.repeat(64);
+  t.mock.method(globalThis, 'fetch', async url => {
+    if (String(url).includes('raw.githubusercontent.com')) return new Response(null, { status: 503 });
+    if (String(url).includes('supabase.co')) {
+      await new Promise(resolve => setImmediate(resolve));
+      return Response.json([{
+        source: 'dataj', season: 18, version: '18.7', dataset: 'recommendation-release',
+        content_sha256: digest, payload: { ...dataj, digest },
+      }]);
+    }
+    return Response.json(String(url).endsWith('.catalog.json') ? catalog : rankings);
+  });
+  const result = await loadFresh(paths, { live: true });
+  assert.equal(result.location, 'database');
+  assert.equal(result.revision, digest);
+});
+
+test('accepts a recovered sync source immediately after all sources fail', async t => {
+  const { loadCatalogBundle: loadFresh } = await import('../src/adapters/catalog.js?fallback-retry');
+  const paths = ['./src/data/dataj/s18.18.7.catalog.json', './src/data/dataj/s18.18.7.json'];
+  let online = false;
+  t.mock.method(globalThis, 'fetch', async url => online && String(url).includes('raw.githubusercontent.com')
+    ? Response.json(dataj) : new Response(null, { status: 503 }));
+  await assert.rejects(loadFresh(paths, { live: true }));
+  online = true;
+  assert.equal((await loadFresh(paths, { live: true })).location, 'live');
+});
+
+test('rejects an invalid lineup reference before adopting a release batch', async t => {
+  const { loadCatalogBundle: loadFresh } = await import('../src/adapters/catalog.js?unknown-unit');
+  const paths = ['./src/data/dataj/s18.18.7.catalog.json', './src/data/dataj/s18.18.7.json'];
+  const broken = structuredClone(dataj);
+  broken.datasets.rankings.comps[0].heroes[0] = { id: 'unknown-unit', name: '坏引用', summon: false };
+  t.mock.method(globalThis, 'fetch', async url => {
+    if (String(url).includes('raw.githubusercontent.com')) return Response.json(broken);
+    if (String(url).includes('supabase.co')) return new Response(null, { status: 503 });
+    return Response.json(String(url).endsWith('.catalog.json') ? catalog : rankings);
+  });
+  assert.equal((await loadFresh(paths, { live: true })).location, 'bundled');
+});
+
 test('loads the native DataJ release from one shared request and keeps optional DataTFT ratings empty', async t => {
   const fetch = t.mock.method(globalThis, 'fetch', async url => {
     if (String(url).endsWith('live-dataj/18.7.json')) return Response.json(dataj);

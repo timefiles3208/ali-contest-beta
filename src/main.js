@@ -3,7 +3,7 @@ import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } fro
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js?v=game-release-scope';
 import { catalogIcon, iconHtml } from './ui/helpers.js?v=game-release-scope';
-import { loadCatalogBundle } from './adapters/catalog.js?v=atomic-db-backup';
+import { loadCatalogBundle } from './adapters/catalog.js?v=bounded-fallback';
 import { bindModelReference } from './ui/model-reference.js?v=game-release-scope';
 import { bindScreenReader } from './ui/screen-reader.js?v=fast-catalog';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
@@ -146,6 +146,7 @@ async function loadSet(version) {
   el('sourceBadge').className = 'badge';
   el('sourceBadge').title = '';
   el('newMatch').disabled = true;
+  el('newMatch').textContent = '新对局';
   el('sourceBadge').textContent = source.game + ' · ' + meta.version + ' · 读取中…';
   renderCostTabs();
   renderUnits();
@@ -172,7 +173,7 @@ async function loadSet(version) {
   catalogBadge.className = `badge ${complete ? 'ok' : 'warn'}`;
   catalogBadge.textContent = coreReady
     ? `卡池·装备·海克斯 · ${catalogLocation(release.location)}${complete ? '' : ' · 部分缺失'}`
-    : '卡池 · 暂无所选版本数据';
+    : release.error ? '卡池 · 读取失败，可重试' : '卡池 · 暂无所选版本数据';
   state.setData = setData;
   state.items = items;
   state.augs = augments;
@@ -198,6 +199,7 @@ async function loadSet(version) {
   renderCostTabs();
   renderUnits();
   applyBoard(boardRelease, source);
+  el('newMatch').textContent = available && !state.comps.length ? '重试加载' : '新对局';
   el('newMatch').disabled = false;
   renderSnapshot();
 }
