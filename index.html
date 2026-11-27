@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 版本资料与赛后复盘</title>
 <link rel="stylesheet" href="./styles.css?v=opening-workspace" />
-<link rel="stylesheet" href="./reference.css?v=version-reference" />
+<link rel="stylesheet" href="./reference.css?v=lineup-import" />
 </head>
 <body>
 <header class="bar reference-header">
@@ -18,13 +18,25 @@
 
 <main class="reference-main">
   <section class="panel snapshot" id="postgameReview" aria-labelledby="postgameTitle" hidden>
-    <h2 id="postgameTitle">金铲铲赛后截图复盘</h2>
+    <h2 id="postgameTitle">金铲铲赛后复盘</h2>
     <p class="fine">选择本人的结算或战绩详情截图，保留标题和名次。图片仅在本机浏览器识别，棋子和装备按截图中可辨认的名称提取。</p>
     <div class="snap-actions">
       <input id="postgameImage" type="file" accept="image/*" aria-label="选择赛后截图" disabled />
-      <button id="clearPostgame" class="ghost" type="button" disabled>清空</button>
+      <button id="clearPostgame" class="ghost" type="button" disabled>清除截图</button>
     </div>
     <p id="postgameStatus" class="snap-status" role="status"></p>
+    <form id="postgameLineup">
+      <fieldset id="postgameLineupFields" disabled>
+        <legend>导入赛后阵容</legend>
+        <label for="postgameLineupText" class="fine">粘贴本站已收录的金铲铲阵容码，或用顿号分隔上阵棋子名称。</label>
+        <textarea id="postgameLineupText" name="lineup" rows="2" maxlength="512" placeholder="例如 洛、阿狸"></textarea>
+        <div class="snap-actions">
+          <button class="primary" type="submit">导入阵容</button>
+          <button class="ghost" type="button" data-remove-lineup disabled>移除阵容</button>
+        </div>
+      </fieldset>
+      <p class="snap-status" role="status"></p>
+    </form>
     <div id="postgameResult"></div>
   </section>
   <section class="panel" aria-labelledby="referenceTitle">
@@ -56,6 +68,6 @@
   <p class="fine">公网测试版。评级与统计沿用来源站口径。</p>
 </footer>
 
-<script type="module" src="./src/reference.js?v=version-reference"></script>
+<script type="module" src="./src/reference.js?v=lineup-import"></script>
 </body>
 </html>

@@ -97,11 +97,13 @@ async function load() {
   const status = el('referenceSource');
   const upload = el('postgameImage');
   const panel = el('postgameReview');
+  const lineupFields = el('postgameLineupFields');
   catalog = null;
   shown = PAGE_SIZE;
   postgame?.reset(gold);
   panel.hidden = !gold;
   upload.disabled = true;
+  lineupFields.disabled = true;
   output.replaceChildren();
   el('referenceCount').textContent = '';
   showMore.hidden = true;
@@ -110,15 +112,18 @@ async function load() {
     if (!gold) return;
     try {
       if (!postgame) {
-        const { bindPostgameReview } = await import('./ui/postgame-review.js?v=postgame-review');
+        const { bindPostgameReview } = await import('./ui/postgame-review.js?v=lineup-import');
         if (request !== releaseId) return;
         postgame = bindPostgameReview({ panel, input: upload, clear: el('clearPostgame'), status: el('postgameStatus'),
-          output: el('postgameResult'), getContext: () => sourceInput.value === 'dataj' && !upload.disabled ? {
+          output: el('postgameResult'), lineupForm: el('postgameLineup'), getContext: () => sourceInput.value === 'dataj' && !upload.disabled ? {
             setData: catalog?.roster || { scope },
             items: catalog?.itemData, comps: catalog?.lineups,
           } : null });
       }
-      if (request === releaseId) upload.disabled = false;
+      if (request === releaseId) {
+        upload.disabled = false;
+        lineupFields.disabled = !catalog?.roster.units.length;
+      }
     } catch {
       if (request === releaseId) el('postgameStatus').textContent = '截图组件加载失败，请刷新页面。';
     }

@@ -3,6 +3,52 @@ import { screenScopeMismatch } from './game-scope.js';
 const RESULT_TITLE = /对局结算|战绩结算|战绩详情|本局战绩|赛后结算|结算详情|返回大厅|再来一局/;
 const RANK_DIGITS = '一二三四五六七八';
 
+export function comparePostgameLineups(units, comps = []) {
+  const known = new Set(units.map(unit => unit.id));
+  if (known.size < 2) return [];
+  return comps.map(comp => ({
+    name: comp.name,
+    count: new Set((comp.units || []).map(unit => typeof unit === 'string' ? unit : unit.id).filter(id => known.has(id))).size,
+  })).filter(row => row.count >= 2).sort((a, b) => b.count - a.count).slice(0, 3);
+}
+
+function lineupCode(value) {
+  return /(?:^|#)([A-Za-z0-9+/]{24,}={0,2})(?:\s|$)/.exec(value)?.[1];
+}
+
+export function importPostgameLineup(value, { setData, comps = [] }) {
+  if (setData?.scope?.sourceId !== 'dataj' || !setData.units?.length) {
+    return { error: '所选金铲铲版本暂无卡池，暂时无法导入阵容。' };
+  }
+  const text = value.normalize('NFKC').trim();
+  if (!text) return { error: '请输入阵容码或棋子名称。' };
+
+  const code = lineupCode(text);
+  const byId = new Map(setData.units.map(unit => [unit.id, unit]));
+  if (code || text.includes('阵容码')) {
+    const matches = code ? comps.filter(comp => comp.teamCode && lineupCode(comp.teamCode) === code) : [];
+    const signatures = new Set(matches.map(comp => [...new Set(comp.units)].sort().join(',')));
+    const match = signatures.size === 1 ? matches[0] : null;
+    const units = match ? [...new Set(match.units)].map(id => byId.get(id)) : [];
+    if (!units.length || units.some(unit => !unit)) {
+      return { error: '这个阵容码无法在所选版本解析，请核对版本或改填上阵棋子名称。' };
+    }
+    return { units, name: match.name };
+  }
+
+  const names = [...new Set(text.split(/[、,;\s]+/).filter(Boolean))];
+  const units = [];
+  const unmatched = [];
+  for (const name of names) {
+    const matches = setData.units.filter(unit => unit.name === name);
+    if (matches.length === 1) units.push(matches[0]);
+    else unmatched.push(matches.length ? `${name}（有同名棋子）` : name);
+  }
+  if (unmatched.length) return { error: `有棋子无法确认：${unmatched.join('、')}。请核对版本和名称。` };
+  if (!units.length) return { error: '请输入至少一个上阵棋子的名称。' };
+  return { units };
+}
+
 export function postgameReview(text, { setData, items, comps }) {
   const normalized = (text || '').normalize('NFKC');
   const lines = normalized.split('\n').map(line => line.replace(/\s+/g, ''));
@@ -30,10 +76,6 @@ export function postgameReview(text, { setData, items, comps }) {
 
   const units = ownFields(/^(?:我的阵容|我的棋子|我的上阵棋子|本局阵容):?/, setData?.units);
   const equipment = ownFields(/^(?:我的[装妆]备|本局[装妆]备):?/, items?.items);
-  const known = new Set(units.map(unit => unit.id));
-  const comparisons = known.size < 2 ? [] : (comps || []).map(comp => ({
-    name: comp.name,
-    count: new Set((comp.units || []).map(unit => typeof unit === 'string' ? unit : unit.id).filter(id => known.has(id))).size,
-  })).filter(row => row.count >= 2).sort((a, b) => b.count - a.count).slice(0, 3);
+  const comparisons = comparePostgameLineups(units, comps);
   return { rank: [...ranks][0], units, equipment, comparisons };
 }
