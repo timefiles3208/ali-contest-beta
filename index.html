@@ -25,7 +25,18 @@
 </header>
 
 <main>
-  <section class="panel snapshot opening-workspace" aria-labelledby="screenTitle">
+  <section class="panel snapshot" id="postgameReview" aria-labelledby="postgameTitle" hidden>
+    <h2 id="postgameTitle">金铲铲赛后截图复盘</h2>
+    <p class="fine">选择本人的结算或战绩详情截图，保留标题和名次。图片仅在本机浏览器识别，棋子和装备按截图中可辨认的名称提取。</p>
+    <div class="snap-actions">
+      <input id="postgameImage" type="file" accept="image/*" aria-label="选择赛后截图" />
+      <button id="clearPostgame" class="ghost" type="button" disabled>清空</button>
+    </div>
+    <p id="postgameStatus" class="snap-status" role="status"></p>
+    <div id="postgameResult"></div>
+  </section>
+
+  <section class="panel snapshot opening-workspace" id="liveOpeningPanel" aria-labelledby="screenTitle">
     <div class="opening-start">
       <div>
         <h2 id="screenTitle">2-1 阵容推荐</h2>
@@ -318,6 +329,6 @@
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=bounded-fallback"></script>
+<script type="module" src="./src/main.js?v=postgame-review"></script>
 </body>
 </html>

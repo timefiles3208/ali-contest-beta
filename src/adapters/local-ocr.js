@@ -59,6 +59,22 @@ export function warmOpeningOcr() {
 }
 export const warmScoutOcr = scout.warm;
 
+export async function readPostgameText(file, isCurrent) {
+  let image;
+  try {
+    image = await createImageBitmap(file);
+  } catch {
+    throw new Error('图片无法解码，请换一张或转成 PNG 后再试。');
+  }
+  try {
+    if (!isCurrent()) return null;
+    const canvas = cropForOcr(image, [0, 0, 1, 1], { zoom: 1 });
+    return await readOcr(canvas, isCurrent, '11');
+  } finally {
+    image.close();
+  }
+}
+
 function cropForOcr(image, [left, top, right, bottom], { zoom = 3, threshold = 0, contrast = true, fixed = false } = {}) {
   const pixel = fixed ? v => v : Math.round;
   const w = Math.max(1, pixel(image.width * (right - left)));

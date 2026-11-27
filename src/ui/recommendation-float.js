@@ -1,6 +1,6 @@
 import { renderLineupList } from './lineup-list.js?v=scout-direction';
 
-export function bindRecommendationFloat({ toggle, panel, status, ranked, onSelect, selectedId }) {
+export function bindRecommendationFloat({ toggle, panel, status, ranked, onSelect, selectedId, enabled = () => true }) {
   const parent = panel.parentNode;
   const controls = document.createElement('div');
   controls.className = 'float-controls';
@@ -50,11 +50,14 @@ export function bindRecommendationFloat({ toggle, panel, status, ranked, onSelec
   };
   opacity.oninput = () => { panel.style.opacity = String(Number(opacity.value) / 100); };
   toggle.onclick = async () => {
+    if (!enabled()) return;
     if (!panel.hidden) { close.onclick(); return; }
     toggle.disabled = true;
     try {
       if (window.documentPictureInPicture) {
-        pip = await window.documentPictureInPicture.requestWindow({ width: 410, height: 430 });
+        const requested = await window.documentPictureInPicture.requestWindow({ width: 410, height: 430 });
+        if (!enabled()) { requested.close(); return; }
+        pip = requested;
         pip.document.body.classList.add('float-window');
         for (const style of document.querySelectorAll('link[rel="stylesheet"]')) {
           const stylesheet = pip.document.createElement('link');
@@ -78,6 +81,7 @@ export function bindRecommendationFloat({ toggle, panel, status, ranked, onSelec
   };
   new MutationObserver(refresh).observe(status, { childList: true });
   return {
+    close: close.onclick,
     refresh,
     setNotice(text) {
       notice.textContent = text;

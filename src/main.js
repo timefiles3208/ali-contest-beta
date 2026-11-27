@@ -9,7 +9,8 @@ import { bindScreenReader } from './ui/screen-reader.js?v=fast-catalog';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
 import { bindOpeningAdvice } from './ui/opening-advice.js?v=game-release-scope';
 import { bindOpeningPrompts } from './ui/opening-prompts.js?v=scout-direction';
-import { bindRecommendationFloat } from './ui/recommendation-float.js?v=scout-direction';
+import { bindRecommendationFloat } from './ui/recommendation-float.js?v=postgame-review';
+import { bindPostgameReview } from './ui/postgame-review.js?v=postgame-review';
 import { solveBoardConstraints } from './engine/board-constraints.js';
 import { bindMatchSamples } from './ui/match-samples.js?v=match-variants';
 import { bindIconMatch } from './ui/icon-match.js?v=ocr-scale';
@@ -30,7 +31,7 @@ import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let modelReference, screenReader, openingAdvice, matchSamples, iconMatch, scout;
-let resultFloat, openingPrompts;
+let resultFloat, openingPrompts, postgame;
 let boardLoad = 0;
 let setLoad = 0;
 let loadingSet = false;
@@ -100,7 +101,7 @@ function applyBoard(release, source) {
     badge.className = 'badge warn';
   }
   renderResults();
-  if (state.comps.length) screenReader?.prepare();
+  if (source.id === 'datatft' && state.comps.length) screenReader?.prepare();
 }
 
 async function loadSet(version) {
@@ -110,6 +111,12 @@ async function loadSet(version) {
   const scope = { sourceId: source.id, game: source.game, season: meta.set, version: meta.version };
   const empty = { set: meta.set, costs: [], traits: [], units: [], scope };
   loadingSet = true;
+  const goldSpatula = source.id === 'dataj';
+  el('liveOpeningPanel').hidden = goldSpatula;
+  el('imageTools').hidden = goldSpatula;
+  postgame?.reset(goldSpatula);
+  el('postgameImage').disabled = true;
+  resultFloat?.close();
   resetLineupChoice();
   openingAdvice?.reset();
   state.opponentBoards.clear();
@@ -199,6 +206,7 @@ async function loadSet(version) {
   renderCostTabs();
   renderUnits();
   applyBoard(boardRelease, source);
+  el('postgameImage').disabled = false;
   el('newMatch').textContent = available && !state.comps.length ? '重试加载' : '新对局';
   el('newMatch').disabled = false;
   renderSnapshot();
@@ -841,6 +849,7 @@ function renderSnapshot() {
 }
 
 async function importSnapshot(read) {
+  if (state.sourceId === 'dataj') return;
   const snap = state.snap;
   if (snap.busy || snap.importing) return;
   snap.importing = true;
@@ -907,7 +916,7 @@ function applySnapshot() {
 }
 
 async function runRecognize(enhanced = false) {
-  if (loadingSet || !state.snap.file || state.snap.busy || state.snap.importing || !state.setData?.units.length) return;
+  if (state.sourceId === 'dataj' || loadingSet || !state.snap.file || state.snap.busy || state.snap.importing || !state.setData?.units.length) return;
   const set = state.meta;
   const generation = boardLoad;
   const { file, rotation } = state.snap;
@@ -1000,6 +1009,11 @@ function clearSnapshot() {
 }
 
 function bind() {
+  postgame = bindPostgameReview({
+    panel: el('postgameReview'), input: el('postgameImage'), clear: el('clearPostgame'),
+    status: el('postgameStatus'), output: el('postgameResult'),
+    getContext: () => state.sourceId === 'dataj' && !loadingSet ? { setData: state.setData, items: state.items, comps: state.comps } : null,
+  });
   el('showLineupPlan').onclick = showLineupPlan;
   el('changeLineupChoice').onclick = () => {
     el('lineupPlan').close();
@@ -1019,7 +1033,7 @@ function bind() {
     inputs: ['openingHex1', 'openingHex2', 'openingHex3'].map(el), list: el('openingHexList'),
     tier: el('openingHexTier'), tierStatus: el('openingHexTierStatus'),
     direction: el('openingDirection'), picks: el('openingPicks'),
-    opponentCoverage: el('openingOpponentCoverage'), getContext: openingContext,
+    opponentCoverage: el('openingOpponentCoverage'), getContext: () => state.sourceId === 'datatft' ? openingContext() : null,
     rollFields: el('openingRolldown'), rollLevel: el('openingRollLevel'),
     rollGold: el('openingRollGold'), rollXp: el('openingRollXp'), copies: el('openingUnitCopies'),
     hud: el('openingHud'), applyHud: el('openingApplyHud'),
@@ -1082,6 +1096,7 @@ function bind() {
     start: el('screenStart'), finish: el('screenFinish'), stop: el('screenStop'), photo: el('screenPhoto'),
     video: el('screenVideo'), status: el('screenStatus'), result: el('screenDirection'),
     getContext: () => {
+      if (state.sourceId === 'dataj') return null;
       const context = openingContext();
       if (!context?.comps.length) return null;
       return {
@@ -1108,7 +1123,7 @@ function bind() {
     onShareStart: openingPrompts.start,
   });
   resultFloat = bindRecommendationFloat({
-    toggle: el('openResultFloat'), panel: el('resultFloat'), status: el('screenStatus'),
+    toggle: el('openResultFloat'), panel: el('resultFloat'), status: el('screenStatus'), enabled: () => state.sourceId === 'datatft',
     ranked: () => state.ranked || [], onSelect: selectLineup, selectedId: () => state.lineupChoice?.id,
   });
   scout = bindOpponentScout({
@@ -1117,12 +1132,11 @@ function bind() {
     economy: el('scoutEconomy'), augment: el('scoutAugment'), saveProfile: el('scoutSaveProfile'),
     artifact: el('scoutArtifact'), artifactHolder: el('scoutArtifactHolder'), removeArtifact: el('scoutRemoveArtifact'),
     clear: el('scoutClear'), clearAll: el('scoutClearAll'), status: el('scoutStatus'), summary: el('scoutSummary'),
-    getContext: () => !loadingSet && state.setData ? {
+    getContext: () => state.sourceId === 'datatft' && !loadingSet && state.setData ? {
       setData: state.setData, comps: state.comps, boards: state.opponentBoards, patch: state.board?.version,
       augments: state.augs?.augments || [],
       itemsData: state.items,
       city: openingContext()?.city,
-      sourceItems: state.sourceId === 'dataj' ? state.board?.items : undefined,
     } : null,
     getFrame: screenReader.getFrame,
     hasSharedStream: screenReader.hasSharedStream,
@@ -1290,7 +1304,7 @@ function bind() {
       .filter(Boolean);
     // 没有 image MIME 的剪贴板文件（部分截图工具）也放行，格式由 imageKind 嗅探决定。
     const file = files.find(looksLikeImage) || e.clipboardData?.files?.[0] || files[0];
-    if (file) { e.preventDefault(); void setSnapFile(file); }
+    if (file && state.sourceId === 'datatft') { e.preventDefault(); void setSnapFile(file); }
   });
   el('snapResult').onclick = (e) => {
     if (e.target.closest('[data-snap-apply]')) { applySnapshot(); return; }
