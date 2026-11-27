@@ -23,10 +23,13 @@ export function adaptBoard(raw, { source, setData, items, ratings }) {
   const unitByName = new Map(setData.units.map((unit) => [normalize(unit.name), unit]));
   const itemByName = new Map((items?.items || []).map((item) => [normalize(item.name), item.id]));
   const itemIds = new Set(itemByName.values());
+  // DataJ S18 can export the split Krug with heroType 0, like a shop unit.
+  const isSmallKrug = hero => source === 'dataj' && raw.season === 18
+    && (String(hero.id) === '8702' || (hero.id == null && normalize(hero.name) === '小型石甲虫'));
   const comps = [];
   const skipped = [];
   for (const row of raw.comps || []) {
-    const entries = (row.heroes || row.heros || []).filter((hero) => !hero.summon).map((hero) => {
+    const entries = (row.heroes || row.heros || []).filter((hero) => !hero.summon && !isSmallKrug(hero)).map((hero) => {
       const unit = hero.key ? byId.get(hero.key) : unitByName.get(normalize(hero.name));
       const gear = hero.tftEquips || (hero.items || []).map((name) => itemByName.get(normalize(itemAliases[name] || name)));
       const stars = Number.isInteger(hero.stars) && hero.stars >= 1 && hero.stars <= 4 ? hero.stars : null;

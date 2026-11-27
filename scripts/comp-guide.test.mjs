@@ -35,7 +35,7 @@ test('both release snapshots produce complete, nonoverlapping boards and valid e
   const items = read('set18.items.json');
   for (const [source, path, count] of [
     ['datatft', 'datatft/s18.18.7.comps.json', 36],
-    ['dataj', 'dataj/s18.18.7.json', 25],
+    ['dataj', 'dataj/s18.18.7.json', 26],
   ]) {
     const { comps } = adaptBoard(read(path), { source, setData, items });
     assert.equal(comps.length, count);

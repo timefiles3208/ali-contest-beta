@@ -24,7 +24,7 @@ import { rankAugments, CATEGORY_LABEL } from './engine/augments.js?v=lineup-augm
 import { planItems } from './engine/items.js';
 import { buildCompGuide, filterCompPlans } from './engine/comp-guide.js?v=opponent-artifacts';
 import { validateComps } from './adapters/provider.js';
-import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=lineup-picker';
+import { BOARD_SOURCES, adaptBoard, boardStat, sourceFor, summarizeBoard } from './adapters/board-sources.js?v=dataj-small-krug';
 import { recognizeSnapshot, matchSnapshot, autoSelect, imageKind, looksLikeImage, importImageUrl, MAX_SOURCE_BYTES } from './adapters/snapshot.js?v=augment-speed';
 
 const el = (id) => document.getElementById(id);
