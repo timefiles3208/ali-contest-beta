@@ -5,8 +5,7 @@ import { transitionGuides } from '../data/s18.18.7.transitions.js';
 
 const RISK = [12, 8, 5];
 const TIERS = ['E', 'D', 'C', 'B', 'A', 'S', 'S+'];
-const EQUIPPED_EVIDENCE = 5;
-const EQUIPPED_CONTEST_DISCOUNT = 4;
+const GENERAL_ARTIFACTS = new Set(['force']);
 
 export function opponentEconomy(gold) {
   if (!Number.isInteger(gold) || gold < 0) return '';
@@ -16,7 +15,7 @@ export function opponentEconomy(gold) {
 
 export function scoutEquipmentOptions(patch, itemsData, sourceItems) {
   const completed = (itemsData?.items || []).filter(item => item.kind === 'completed')
-    .map(item => ({ ...item, baseId: item.id, ordinary: true }));
+    .map(item => ({ ...item, baseId: item.id }));
   return [...completed, ...artifactOptions(patch, sourceItems), ...radiantOptions(patch, itemsData, sourceItems)];
 }
 
@@ -37,29 +36,20 @@ function routeEvidence(comp, units, traits, profile, patch, unitById) {
   const boardHits = hits + traitMatches.length + multipleCores.length;
   const hasBoardEvidence = boardHits >= 2 || (linkedAugments.length && (boardHits || dedicated));
   const hasRouteEvidence = core || carries || opening.length >= 2 || traitMatches.length || linkedAugments.length;
-  const equipped = profile.equipment.some(item => item.unit && comp.units.includes(item.unit));
-  if ((!hasBoardEvidence || !hasRouteEvidence) && !equipped && !dedicated
-    && !profile.equipment.some(item => item.ordinary && !item.unit)) return null;
+  if (!hasBoardEvidence || !hasRouteEvidence) return null;
   const formation = formationPlan(comp, unitById);
-  let equipmentScore = 0;
-  let ordinaryMatch = false;
+  const matchingArtifacts = new Set();
   if (profile.equipment.length) {
-    for (const unit of formation.units) {
-      const candidates = profile.equipment.filter(item => item.unit === unit.id || (!item.unit && (units.has(unit.id) || item.ordinary)));
+    for (const unit of formation.carries) {
+      if (!units.has(unit.id) || unit.tank || formationRow(unit) === 0) continue;
+      const candidates = profile.equipment.filter(item => item.unit === unit.id && !item.baseId && !GENERAL_ARTIFACTS.has(item.id));
       if (!candidates.length) continue;
-      const recommended = candidates.some(item => !item.baseId)
-        ? recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, profile.sourceItems) : [];
+      const recommended = recommendArtifacts({ ...unit, row: formationRow(unit) }, patch, profile.sourceItems);
       for (const item of candidates) {
-        const compatible = item.baseId ? unit.items.includes(item.baseId) : recommended.some(option => option.id === item.id);
-        if (compatible) {
-          ordinaryMatch ||= item.ordinary;
-          equipmentScore = Math.max(equipmentScore, item.unit ? EQUIPPED_EVIDENCE : item.ordinary ? 2 : 1);
-        }
+        if (recommended.some(option => option.id === item.id)) matchingArtifacts.add(item.id);
       }
     }
   }
-  const equippedMatch = equipmentScore === EQUIPPED_EVIDENCE;
-  if ((!hasBoardEvidence || !hasRouteEvidence) && !equippedMatch && !ordinaryMatch && !dedicated) return null;
   const chase = formation.chase.filter(unit => unit.cost <= 3);
   const reroll = chase.length > 0;
   const leadChase = chase.map(unit => ({ unit, count: profile.unitCopies.get(unit.id) ?? 0 }))
@@ -72,24 +62,22 @@ function routeEvidence(comp, units, traits, profile, patch, unitById) {
   const earlyUnits = [...new Set([...opening, ...final])].filter(id => unitById.get(id)?.cost <= 3);
   const upgradedOpener = earlyUnits.length >= 2 && earlyUnits.some(id => (profile.unitCopies.get(id) ?? 0) >= 3);
   const levelReady = leveling && upgradedOpener && (profile.economy === 'high' || economicAugment > 0);
-  const encounter = cityFit(profile.city, comp, equipmentScore * 3, unitById, formation);
-  const confidence = (leadChase?.count >= 3 && (equippedMatch || dedicated)) || (levelReady && equippedMatch)
-    ? 'strong' : equippedMatch || (hasBoardEvidence && hasRouteEvidence && (hits >= 2 || traitMatches.length >= 2))
-      ? 'likely' : 'tentative';
+  const encounter = cityFit(profile.city, comp, 0, unitById, formation);
+  const confidence = (leadChase?.count >= 3 && (dedicated || core >= 2)) || (levelReady && dedicated)
+    ? 'strong' : hits >= 2 || traitMatches.length >= 2 ? 'likely' : 'tentative';
   const evidence = final.length * 2 + core * 4 + carries * 3 + opening.length * 2
     + traitMatches.reduce((sum, [, level]) => sum + Math.min(level, 5), 0)
-    + Math.min(8, linkedAugments.length * 5) + economy + economicAugment + equipmentScore
+    + Math.min(8, linkedAugments.length * 5) + economy + economicAugment
     + Math.min(6, multipleCores.reduce((sum, id) => sum + profile.unitCopies.get(id), 0))
     + Math.min(5, encounter) + (dedicated ? 4 : 0) + (levelReady ? 4 : 0)
     + (leadChase ? Math.min(4, leadChase.count - 1) : 0);
   const reasons = [
     leadChase && leadChase.unit.name + ' ' + leadChase.count + ' 张，目标三星',
-    equippedMatch ? '装备契合佩戴棋子' : ordinaryMatch && '成装方向吻合',
     dedicated && '已选专属海克斯',
     levelReady ? '过渡已升星，经济支持冲高费' : leveling && economy > 0 && '经济支持考虑高费',
     encounter > 0 && '契合' + profile.city.name,
   ].filter(Boolean);
-  return { comp, evidence, equippedMatch, confidence, reasons };
+  return { comp, evidence, matchingArtifacts, confidence, reasons };
 }
 
 export function predictOpponentRoutes(comps, { units = [], traits = [], gold, economy, augments = [], artifacts = [], unitCopies = new Map() }, patch, { setData, itemsData, sourceItems, city } = {}) {
@@ -99,8 +87,8 @@ export function predictOpponentRoutes(comps, { units = [], traits = [], gold, ec
   const available = artifacts.length ? scoutEquipmentOptions(patch, itemsData, sourceItems) : [];
   const equipmentById = new Map(available.map(item => [item.id, item]));
   const equipment = artifacts.filter(item => equipmentById.has(item.id) && (!item.unit || unitById.has(item.unit)))
-    .map(item => ({ ...item, baseId: equipmentById.get(item.id).baseId, ordinary: equipmentById.get(item.id).ordinary }));
-  const knownUnits = new Set([...units, ...unitCopies.keys(), ...equipment.map(item => item.unit).filter(Boolean)]);
+    .map(item => ({ ...item, baseId: equipmentById.get(item.id).baseId }));
+  const knownUnits = new Set([...units, ...unitCopies.keys()]);
   const traitsByName = new Map((setData?.traits || []).map(row => [row.name, row.id]));
   const unitsByName = new Map(roster.map(row => [row.name, row.id]));
   const profile = {
@@ -113,9 +101,17 @@ export function predictOpponentRoutes(comps, { units = [], traits = [], gold, ec
       units: (aug.grantUnits || []).map(name => unitsByName.get(name) || name),
     })),
   };
-  return comps.map(comp => routeEvidence(comp, knownUnits, knownTraits, profile, patch, unitById))
-    .filter(Boolean)
-    .sort((a, b) => b.evidence - a.evidence
+  const routes = comps.map(comp => routeEvidence(comp, knownUnits, knownTraits, profile, patch, unitById)).filter(Boolean);
+  const matches = new Map();
+  for (const { matchingArtifacts } of routes) {
+    for (const id of matchingArtifacts) matches.set(id, (matches.get(id) ?? 0) + 1);
+  }
+  return routes.map(({ matchingArtifacts, ...route }) => {
+    const distinctiveArtifact = [...matchingArtifacts].some(id => matches.get(id) === 1);
+    if (distinctiveArtifact) route.reasons.push('主 C 已佩戴适配神器');
+    return { ...route, distinctiveArtifact };
+  }).sort((a, b) => b.evidence - a.evidence
+      || Number(b.distinctiveArtifact) - Number(a.distinctiveArtifact)
       || TIERS.indexOf(b.comp.rank?.tier) - TIERS.indexOf(a.comp.rank?.tier)
       || (b.comp.rank?.top4 ?? 0) - (a.comp.rank?.top4 ?? 0))
     .slice(0, 3);
@@ -125,7 +121,6 @@ export function opponentPressure(comp, boards, chase = []) {
   const carries = new Set(comp.carry || []);
   let opponents = 0;
   let pressure = 0;
-  let equippedOpponents = 0;
   let contestedCopies = 0;
   for (const { routes, unitCopies } of boards.values()) {
     const sharedRisk = routes.reduce((best, route) => {
@@ -142,10 +137,6 @@ export function opponentPressure(comp, boards, chase = []) {
       contestedCopies += copies;
       pressure += Math.min(8, (copies - 1) * 2);
     }
-    if (routes.some(row => row.comp.id === comp.id && row.equippedMatch)) {
-      equippedOpponents++;
-      pressure += EQUIPPED_CONTEST_DISCOUNT;
-    }
   }
-  return { opponents, discount: Math.min(28, pressure), ...(equippedOpponents ? { equippedOpponents } : {}), ...(contestedCopies ? { contestedCopies } : {}) };
+  return { opponents, discount: Math.min(28, pressure), ...(contestedCopies ? { contestedCopies } : {}) };
 }

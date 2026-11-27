@@ -1,5 +1,5 @@
 import { cityFit, formationPlan, formationRow } from './formation.js?v=scout-direction';
-import { opponentPressure } from './opponent-scout.js?v=scout-direction';
+import { opponentPressure } from './opponent-scout.js?v=scout-hold-evidence';
 import { openingModelBonus, openingModelFeatures, supportsOpeningModel } from './opening-model.js';
 import { recommend } from './recommend.js';
 import { economyBenefits, rankAugments } from './augments.js?v=lineup-augment-guides';
@@ -124,10 +124,10 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
     const nearTarget = scenario && carry.rollLevel <= rollBudget.level + 1;
     const funded = nearTarget && (scenario.missing === 0 || goldAfterLevel >= scenario.buyGold + 4);
     const viable = Boolean(units || gearPoints || cityPoints || econ > 0 || aug || learned || rollPoints);
-    const { opponents: opponentCount, discount, equippedOpponents, contestedCopies } = opponentPressure(comp, opponentBoards, chase);
+    const { opponents: opponentCount, discount, contestedCopies } = opponentPressure(comp, opponentBoards, chase);
     const primaryChase = chase.find(unit => unit.carry) ?? chase[0];
     const enoughCopies = primaryChase && heldCopies(primaryChase.id) >= 3;
-    const canCommit = !contestedCopies && !equippedOpponents && discount < 12 && (chase.length
+    const canCommit = !contestedCopies && discount < 12 && (chase.length
       ? enoughCopies && (openingReady.carry || dedicated)
       : highCost ? stableOpener && rich && openingReady.carry && Boolean(funded)
         : dedicated && openingReady.carry && row.detail.coreHit.length >= 2);
@@ -150,7 +150,6 @@ export function rankOpening({ setData, comps, itemsData, selected, level, owned,
       opponentCount ? `可能有 ${opponentCount} 家同行，适配扣 ${discount} 分`
         : hasOpponentEvidence && '已记录的对手中暂无此阵容的同行证据',
       contestedCopies && `已记录对手持有追星目标共 ${contestedCopies} 张`,
-      equippedOpponents && `其中 ${equippedOpponents} 家的装备与佩戴棋子契合本阵容`,
     ].filter(Boolean);
     return { ...row, formation, roll, score: Math.max(0, Math.min(100, Math.round(fit))), fit, viable, reasons, gearPoints, openingReady, canCommit, opponentCount, hasOpponentEvidence };
   });

@@ -1,7 +1,7 @@
 import { recognizeOpponentLabels, recognizeOpponentTraitStrip, warmScoutOcr } from '../adapters/local-ocr.js?v=augment-speed';
 import { augmentIconElement, readCroppedAugmentIcon, readSelectedAugmentIcons, warmOpponentAugmentIcons } from '../adapters/selected-augment-icons.js';
 import { contentFrame } from '../adapters/game-frame.js';
-import { opponentEconomy, predictOpponentRoutes, scoutEquipmentOptions } from '../engine/opponent-scout.js?v=scout-direction';
+import { opponentEconomy, predictOpponentRoutes, scoutEquipmentOptions } from '../engine/opponent-scout.js?v=scout-hold-evidence';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
 
 const SCOUT_BUDGET_MS = 5_000;
@@ -94,7 +94,7 @@ export function bindOpponentScout({ view, capture, photo, iconPhoto, heldUnit, c
         item.append(list);
       } else {
         const empty = document.createElement('p');
-        empty.textContent = '暂无符合这次画面的阵容方向。';
+        empty.textContent = '留牌、羁绊或已选海克斯的线索不足，暂不推断阵容。';
         item.append(empty);
       }
       return item;

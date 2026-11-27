@@ -74,17 +74,18 @@ test('an equipped artifact favors the carrier build that fits it over a higher-t
   const artifact = { id: 'manazane', unit: 'a' };
   assert.equal(routes({ units: ['a', 'b'] })[0].comp.id, 'attack');
   assert.deepEqual(routes({ units: ['a', 'b'], artifacts: [artifact] }).map(row => row.comp.id), ['spell', 'attack']);
-  assert.deepEqual(routes({ artifacts: [artifact] }).map(row => row.comp.id), ['spell']);
+  assert.deepEqual(routes({ artifacts: [artifact] }), []);
   assert.deepEqual(routes({ artifacts: [{ id: 'manazane' }] }), []);
   assert.deepEqual(routes({ artifacts: [{ id: 'manazane', unit: 'b' }] }), []);
   const uncertain = routes({ units: ['a', 'b'], artifacts: [{ id: 'manazane' }] });
-  assert.equal(uncertain[0].evidence - uncertain[1].evidence, 1);
+  assert.equal(uncertain[0].comp.id, 'attack');
+  assert.equal(uncertain[0].evidence, uncertain[1].evidence);
   assert.equal(predictOpponentRoutes([spell, attack], { units: ['a', 'b'], artifacts: [artifact] },
     '18.7', { ...options, sourceItems: new Map() })[0].comp.id, 'attack');
   assert.equal(routes({ units: ['a', 'b'], artifacts: [artifact] }, '19.1')[0].comp.id, 'attack');
 });
 
-test('confirmed fitting equipment adds one contest deduction and keeps build variants distinct', () => {
+test('ordinary and radiant gear preserve route order and add no contest penalty', () => {
   const spell = { ...first, id: 'spell', items: { a: ['DA_SpearOfShojin'] } };
   const attack = { ...first, id: 'attack', rank: { tier: 'A' }, items: { a: ['DA_GuinsoosRageblade'] } };
   const options = {
@@ -98,12 +99,12 @@ test('confirmed fitting equipment adds one contest deduction and keeps build var
   }]]);
   const artifact = { id: 'manazane', unit: 'a' };
   const radiant = { id: 'radiant:DA_SpearOfShojin', unit: 'a' };
-  for (const records of [[artifact], [radiant], [artifact, radiant]]) {
+  for (const records of [[artifact], [radiant], [artifact, radiant], [{ id: 'DA_SpearOfShojin', unit: 'a' }]]) {
     const opponentBoards = boards(records);
-    assert.deepEqual(opponentPressure(spell, opponentBoards), { opponents: 1, discount: 16, equippedOpponents: 1 });
+    assert.deepEqual(opponentPressure(spell, opponentBoards), { opponents: 1, discount: 12 });
     assert.deepEqual(opponentPressure(attack, opponentBoards), { opponents: 1, discount: 12 });
     assert.match(rankOpening({ ...options, opponentBoards }).find(row => row.comp.id === spell.id)
-      .reasons.join(' '), /同行.*16 分.*装备/);
+      .reasons.join(' '), /同行.*12 分/);
   }
   assert.deepEqual(opponentPressure(spell, boards([{ ...radiant, unit: '' }])), { opponents: 1, discount: 12 });
   assert.deepEqual(opponentPressure(spell, boards([radiant], [], { ...options, sourceItems: new Map() })),
@@ -121,15 +122,33 @@ test('opponent route confidence uses shared encounters, confirmed builds and cur
     itemsData: { items: [{ id: 'spell', name: '回蓝装', kind: 'completed' }] }, city };
   const predict = (profile, ctx = options) => predictOpponentRoutes(comps, profile, '18.7', ctx);
   assert.deepEqual(predict({ gold: 24 }), []);
-  const weak = predict({ artifacts: [{ id: 'spell' }] });
-  assert.equal(weak[0].comp.id, 'reroll');
+  assert.deepEqual(predict({ artifacts: [{ id: 'spell' }] }), []);
+  const weak = predict({ unitCopies: new Map([['a', 3]]), artifacts: [{ id: 'spell', unit: 'a' }] });
   assert.equal(weak[0].confidence, 'tentative');
   assert.equal(opponentPressure(reroll, new Map([[1, { routes: weak }]])).discount, 6);
-  const strong = predict({ unitCopies: new Map([['a', 3]]), artifacts: [{ id: 'spell', unit: 'a' }] });
+  const strong = predict({ units: ['b'], unitCopies: new Map([['a', 3]]), augments: [{ grantUnits: ['a'] }] });
   assert.equal(strong[0].comp.id, 'reroll');
   assert.equal(strong[0].confidence, 'strong');
-  assert.match(strong[0].reasons.join(' '), /3 张.*装备.*刷新次数订阅/);
+  assert.match(strong[0].reasons.join(' '), /3 张.*专属海克斯.*刷新次数订阅/);
   const board = { units: ['a', 'b'], gold: 24 };
   assert.ok(predict(board).find(row => row.comp.id === 'reroll').evidence >
     predict(board, { ...options, city: null }).find(row => row.comp.id === 'reroll').evidence);
+});
+
+test('gear and its wearer cannot establish a route without independent holds or augments', () => {
+  const spell = { ...first, items: { a: ['DA_SpearOfShojin'] } };
+  const result = predictOpponentRoutes([spell], { artifacts: [{ id: 'manazane', unit: 'a' }] }, '18.7',
+    { setData: context.setData });
+  assert.deepEqual(result, []);
+
+  const spellVariant = { ...spell, id: 'variant', rank: { tier: 'S+' } };
+  const supported = { units: ['a', 'b'] };
+  const predict = artifacts => predictOpponentRoutes([spell, spellVariant], { ...supported, artifacts }, '18.7',
+    { setData: context.setData });
+  assert.deepEqual(predict([{ id: 'manazane', unit: 'a' }]), predict([]));
+
+  const tank = { ...spell, tank: ['a'], items: { a: ['DA_BrambleVest'] } };
+  const tankRoutes = artifacts => predictOpponentRoutes([tank], { ...supported, artifacts }, '18.7',
+    { setData: context.setData });
+  assert.deepEqual(tankRoutes([{ id: 'crest', unit: 'a' }]), tankRoutes([]));
 });
