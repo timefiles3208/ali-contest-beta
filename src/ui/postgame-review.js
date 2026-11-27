@@ -1,7 +1,7 @@
 import { imageKind, MAX_SOURCE_BYTES } from '../adapters/snapshot.js?v=game-release-scope-2';
 import { readPostgameText } from '../adapters/local-ocr.js?v=postgame-review';
 import { withinRecognitionBudget } from '../engine/recognition-budget.js';
-import { comparePostgameLineups, importPostgameLineup, postgameReview } from '../engine/postgame-review.js?v=lineup-import';
+import { analyzePostgameLineup, importPostgameLineup, postgameReview } from '../engine/postgame-review.js?v=lineup-analysis';
 
 export function bindPostgameReview({ panel, input, clear, status, output, getContext, lineupForm }) {
   let generation = 0;
@@ -29,12 +29,56 @@ export function bindPostgameReview({ panel, input, clear, status, output, getCon
     output.replaceChildren();
   }
 
-  function addResult(label, value) {
+  function addResult(label, value, target = output) {
     const row = document.createElement('p');
     const heading = document.createElement('strong');
     heading.textContent = label;
     row.append(heading, `　${value}`);
-    output.append(row);
+    target.append(row);
+  }
+
+  function renderAnalysis(analysis, hasEquipment) {
+    const section = document.createElement('section');
+    section.className = 'postgame-analysis';
+    const heading = document.createElement('h3');
+    heading.textContent = '赛后阵容分析';
+    section.append(heading);
+    output.append(section);
+    if (!analysis) {
+      addResult('阵容信息不足', '补录上阵棋子后即可分析。', section);
+      return;
+    }
+    const { count, active, near, comparisons } = analysis;
+    const activeNames = active.map(trait => `${trait.name} ${trait.tier} 档`).join('、');
+    addResult(`羁绊（按 ${count} 名上阵棋子）`, activeNames || '暂无达到人数门槛的羁绊', section);
+    if (near.length) addResult('差一名到下一档', near.map(trait => `${trait.name} ${trait.num}/${trait.next}`).join('、'), section);
+    if (!comparisons.length) {
+      addResult('同版本阵容对照', '暂无至少重合两名棋子的榜单阵容。', section);
+      return;
+    }
+    const subheading = document.createElement('h4');
+    subheading.textContent = '同版本阵容对照';
+    section.append(subheading);
+    comparisons.forEach((reference, index) => {
+      const details = document.createElement('details');
+      details.className = 'reference-lineup';
+      details.open = index === 0;
+      const summary = document.createElement('summary');
+      const tier = reference.tier ? ` · 榜单 ${reference.tier} 级` : '';
+      summary.textContent = `${reference.name}${tier} · 重合 ${reference.count}/${reference.total} 名`;
+      const rows = document.createElement('div');
+      rows.className = 'reference-lineup-detail';
+      addResult('重合核心', reference.sharedCore.join('、') || '无', rows);
+      if (reference.missingCore.length) addResult('榜单核心差异', reference.missingCore.join('、'), rows);
+      if (reference.missing.length) addResult('仅榜单有', reference.missing.join('、'), rows);
+      if (reference.extra.length) addResult('仅本局有', reference.extra.join('、'), rows);
+      if (hasEquipment) {
+        const gear = reference.equipment.map(item => `${item.name} → ${item.holders.join('、')}`).join('；');
+        addResult('截图装备在榜单的搭配', gear || '重合棋子的榜单装备暂无对应', rows);
+      }
+      details.append(summary, rows);
+      section.append(details);
+    });
   }
 
   function render(context) {
@@ -46,10 +90,8 @@ export function bindPostgameReview({ panel, input, clear, status, output, getCon
     const lineup = imported || screenshot;
     if (!lineup) return;
     addResult(imported ? '导入阵容' : '棋子名称', lineup.units.map(unit => unit.name).join('、') || '未读到可归属本人的名称');
-    const comparisons = imported ? comparePostgameLineups(imported.units, context?.comps) : screenshot.comparisons;
-    if (comparisons.length) {
-      addResult('同版本阵容对照', comparisons.map(row => `${row.name}（重合 ${row.count} 个棋子）`).join('、'));
-    }
+    const equipment = screenshot?.equipment || [];
+    renderAnalysis(context && analyzePostgameLineup(lineup.units, equipment, context), equipment.length > 0);
   }
 
   if (lineupForm) {

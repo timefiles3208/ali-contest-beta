@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { importPostgameLineup, postgameReview } from '../src/engine/postgame-review.js';
+import { analyzePostgameLineup, importPostgameLineup, postgameReview } from '../src/engine/postgame-review.js';
 import { datajTeamCodes } from '../src/data/s18.18.7.dataj-team-codes.js';
 import { adaptBoard } from '../src/adapters/board-sources.js';
 
@@ -18,7 +18,7 @@ test('uses the visible personal settlement fields and selected Gold Spatula cata
   assert.equal(review.rank, 3);
   assert.deepEqual(new Set(review.units.map(unit => unit.name)), new Set(['洛', '阿狸']));
   assert.deepEqual(review.equipment.map(item => item.name), ['珠光护手']);
-  assert.deepEqual(review.comparisons, [{ name: '阵容样例', count: 2 }]);
+  assert.equal(analyzePostgameLineup(review.units, review.equipment, context).comparisons[0].count, 2);
 });
 
 test('refuses live gameplay and ambiguous multi-player or multi-match summaries', () => {
@@ -28,9 +28,31 @@ test('refuses live gameplay and ambiguous multi-player or multi-match summaries'
 });
 
 test('leaves unseen details blank and rejects explicitly different game and patch', () => {
-  assert.deepEqual(postgameReview('战绩详情\n最终排名：五\n阿狸 洛', context), { rank: 5, units: [], equipment: [], comparisons: [] });
+  assert.deepEqual(postgameReview('战绩详情\n最终排名：五\n阿狸 洛', context), { rank: 5, units: [], equipment: [] });
   assert.match(postgameReview('云顶之弈\n对局结算\n第3名', context).error, /云顶之弈/);
   assert.match(postgameReview('金铲铲之战 版本18.6\n对局结算\n第3名', context).error, /版本/);
+});
+
+test('analyzes roster traits, closest lineups and equipment references', () => {
+  const [ahri, sett, xayah, yunara] = ['阿狸', '瑟提', '霞', '芸阿娜'].map(name => catalog.units.find(unit => unit.name === name));
+  const gear = catalog.items.find(item => item.name === '珠光护手');
+  const comp = { name: '莲华样例', rank: { tier: 'S' }, units: [ahri.id, sett.id, yunara.id],
+    core: [ahri.id, yunara.id], itemBuilds: { [ahri.id]: [gear.id], [yunara.id]: [gear.id] } };
+  const wider = { ...comp, name: '重合相同但差异更多', units: [...comp.units, units[0].id] };
+  const result = analyzePostgameLineup([ahri, sett, xayah, ahri], [gear], { ...context, comps: [wider, comp] });
+  assert.equal(result.count, 3);
+  assert.ok(result.near.some(trait => trait.name === '灵魂莲华' && trait.num === 2 && trait.next === 3));
+  assert.ok(analyzePostgameLineup([ahri, sett, yunara], [], context).active.some(trait => trait.name === '灵魂莲华' && trait.tier === 3));
+  assert.ok(result.near.some(trait => trait.name === '花仙子' && trait.num === 1 && trait.next === 2));
+  const [best] = result.comparisons;
+  assert.equal(best.name, comp.name);
+  assert.deepEqual(best.sharedCore, ['阿狸']);
+  assert.deepEqual(best.missing, ['芸阿娜']);
+  assert.deepEqual(best.missingCore, ['芸阿娜']);
+  assert.deepEqual(best.extra, ['霞']);
+  assert.deepEqual(best.equipment, [{ name: '珠光护手', holders: ['阿狸'] }]);
+  assert.equal(analyzePostgameLineup([], [gear], context), null);
+  assert.deepEqual(analyzePostgameLineup([ahri], [], { ...context, comps: [comp] }).comparisons, []);
 });
 
 test('imports explicit names using only the selected Gold Spatula roster', () => {

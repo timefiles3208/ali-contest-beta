@@ -51,3 +51,7 @@
   resize: vertical;
 }
 #postgameLineup [role='status']:not(:empty) { margin-top: 8px; }
+.postgame-analysis { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.postgame-analysis h3 { margin: 0; }
+.postgame-analysis h4 { margin: 12px 0 6px; }
+.postgame-analysis details + details { margin-top: 6px; }

@@ -1,15 +1,43 @@
 import { screenScopeMismatch } from './game-scope.js';
+import { traitBreakdown } from './recommend.js';
 
 const RESULT_TITLE = /对局结算|战绩结算|战绩详情|本局战绩|赛后结算|结算详情|返回大厅|再来一局/;
 const RANK_DIGITS = '一二三四五六七八';
 
-export function comparePostgameLineups(units, comps = []) {
-  const known = new Set(units.map(unit => unit.id));
-  if (known.size < 2) return [];
-  return comps.map(comp => ({
-    name: comp.name,
-    count: new Set((comp.units || []).map(unit => typeof unit === 'string' ? unit : unit.id).filter(id => known.has(id))).size,
-  })).filter(row => row.count >= 2).sort((a, b) => b.count - a.count).slice(0, 3);
+export function analyzePostgameLineup(units, equipment, { setData, comps = [] }) {
+  const byUnit = new Map((setData?.units || []).map(unit => [unit.id, unit]));
+  const selected = new Set(units.map(unit => unit.id).filter(id => byUnit.has(id)));
+  if (!selected.size) return null;
+
+  const thresholds = new Map((setData.traits || []).map(trait => [trait.id, trait.tiers || []]));
+  const traits = traitBreakdown(setData, selected);
+  const active = traits.filter(trait => trait.tier > 0);
+  const near = traits.flatMap(trait => thresholds.get(trait.id)?.some(tier => tier.min === trait.num + 1)
+    ? [{ ...trait, next: trait.num + 1 }] : []);
+
+  const comparisons = comps.map(comp => {
+    const reference = new Set(comp.units.filter(id => byUnit.has(id)));
+    const shared = [...reference].filter(id => selected.has(id));
+    const core = new Set([...(comp.core || []), ...(comp.carry || [])].filter(id => reference.has(id)));
+    const missing = [...reference].filter(id => !selected.has(id));
+    const names = ids => ids.map(id => byUnit.get(id).name);
+    return {
+      name: comp.name,
+      tier: comp.rank?.tier,
+      count: shared.length,
+      total: reference.size,
+      likeness: shared.length / (selected.size + missing.length),
+      sharedCore: names(shared.filter(id => core.has(id))),
+      missingCore: names(missing.filter(id => core.has(id))),
+      missing: names(missing),
+      extra: names([...selected].filter(id => !reference.has(id))),
+      equipment: equipment.flatMap(item => {
+        const holders = names(shared.filter(id => (comp.itemBuilds?.[id] || comp.items?.[id] || []).includes(item.id)));
+        return holders.length ? [{ name: item.name, holders }] : [];
+      }),
+    };
+  }).filter(row => row.count >= 2).sort((a, b) => b.likeness - a.likeness || b.sharedCore.length - a.sharedCore.length || b.count - a.count).slice(0, 3);
+  return { count: selected.size, active, near, comparisons };
 }
 
 function lineupCode(value) {
@@ -49,7 +77,7 @@ export function importPostgameLineup(value, { setData, comps = [] }) {
   return { units };
 }
 
-export function postgameReview(text, { setData, items, comps }) {
+export function postgameReview(text, { setData, items }) {
   const normalized = (text || '').normalize('NFKC');
   const lines = normalized.split('\n').map(line => line.replace(/\s+/g, ''));
   const scopeError = screenScopeMismatch(normalized, setData?.scope);
@@ -76,6 +104,5 @@ export function postgameReview(text, { setData, items, comps }) {
 
   const units = ownFields(/^(?:我的阵容|我的棋子|我的上阵棋子|本局阵容):?/, setData?.units);
   const equipment = ownFields(/^(?:我的[装妆]备|本局[装妆]备):?/, items?.items);
-  const comparisons = comparePostgameLineups(units, comps);
-  return { rank: [...ranks][0], units, equipment, comparisons };
+  return { rank: [...ranks][0], units, equipment };
 }
