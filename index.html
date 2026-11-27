@@ -3,332 +3,59 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>云顶阵容参谋 · 公网测试版</title>
+<title>云顶阵容参谋 · 版本资料与赛后复盘</title>
 <link rel="stylesheet" href="./styles.css?v=opening-workspace" />
+<link rel="stylesheet" href="./reference.css?v=version-reference" />
 </head>
 <body>
-<header class="bar">
-  <div class="brand">
-    <div>
-      <h1>云顶阵容参谋</h1>
-      <p class="sub">云顶之弈 · 金铲铲之战</p>
-    </div>
-  </div>
+<header class="bar reference-header">
+  <div class="brand"><h1>云顶阵容参谋</h1></div>
   <div class="controls">
     <label for="boardSource">游戏端 <select id="boardSource"></select></label>
-    <label for="setSelect">版本 <select id="setSelect" aria-label="版本"></select></label>
-    <div class="catalog-status">
-      <span id="sourceBadge" class="badge" role="status">数据源载入中…</span>
-      <span id="catalogBadge" class="badge" role="status">卡池载入中…</span>
-    </div>
+    <label for="setSelect">版本 <select id="setSelect"></select></label>
   </div>
 </header>
 
-<main>
+<main class="reference-main">
   <section class="panel snapshot" id="postgameReview" aria-labelledby="postgameTitle" hidden>
     <h2 id="postgameTitle">金铲铲赛后截图复盘</h2>
     <p class="fine">选择本人的结算或战绩详情截图，保留标题和名次。图片仅在本机浏览器识别，棋子和装备按截图中可辨认的名称提取。</p>
     <div class="snap-actions">
-      <input id="postgameImage" type="file" accept="image/*" aria-label="选择赛后截图" />
+      <input id="postgameImage" type="file" accept="image/*" aria-label="选择赛后截图" disabled />
       <button id="clearPostgame" class="ghost" type="button" disabled>清空</button>
     </div>
     <p id="postgameStatus" class="snap-status" role="status"></p>
     <div id="postgameResult"></div>
   </section>
-
-  <section class="panel snapshot opening-workspace" id="liveOpeningPanel" aria-labelledby="screenTitle">
-    <div class="opening-start">
+  <section class="panel" aria-labelledby="referenceTitle">
+    <header class="reference-toolbar">
       <div>
-        <h2 id="screenTitle">2-1 阵容推荐</h2>
-        <p class="opening-intro">根据来牌、装备和首个海克斯，推荐主推阵容与备选方向。选择海克斯后结束共享。</p>
-        <div class="snap-actions opening-actions">
-          <button id="openingOpen" class="primary" type="button" disabled>开局推荐</button>
-          <button id="newMatch" class="ghost" type="button" title="清空本局记录并读取可用的数据批次" disabled>新对局</button>
-          <button id="screenStart" class="ghost" type="button">共享游戏窗口</button>
-          <button id="showLineupPlan" class="ghost" type="button" hidden>查看已选阵容</button>
-          <button id="openResultFloat" class="ghost" type="button" aria-expanded="false">推荐浮窗</button>
-          <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
-          <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
-        </div>
+        <h2 id="referenceTitle">版本资料</h2>
+        <p class="fine" id="referenceSource" role="status">数据加载中…</p>
       </div>
-      <div class="opening-upload">
-        <label for="screenPhoto">导入开局或 2-1 截图</label>
-        <input id="screenPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" />
-        <p class="fine">按所选游戏端和版本匹配。画面有清晰的游戏名或版本标识时，会先核对。</p>
-      </div>
-    </div>
-    <p id="screenStatus" class="snap-status" role="status">正在检查屏幕共享支持…</p>
-    <aside id="openingNotice" class="opening-notice" aria-label="开局提醒" hidden>
-      <p id="openingNoticeText" role="status"></p>
-      <div id="openingNoticeLineups" class="opening-notice-lineups" aria-label="选择推荐阵容" hidden></div>
-      <div class="opening-notice-actions">
-        <button id="openingNoticeReview" class="ghost" type="button">查看推荐</button>
-        <button id="openingNoticeDismiss" class="ghost" type="button" aria-label="关闭提醒">关闭</button>
-      </div>
-    </aside>
-    <section id="screenDirection" class="snap-status ok" aria-live="polite" hidden></section>
-    <aside id="resultFloat" class="result-float" aria-label="推荐浮窗" hidden></aside>
-    <video id="screenVideo" class="screen-video" muted playsinline hidden aria-label="共享画面预览"></video>
-    <details class="snap-model" id="opponentScout">
-      <summary>对手视角与同行分析</summary>
-      <p class="fine">切到对手画面后选择编号，网站会等到新画面再读取。同一编号只保留最后一次有效观察。对手信息可以跳过，2-1 推荐会直接使用已有记录。回到自己的画面后请选择「我的视角」。</p>
-      <div class="snap-actions">
-        <label>当前视角
-          <select id="scoutView">
-            <option value="">我的视角</option>
-            <option value="1">对手 1</option><option value="2">对手 2</option>
-            <option value="3">对手 3</option><option value="4">对手 4</option>
-            <option value="5">对手 5</option><option value="6">对手 6</option>
-            <option value="7">对手 7</option>
+      <div class="reference-filters">
+        <label for="referenceCategory">资料类型
+          <select id="referenceCategory">
+            <option value="lineups">阵容榜单（按评级）</option>
+            <option value="units">棋子</option>
+            <option value="traits">羁绊</option>
+            <option value="items">装备</option>
+            <option value="augments">海克斯</option>
           </select>
         </label>
-        <button id="scoutCapture" class="ghost" type="button" disabled>重新读取</button>
-        <label>导入对手截图 <input id="scoutPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" disabled /></label>
+        <label for="referenceSearch">搜索 <input id="referenceSearch" type="search" placeholder="输入名称" /></label>
       </div>
-      <div class="snap-actions">
-        <label>导入单枚已选海克斯图标 <input id="scoutIconPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" disabled /></label>
-      </div>
-      <div class="snap-actions">
-        <button id="scoutClear" class="ghost" type="button" disabled>清除该对手</button>
-        <button id="scoutClearAll" class="ghost" type="button" disabled>清空本局对手记录</button>
-      </div>
-      <details class="snap-model">
-        <summary>补充对手来牌、经济、海克斯和装备</summary>
-        <div class="snap-model-fields">
-          <label>已确认棋子 <select id="scoutUnit" disabled><option value="">选择棋子</option></select></label>
-          <label>持有张数 <input id="scoutCopies" type="number" min="0" max="9" step="1" placeholder="二星算 3 张，0 清除" disabled /></label>
-          <label>经济预估
-            <select id="scoutEconomy" disabled>
-              <option value="">沿用记录</option><option value="low">偏低</option>
-              <option value="normal">一般</option><option value="high">较高</option>
-            </select>
-          </label>
-          <label>已选海克斯 <select id="scoutAugment" disabled><option value="">沿用记录</option></select></label>
-          <label>对手装备 <select id="scoutArtifact" disabled><option value="">选择已确认的装备</option></select></label>
-          <label>佩戴棋子 <select id="scoutArtifactHolder" disabled><option value="">佩戴者未知</option></select></label>
-          <button id="scoutSaveProfile" class="ghost" type="button" disabled>更新对手信息</button>
-          <button id="scoutRemoveArtifact" class="ghost" type="button" disabled>移除装备记录</button>
-        </div>
-      </details>
-      <p id="scoutStatus" class="snap-status" role="status">当前是我的视角。</p>
-      <ul id="scoutSummary" hidden></ul>
-    </details>
-    <nav class="workspace-links" aria-label="对局工具">
-      <a href="#imageTools">截图与图标识别</a>
-      <a href="#roster">手动登记棋子</a>
-      <a href="#lineupResults">成型阵容</a>
-    </nav>
-  </section>
-  <dialog id="openingDialog" aria-labelledby="openingTitle">
-    <header class="opening-header">
-      <h2 id="openingTitle">2-1 阵容与海克斯</h2>
-      <form method="dialog"><button type="submit" class="ghost">关闭</button></form>
     </header>
-    <p id="openingOpponentCoverage" class="fine"></p>
-    <div class="opening-fields">
-      <label>开局城邦 <select id="openingCity"></select></label>
-      <label>当前经济
-        <select id="openingEconomy"><option value="">未确认</option><option value="low">紧张</option><option value="normal">普通</option><option value="high">充足</option></select>
-      </label>
-      <label>持有棋子 <select id="openingUnit"></select></label>
-      <button id="openingToggleUnit" class="ghost" type="button">登记或移除棋子</button>
-      <label>已选棋子的持有张数 <input id="openingUnitCopies" type="number" min="1" max="9" step="1" disabled /></label>
-      <label>手上装备 <select id="openingItem"></select></label>
-      <div class="opening-item-actions">
-        <button id="openingAddItem" class="ghost" type="button">登记装备</button>
-        <button id="openingRemoveItem" class="ghost" type="button">移除装备</button>
-      </div>
-    </div>
-    <p id="openingOwned" class="fine" role="status"></p>
-    <fieldset id="openingCandidates" hidden></fieldset>
-    <fieldset class="opening-hex">
-      <legend>本轮提供的海克斯</legend>
-      <div class="opening-tier">
-        <label>本轮颜色
-          <select id="openingHexTier">
-            <option value="">自动判断</option><option value="silver">白银</option>
-            <option value="gold">黄金</option><option value="prismatic">棱彩</option>
-          </select>
-        </label>
-        <p id="openingHexTierStatus" class="fine" role="status"></p>
-      </div>
-      <label>选项一 <input id="openingHex1" list="openingHexList" /></label>
-      <label>选项二 <input id="openingHex2" list="openingHexList" /></label>
-      <label>选项三 <input id="openingHex3" list="openingHexList" /></label>
-      <datalist id="openingHexList"></datalist>
-    </fieldset>
-    <ol id="openingPicks" aria-live="polite"></ol>
-    <section id="openingDirection" aria-live="polite"></section>
-    <fieldset id="openingRolldown" hidden>
-      <legend>搜牌预算估算（可选）</legend>
-      <div class="opening-fields">
-        <label>当前等级 <input id="openingRollLevel" type="number" min="1" max="10" step="1" placeholder="1–10" /></label>
-        <label>可用金币 <input id="openingRollGold" type="number" min="0" max="200" step="1" placeholder="0–200" /></label>
-        <label>当前等级已累积经验 <input id="openingRollXp" type="number" min="0" max="68" step="1" placeholder="默认 0" /></label>
-      </div>
-      <p class="fine">登记后默认持有 1 张，二星算 3 张、三星算 9 张。概率只覆盖首位主 C，按标准商店和付费刷新估算。优先使用已确认的对手张数，仅识别到名称时按每家至少 1 张计入。</p>
-      <p id="openingHud" class="fine" hidden></p>
-      <button id="openingApplyHud" class="ghost" type="button" hidden>应用识别数值</button>
-    </fieldset>
-  </dialog>
-  <dialog id="lineupPlan" aria-labelledby="lineupPlanTitle">
-    <header class="opening-header">
-      <h2 id="lineupPlanTitle">已选阵容</h2>
-      <form method="dialog"><button type="submit" class="ghost">关闭</button></form>
-    </header>
-    <section id="lineupPlanCode" class="lineup-code">
-      <label for="lineupCode" id="lineupCodeLabel">阵容码</label>
-      <textarea id="lineupCode" rows="2" spellcheck="false" readonly></textarea>
-      <div class="snap-actions"><button id="copyLineupCode" type="button" class="ghost">复制阵容码</button></div>
-      <p id="lineupCopyStatus" class="fine" role="status"></p>
-    </section>
-    <p id="lineupPlanNoCode" class="fine" hidden>这套阵容暂无可导入的游戏阵容码。</p>
-    <div id="lineupPlanTransition"></div>
-    <div class="snap-actions"><button id="changeLineupChoice" type="button" class="ghost">返回阵容推荐</button></div>
-  </dialog>
-  <section class="panel snapshot" id="imageTools">
-    <h2>截图与图标识别</h2>
-    <div class="snap-grid">
-      <div class="drop" id="snapDrop">
-        <label class="dt" for="snapFile">选择截图</label>
-        <input id="snapFile" type="file" accept=".jpg,.jpeg,.jfif,.png,.webp,.gif,.bmp,.avif" />
-        <span class="dd">也可拖入或 Ctrl+V 粘贴。支持 JPG、PNG、WebP、GIF、BMP、AVIF，最大 20 MB。</span>
-        <div class="snap-preview" id="snapPreview" hidden></div>
-      </div>
-      <div class="snap-side">
-        <div class="snap-actions">
-          <button id="snapPaste" class="ghost" type="button">从剪贴板导入</button>
-          <button id="snapRotate" class="ghost" type="button" disabled>顺时针旋转 90°</button>
-          <button id="snapRun" class="primary" disabled>开始识别</button>
-          <button id="snapAi" class="ghost" type="button" disabled>AI 增强识别</button>
-          <button id="snapClear" class="ghost" disabled>清空截图</button>
-        </div>
-        <form class="snap-actions snap-url" id="snapUrlForm">
-          <label for="snapUrl">图片直链</label>
-          <input id="snapUrl" type="url" inputmode="url" placeholder="https://…" required />
-          <button id="snapUrlLoad" class="ghost" type="submit">导入链接</button>
-        </form>
-        <p id="snapStatus" class="snap-status" role="status">正在准备截图工具…</p>
-        <p class="fine">请用原始截图，或裁出商店、羁绊栏等含清晰名称的区域。识别出的棋子名需核对后应用到推荐。AI 增强首次会加载模型，截图在浏览器内处理。</p>
-        <details class="snap-model">
-          <summary>识别单个棋子或装备图标</summary>
-          <div class="plan-controls">
-            <label>图标类型 <select id="iconKind"><option value="unit">棋子头像</option><option value="item">装备图标</option></select></label>
-            <label>上传裁好的图标 <input id="iconFile" type="file" accept="image/*" /></label>
-            <button id="iconApply" class="ghost" type="button" disabled>确认并登记</button>
-          </div>
-          <p id="iconStatus" class="snap-status" role="status"></p>
-        </details>
-        <details class="snap-model">
-          <summary>棋子 3D 模型参考（可选）</summary>
-          <p class="fine"><strong id="modelGame"></strong>。GLB 模型可保存到当前浏览器。请上传所选游戏和版本的模型。</p>
-          <div class="snap-model-fields">
-            <label>GLB 模型 <input id="modelFile" type="file" accept=".glb" /></label>
-            <label>模型对应棋子 <select id="modelUnit"></select></label>
-            <label>模型视角 <select id="modelAngle" disabled></select></label>
-          </div>
-          <div id="modelDisplay" class="snap-model-display" hidden></div>
-          <div class="snap-actions">
-            <button id="modelUse" class="ghost" type="button" disabled>用当前角度生成参考图</button>
-            <button id="modelUseAll" class="ghost" type="button" disabled>生成六视角参考图</button>
-            <button id="modelClear" class="ghost" type="button" disabled>关闭预览</button>
-          </div>
-          <div class="snap-actions snap-load-actions">
-            <button id="modelSave" class="ghost" type="button" disabled>保存到本机</button>
-            <button id="modelLoad" class="ghost" type="button" disabled>载入本机模型</button>
-            <button id="modelRemove" class="ghost" type="button" disabled>删除本机模型</button>
-          </div>
-          <p id="modelStatus" class="snap-status" role="status"></p>
-          <div id="modelReferencePreview" class="snap-model-reference" hidden></div>
-          <a href="./samples/demo-model.glb" download>下载示例 GLB</a>
-          <a href="https://github.com/Xiaochr/LOLCodexPet" target="_blank" rel="noopener noreferrer">TFT 模型处理参考</a>
-          <a href="https://github.com/Crauzer/lol2gltf" target="_blank" rel="noopener noreferrer">GLB 转换工具</a>
-        </details>
-      </div>
-    </div>
-    <section id="snapLineup" class="snap-status ok" aria-live="polite" hidden></section>
-    <div id="snapResult" class="snap-result"></div>
-  </section>
-
-  <section class="panel pool" id="roster">
-    <h2>持有棋子</h2>
-    <div class="pool-tools">
-      <input id="search" type="search" aria-label="搜索棋子或羁绊" placeholder="搜棋子或羁绊，例如 奥恩 / 永恒之森" />
-      <div class="costs" id="costTabs"></div>
-    </div>
-    <div class="selected-strip">
-      <div id="selectedList" class="selected-list"><span class="hint">还没选</span></div>
-      <div class="strip-actions">
-        <span id="selCount" class="count">0 选</span>
-        <button id="clearSel" class="ghost">清空</button>
-      </div>
-    </div>
-    <div id="unitGrid" class="unit-grid"></div>
-
-    <h2 class="mt">持有散件（点击添加）</h2>
-    <div id="compGrid" class="item-grid"></div>
-    <div class="strip-actions">
-      <span id="compCount" class="count">0 件散件</span>
-      <button id="clearComps" class="ghost">清空散件</button>
-    </div>
-  </section>
-
-  <section class="panel result" id="lineupResults">
-    <h2>成型阵容</h2>
-    <details id="matchSamples" class="snap-model" hidden>
-      <summary>赛前阵容参考 · 导入对局记录</summary>
-      <p class="fine">导入云顶 S18 18.7 的 Riot 对局 JSON。终局棋盘统计仅供赛前参考，文件在浏览器内处理。</p>
-      <p class="fine">公开对局参考 · <a href="https://tftcodex.com/patch/18-7.html" target="_blank" rel="noopener noreferrer">TFT Codex 18.7 钻石以上排位统计</a> · <a href="https://tftcodex.com/about/" target="_blank" rel="noopener noreferrer">采样口径</a></p>
-      <label for="matchSampleFiles">对局 JSON</label>
-      <input id="matchSampleFiles" type="file" accept=".json,application/json" multiple />
-      <button id="clearMatchSamples" type="button" class="ghost" disabled>清除样本</button>
-      <p id="matchSampleStatus" class="snap-status" role="status">可以导入同版本的已结束排位记录。</p>
-      <div id="matchSampleOutput"></div>
-    </details>
-    <div id="traitsNow" class="traits-now"></div>
-    <div class="plan-controls" role="group" aria-label="筛选阵容">
-      <label>目标羁绊 <select id="planTrait"><option value="">全部羁绊</option></select></label>
-      <label>羁绊档位 <select id="planTier" disabled><option value="">任意已激活</option></select></label>
-      <label>成型人口上限
-        <select id="planCap">
-          <option value="">不限</option><option value="6">6</option><option value="7">7</option>
-          <option value="8">8</option><option value="9">9</option><option value="10">10</option>
-        </select>
-      </label>
-    </div>
-    <div class="plan-controls" role="group" aria-label="阵容限制">
-      <label>目标羁绊人数上限 <input id="planMaxTier" type="number" min="1" max="12" placeholder="不限" /></label>
-      <label>必带棋子 <select id="planInclude"></select></label>
-      <label>排除棋子 <select id="planExclude"></select></label>
-      <label>排除费用 <select id="planExcludeCost"><option value="">不限</option><option value="1">1 费</option><option value="2">2 费</option><option value="3">3 费</option><option value="4">4 费</option><option value="5">5 费</option></select></label>
-      <label>已持有纹章 <select id="planEmblem"></select></label>
-      <label>纹章携带者 <select id="planBearer" disabled></select></label>
-    </div>
-    <div id="comps" class="comps"></div>
-
-    <h2 class="mt">羁绊方向</h2>
-    <div id="paths" class="paths"></div>
-
-    <h2 class="mt">海克斯（点击登记）</h2>
-    <label class="augment-filter">推荐颜色
-      <select id="augmentTierFilter">
-        <option value="">全部颜色</option><option value="silver">白银</option>
-        <option value="gold">黄金</option><option value="prismatic">棱彩</option>
-      </select>
-    </label>
-    <div id="hexes" class="hexes"></div>
-
-    <h2 class="mt">成装规划</h2>
-    <div id="gear" class="gear"></div>
+    <p id="referenceCount" class="fine" role="status"></p>
+    <div id="referenceResults" class="reference-results"></div>
+    <div class="snap-actions"><button id="showMore" class="ghost" type="button" hidden>查看更多</button></div>
   </section>
 </main>
 
 <footer class="bar foot">
-  <p id="footNote"></p>
-  <p class="fine">公网测试版</p>
-  <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
+  <p class="fine">公网测试版。评级与统计沿用来源站口径。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=postgame-review"></script>
+<script type="module" src="./src/reference.js?v=version-reference"></script>
 </body>
 </html>
