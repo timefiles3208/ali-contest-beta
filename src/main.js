@@ -3,7 +3,7 @@ import { artifactAugmentChoices, radiantAugmentChoices, recommendArtifacts } fro
 import { openingModel } from './data/s18.18.7.opening-model.js';
 import { SETS, findSet } from './data/sets.js?v=game-release-scope';
 import { catalogIcon, iconHtml } from './ui/helpers.js?v=game-release-scope';
-import { loadCatalogBundle } from './adapters/catalog.js?v=fast-catalog-2';
+import { loadCatalogBundle } from './adapters/catalog.js?v=release-batch';
 import { bindModelReference } from './ui/model-reference.js?v=game-release-scope';
 import { bindScreenReader } from './ui/screen-reader.js?v=fast-catalog';
 import { bindOpponentScout } from './ui/opponent-scout.js?v=game-release-scope';
@@ -82,7 +82,7 @@ const state = {
 function applyBoard(release, source) {
   const badge = el('sourceBadge');
   try {
-    const { values: [raw, ratings = null], location, updatedAt, error } = release;
+    const { values: [raw, ratings = null], location, updatedAt, revision, error } = release;
     if (error) throw new Error(error);
     if (!raw || !state.setData.units.length) throw new Error(`暂无 ${source.game} ${state.meta.version} 的阵容数据`);
     const board = adaptBoard(raw, { source: source.id, setData: state.setData, items: state.items, ratings });
@@ -93,6 +93,7 @@ function applyBoard(release, source) {
     state.issues = valid.issues;
     badge.textContent = `${source.host} · ${board.version} · ${state.comps.length} 套 · ${catalogLocation(location)}${updatedAt ? ' ' + catalogTime.format(new Date(updatedAt)) : ''}`;
     badge.className = `badge ${state.comps.length ? 'ok' : 'warn'}`;
+    badge.title = revision ? '本局数据批次 ' + revision.slice(0, 12) : '';
   } catch (error) {
     state.issues = [`${source.host}：${error.message}`];
     badge.textContent = `${source.host} · 数据不可用`;
@@ -143,6 +144,8 @@ async function loadSet(version) {
   clearSnapshot();
   el('search').value = '';
   el('sourceBadge').className = 'badge';
+  el('sourceBadge').title = '';
+  el('newMatch').disabled = true;
   el('sourceBadge').textContent = source.game + ' · ' + meta.version + ' · 读取中…';
   renderCostTabs();
   renderUnits();
@@ -153,22 +156,14 @@ async function loadSet(version) {
   catalogBadge.textContent = '卡池载入中…';
   const available = source.version === meta.version && source.season === meta.set;
   const boardPaths = source.ratingsFile ? [source.file, source.ratingsFile] : [source.file];
-  const safeLoad = (paths, options) => loadCatalogBundle(paths, options)
-    .catch(error => ({ values: [], error: error.message }));
-  let release = { values: [] };
-  let boardRelease = release;
-  if (available && source.catalogFile) {
-    const combined = await safeLoad([source.catalogFile, ...boardPaths], { live: true });
-    const [catalog, ...board] = combined.values;
-    release = { ...combined, values: [catalog, catalog, catalog] };
-    boardRelease = { ...combined, values: board };
-  } else if (available) {
-    [release, boardRelease] = await Promise.all([
-      safeLoad([meta.dataFile, meta.itemsFile, meta.augFile], { optional: [meta.itemsFile, meta.augFile] }),
-      safeLoad(boardPaths, { live: true, optional: [source.ratingsFile] }),
-    ]);
-  }
-  const [roster, items = null, augments = null] = release.values;
+  const corePaths = source.catalogFile ? [source.catalogFile] : [meta.dataFile, meta.itemsFile, meta.augFile];
+  const release = available
+    ? await loadCatalogBundle([...corePaths, ...boardPaths], { live: true, optional: [source.ratingsFile] })
+      .catch(error => ({ values: [], error: error.message }))
+    : { values: [] };
+  const [roster, items = source.catalogFile ? roster : null, augments = source.catalogFile ? roster : null] =
+    release.values.slice(0, corePaths.length);
+  const boardRelease = { ...release, values: release.values.slice(corePaths.length) };
   const setData = roster ? { ...roster, set: meta.set, scope } : { ...empty, loadError: release.error };
   if (generation !== setLoad) return;
   loadingSet = false;
@@ -203,6 +198,7 @@ async function loadSet(version) {
   renderCostTabs();
   renderUnits();
   applyBoard(boardRelease, source);
+  el('newMatch').disabled = false;
   renderSnapshot();
 }
 
@@ -1164,6 +1160,7 @@ function bind() {
   el('setSelect').value = savedRelease();
   el('boardSource').replaceChildren(...BOARD_SOURCES.map(({ id, host, game }) => new Option(`${game} · ${host}`, id)));
   el('boardSource').value = state.sourceId;
+  el('newMatch').onclick = () => void loadSet(el('setSelect').value);
   el('boardSource').onchange = (event) => {
     state.sourceId = sourceFor(event.target.value).id;
     try { localStorage.setItem(SOURCE_KEY, state.sourceId); } catch { /* session choice still works */ }

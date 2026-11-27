@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { validReleaseDatasets } from '../src/adapters/catalog.js';
 import { adaptBoard, sourceFor } from '../src/adapters/board-sources.js';
 import { datajTeamCodes } from '../src/data/s18.18.7.dataj-team-codes.js';
 import { buildDatajCatalog } from './import-dataj-catalog.mjs';
@@ -99,25 +100,41 @@ async function refreshTft() {
   }));
   assert.equal(result.success, true, 'DataTFT team list request failed');
   assert.ok(Number(result.data?.count) > 0 && Array.isArray(result.data?.list), 'DataTFT team list incomplete');
-  const baseline = await readData('datatft/s18.18.7.comps.json');
-  return { compositions: {
-    source: 'datatft.com', season, version, pages: baseline.pages, samples: Number(result.data.count), comps: result.data.list,
-  } };
+  const [baseline, roster, items, augments] = await Promise.all([
+    'datatft/s18.18.7.comps.json', 'set18.json', 'set18.items.json', 'set18.augments.json',
+  ].map(readData));
+  return {
+    'units-traits': roster,
+    items,
+    augments,
+    compositions: {
+      source: 'datatft.com', season, version, pages: baseline.pages, samples: Number(result.data.count), comps: result.data.list,
+    },
+  };
 }
 
 export async function validateUpdate(source, datasets) {
   const native = source === 'dataj';
   const raw = datasets[native ? 'rankings' : 'compositions'];
-  const items = native ? datasets['game-catalog'] : await readData('set18.items.json');
-  const roster = native ? items : await readData('set18.json');
+  const items = native ? datasets['game-catalog'] : datasets.items;
+  const roster = native ? items : datasets['units-traits'];
   const prior = await readData(native ? 'dataj/s18.18.7.json' : 'datatft/s18.18.7.comps.json');
   assert.equal(raw?.source, sourceFor(source).host);
   assert.equal(raw?.season, season);
   assert.equal(raw?.version, version);
   assert.ok(raw.comps.length >= Math.ceil(prior.comps.length * 0.7), 'Array smaller than the release baseline');
+  assert.ok(validReleaseDatasets(source, datasets), 'Incomplete or incompatible release batch');
   assert.equal(new Set(raw.comps.map(row => String(row.id))).size, raw.comps.length, 'Duplicate team IDs');
   const setData = { ...roster, set: season, scope: { sourceId: source, version } };
   const { comps } = adaptBoard(raw, { source, setData, items });
+  const knownItems = new Set([...items.items, ...items.components].map(item => native ? item.name : item.id));
+  for (const row of raw.comps) {
+    for (const hero of row.heroes || row.heros) {
+      if (hero.summon) continue;
+      const gear = native ? hero.items : hero.tftEquips;
+      assert.ok((gear || []).every(item => knownItems.has(item)), 'Lineup equipment missing from its release batch');
+    }
+  }
   assert.equal(comps.length, raw.comps.length, 'Lineup contains heroes outside the release catalog');
   assert.ok(comps.every(row => row.name && Number.isFinite(row.rank.top4)), 'Lineup statistics incomplete');
   if (native) {

@@ -43,6 +43,21 @@ function validPayload(payload, source, version, accepts) {
   return identityMatches && accepts(payload);
 }
 
+const releaseDatasets = {
+  datatft: ['units-traits', 'items', 'augments', 'compositions'],
+  dataj: ['game-catalog', 'rankings'],
+};
+
+function releaseSpecs(source) {
+  return releaseDatasets[source]?.map(dataset => [...snapshots.values()].find(([name, id]) =>
+    name === dataset && (id === source || (source === 'datatft' && id === 'riot'))));
+}
+
+export function validReleaseDatasets(source, datasets) {
+  return releaseSpecs(source)?.every(([dataset, id, version, accepts]) =>
+    validPayload(datasets?.[dataset], id, version, accepts)) === true;
+}
+
 async function readDatabase(specs, signal) {
   const url = new URL(API);
   const clauses = specs.map(([dataset, source, version]) =>
@@ -67,8 +82,12 @@ async function readDatabase(specs, signal) {
 }
 
 async function loadLiveBundle(specs) {
-  const [, source, version] = specs[0];
-  if (!['datatft', 'dataj'].includes(source) || !specs.every(([, id, release]) => id === source && release === version)) return null;
+  const rankingSpec = specs.find(([, id]) => Object.hasOwn(releaseDatasets, id));
+  if (!rankingSpec) return null;
+  const [, source, version] = rankingSpec;
+  const compatible = specs.every(([, id, release]) =>
+    (id === source && release === version) || (source === 'datatft' && id === 'riot' && release === '16.23.1'));
+  if (!compatible) return null;
   const key = source + '/' + version;
   const cached = liveBundles.get(key);
   if (cached && Date.now() - cached.started < 60_000) return cached.result;
@@ -76,12 +95,7 @@ async function loadLiveBundle(specs) {
   const validate = entry => {
     if (entry?.source !== source || entry.season !== 18 || entry.version !== version ||
       !Number.isFinite(Date.parse(entry.updatedAt))) return null;
-    const mandatory = source === 'dataj' ? ['game-catalog', 'rankings'] : ['compositions'];
-    for (const dataset of mandatory) {
-      const spec = [...snapshots.values()].find(row => row[0] === dataset && row[1] === source && row[2] === version);
-      if (!spec || !validPayload(entry.datasets?.[dataset], source, version, spec[3])) return null;
-    }
-    return entry;
+    return validReleaseDatasets(source, entry.datasets) ? entry : null;
   };
   const browserCache = globalThis.caches?.open(LIVE_CACHE).catch(() => null);
   const stored = browserCache?.then(async cache => {
@@ -142,7 +156,7 @@ export async function loadCatalogBundle(paths, { optional = [], live = false } =
         return validPayload(payload, source, version, accepts) ? { ...payload, extractedAt: entry.updatedAt } : null;
       });
       if (!values.every((value, index) => value || optional.includes(paths[index]))) throw new Error('自动同步快照不完整');
-      return { values, location: 'live', updatedAt: entry.updatedAt };
+      return { values, location: 'live', updatedAt: entry.updatedAt, revision: entry.digest };
     });
     // Prefer a fresh snapshot during a short window, then show the first complete fallback.
     const grace = new Promise(resolve => { timer = setTimeout(resolve, 1_200); });

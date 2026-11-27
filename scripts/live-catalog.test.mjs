@@ -6,6 +6,7 @@ import { loadCatalogBundle } from '../src/adapters/catalog.js';
 
 const read = path => JSON.parse(readFileSync(new URL('../src/data/' + path, import.meta.url)));
 const compositions = read('datatft/s18.18.7.comps.json');
+const tftDatasets = { compositions, 'units-traits': read('set18.json'), items: read('set18.items.json'), augments: read('set18.augments.json') };
 const rankings = read('dataj/s18.18.7.json');
 const catalog = read('dataj/s18.18.7.catalog.json');
 const timestamp = '2026-11-27T02:42:00.000Z';
@@ -96,7 +97,11 @@ test('preserves separate source equipment and augments and rejects partial or fo
   await validateUpdate('dataj', dataj.datasets);
   await assert.rejects(validateUpdate('dataj', { ...dataj.datasets, rankings: { ...rankings, comps: [] } }), /baseline/);
   await assert.rejects(validateUpdate('datatft', { compositions: rankings }));
-  await validateUpdate('datatft', { compositions });
+  await assert.rejects(validateUpdate('datatft', { compositions }), /release batch/);
+  await validateUpdate('datatft', tftDatasets);
+  await assert.rejects(validateUpdate('datatft', { ...tftDatasets, items: {
+    ...tftDatasets.items, source: { ddragonVersion: '16.22.1' },
+  } }), /release batch/);
 });
 
 test('validates the full DataJ bundle before use and falls back without mixing catalogs', async t => {
@@ -117,7 +122,7 @@ test('loads the native DataJ release from one shared request and keeps optional 
   const fetch = t.mock.method(globalThis, 'fetch', async url => {
     if (String(url).endsWith('live-dataj/18.7.json')) return Response.json(dataj);
     if (String(url).endsWith('live-datatft/18.7.json')) {
-      return Response.json({ ...dataj, source: 'datatft', datasets: { compositions } });
+      return Response.json({ ...dataj, source: 'datatft', datasets: tftDatasets });
     }
     return new Response(null, { status: 404 });
   });
@@ -126,7 +131,12 @@ test('loads the native DataJ release from one shared request and keeps optional 
   assert.equal((await loadCatalogBundle(['./src/data/dataj/s18.18.7.json'], options)).values[0].extractedAt, timestamp);
   assert.equal(fetch.mock.calls.filter(call => String(call.arguments[0]).endsWith('live-dataj/18.7.json')).length, 1);
   const tier = './src/data/datatft/s18.18.7.ratings.json';
-  const tft = await loadCatalogBundle(['./src/data/datatft/s18.18.7.comps.json', tier], { ...options, optional: [tier] });
+  const tft = await loadCatalogBundle(
+    ['./src/data/set18.json', './src/data/set18.items.json', './src/data/set18.augments.json', './src/data/datatft/s18.18.7.comps.json', tier],
+    { ...options, optional: [tier] },
+  );
   assert.equal(tft.location, 'live');
-  assert.equal(tft.values[1], null);
+  assert.equal(tft.values[1].source.ddragonVersion, '16.23.1');
+  assert.equal(tft.values[3].version, '18.7');
+  assert.equal(tft.values[4], null);
 });
