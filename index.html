@@ -4,39 +4,47 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>云顶阵容参谋 · 公网测试版</title>
-<link rel="stylesheet" href="./styles.css?v=lineup-picker" />
+<link rel="stylesheet" href="./styles.css?v=opening-workspace" />
 </head>
 <body>
 <header class="bar">
   <div class="brand">
-    <span class="logo">棋</span>
     <div>
       <h1>云顶阵容参谋</h1>
-      <p class="sub">导入对局截图或手选棋子 → 本地阵容库匹配 → 给出成型羁绊、所需棋子与成装缺口</p>
+      <p class="sub">云顶之弈 · 金铲铲之战</p>
     </div>
   </div>
   <div class="controls">
-    <label for="boardSource">大数据来源 <select id="boardSource"></select></label>
+    <label for="boardSource">数据来源 <select id="boardSource"></select></label>
     <label for="setSelect">赛季 <select id="setSelect" aria-label="赛季"></select></label>
-    <span id="sourceBadge" class="badge" role="status">数据源载入中…</span>
-    <span id="catalogBadge" class="badge" role="status">卡池载入中…</span>
+    <div class="catalog-status">
+      <span id="sourceBadge" class="badge" role="status">数据源载入中…</span>
+      <span id="catalogBadge" class="badge" role="status">卡池载入中…</span>
+    </div>
   </div>
 </header>
 
-<main><aside class="panel" aria-label="公网测试版"><strong>公网测试版</strong><p class="fine">屏幕与截图中的文字都在浏览器内识别。</p><p><a href="./samples/demo-model.glb" download>下载示例 GLB</a></p></aside>
-  <section class="panel snapshot" aria-labelledby="screenTitle">
-    <h2 id="screenTitle">屏幕识别 · 2-1 阵容方向</h2>
-    <p class="fine">登记持有的关键棋子后会提醒阵容方向。识别到 2-1 就显示阵容，海克斯读完后补充选择建议。选择海克斯后结束共享。</p>
-    <div class="snap-actions">
-      <button id="screenStart" class="primary" type="button">共享游戏窗口</button>
-      <button id="openingOpen" class="ghost" type="button" disabled>开局推荐</button>
-      <button id="showLineupPlan" class="ghost" type="button" hidden>查看已选阵容</button>
-      <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
-      <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
-      <button id="openResultFloat" class="ghost" type="button" aria-expanded="false">推荐浮窗</button>
+<main>
+  <section class="panel snapshot opening-workspace" aria-labelledby="screenTitle">
+    <div class="opening-start">
+      <div>
+        <h2 id="screenTitle">2-1 阵容推荐</h2>
+        <p class="opening-intro">根据来牌、装备和首个海克斯，推荐主推阵容与备选方向。选择海克斯后结束共享。</p>
+        <div class="snap-actions opening-actions">
+          <button id="openingOpen" class="primary" type="button" disabled>开局推荐</button>
+          <button id="screenStart" class="ghost" type="button">共享游戏窗口</button>
+          <button id="showLineupPlan" class="ghost" type="button" hidden>查看已选阵容</button>
+          <button id="openResultFloat" class="ghost" type="button" aria-expanded="false">推荐浮窗</button>
+          <button id="screenFinish" class="ghost" type="button" disabled>已选海克斯，生成方向</button>
+          <button id="screenStop" class="ghost" type="button" disabled>停止共享</button>
+        </div>
+      </div>
+      <div class="opening-upload">
+        <label for="screenPhoto">导入开局或 2-1 截图</label>
+        <input id="screenPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" />
+        <p class="fine">截图文字在浏览器内识别。</p>
+      </div>
     </div>
-    <label for="screenPhoto">导入我的开局或 2-1 截图</label>
-    <input id="screenPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" />
     <p id="screenStatus" class="snap-status" role="status">正在检查屏幕共享支持…</p>
     <aside id="openingNotice" class="opening-notice" aria-label="开局提醒" hidden>
       <p id="openingNoticeText" role="status"></p>
@@ -93,6 +101,11 @@
       <p id="scoutStatus" class="snap-status" role="status">当前是我的视角。</p>
       <ul id="scoutSummary" hidden></ul>
     </details>
+    <nav class="workspace-links" aria-label="对局工具">
+      <a href="#imageTools">截图与图标识别</a>
+      <a href="#roster">手动登记棋子</a>
+      <a href="#lineupResults">成型阵容</a>
+    </nav>
   </section>
   <dialog id="openingDialog" aria-labelledby="openingTitle">
     <header class="opening-header">
@@ -116,18 +129,6 @@
     </div>
     <p id="openingOwned" class="fine" role="status"></p>
     <fieldset id="openingCandidates" hidden></fieldset>
-    <section id="openingDirection" aria-live="polite"></section>
-    <fieldset id="openingRolldown" hidden>
-      <legend>搜牌预算估算（可选）</legend>
-      <div class="opening-fields">
-        <label>当前等级 <input id="openingRollLevel" type="number" min="1" max="10" step="1" placeholder="1–10" /></label>
-        <label>可用金币 <input id="openingRollGold" type="number" min="0" max="200" step="1" placeholder="0–200" /></label>
-        <label>当前等级已累积经验 <input id="openingRollXp" type="number" min="0" max="68" step="1" placeholder="默认 0" /></label>
-      </div>
-      <p class="fine">登记后默认持有 1 张，二星算 3 张、三星算 9 张。概率只覆盖首位主 C，按标准商店和付费刷新估算。优先使用已确认的对手张数，仅识别到名称时按每家至少 1 张计入。</p>
-      <p id="openingHud" class="fine" hidden></p>
-      <button id="openingApplyHud" class="ghost" type="button" hidden>应用识别数值</button>
-    </fieldset>
     <fieldset class="opening-hex">
       <legend>本轮提供的海克斯</legend>
       <div class="opening-tier">
@@ -145,6 +146,18 @@
       <datalist id="openingHexList"></datalist>
     </fieldset>
     <ol id="openingPicks" aria-live="polite"></ol>
+    <section id="openingDirection" aria-live="polite"></section>
+    <fieldset id="openingRolldown" hidden>
+      <legend>搜牌预算估算（可选）</legend>
+      <div class="opening-fields">
+        <label>当前等级 <input id="openingRollLevel" type="number" min="1" max="10" step="1" placeholder="1–10" /></label>
+        <label>可用金币 <input id="openingRollGold" type="number" min="0" max="200" step="1" placeholder="0–200" /></label>
+        <label>当前等级已累积经验 <input id="openingRollXp" type="number" min="0" max="68" step="1" placeholder="默认 0" /></label>
+      </div>
+      <p class="fine">登记后默认持有 1 张，二星算 3 张、三星算 9 张。概率只覆盖首位主 C，按标准商店和付费刷新估算。优先使用已确认的对手张数，仅识别到名称时按每家至少 1 张计入。</p>
+      <p id="openingHud" class="fine" hidden></p>
+      <button id="openingApplyHud" class="ghost" type="button" hidden>应用识别数值</button>
+    </fieldset>
   </dialog>
   <dialog id="lineupPlan" aria-labelledby="lineupPlanTitle">
     <header class="opening-header">
@@ -161,16 +174,14 @@
     <div id="lineupPlanTransition"></div>
     <div class="snap-actions"><button id="changeLineupChoice" type="button" class="ghost">返回阵容推荐</button></div>
   </dialog>
-  <section class="panel snapshot">
-    <h2>1 · 导入对局截图（可选）</h2>
+  <section class="panel snapshot" id="imageTools">
+    <h2>截图与图标识别</h2>
     <div class="snap-grid">
       <div class="drop" id="snapDrop">
         <label class="dt" for="snapFile">选择截图</label>
         <input id="snapFile" type="file" accept=".jpg,.jpeg,.jfif,.png,.webp,.gif,.bmp,.avif" />
         <span class="dd">也可拖入或 Ctrl+V 粘贴。支持 JPG、PNG、WebP、GIF、BMP、AVIF，最大 20 MB。</span>
-        <div class="snap-preview" id="snapPreview" hidden>
-          <img id="snapThumb" class="thumb" alt="待识别截图" />
-        </div>
+        <div class="snap-preview" id="snapPreview" hidden></div>
       </div>
       <div class="snap-side">
         <div class="snap-actions">
@@ -217,6 +228,7 @@
           </div>
           <p id="modelStatus" class="snap-status" role="status"></p>
           <div id="modelReferencePreview" class="snap-model-reference" hidden></div>
+          <a href="./samples/demo-model.glb" download>下载示例 GLB</a>
           <a href="https://github.com/Xiaochr/LOLCodexPet" target="_blank" rel="noopener noreferrer">TFT 模型处理参考</a>
           <a href="https://github.com/Crauzer/lol2gltf" target="_blank" rel="noopener noreferrer">GLB 转换工具</a>
         </details>
@@ -226,10 +238,10 @@
     <div id="snapResult" class="snap-result"></div>
   </section>
 
-  <section class="panel pool">
-    <h2>2 · 这一局你拥有的棋子</h2>
+  <section class="panel pool" id="roster">
+    <h2>持有棋子</h2>
     <div class="pool-tools">
-      <input id="search" type="search" placeholder="搜棋子或羁绊，例如 奥恩 / 永恒之森" />
+      <input id="search" type="search" aria-label="搜索棋子或羁绊" placeholder="搜棋子或羁绊，例如 奥恩 / 永恒之森" />
       <div class="costs" id="costTabs"></div>
     </div>
     <div class="selected-strip">
@@ -241,7 +253,7 @@
     </div>
     <div id="unitGrid" class="unit-grid"></div>
 
-    <h2 class="mt">3 · 你手上的散件（可选，点一下 +1）</h2>
+    <h2 class="mt">持有散件（点击添加）</h2>
     <div id="compGrid" class="item-grid"></div>
     <div class="strip-actions">
       <span id="compCount" class="count">0 件散件</span>
@@ -249,8 +261,8 @@
     </div>
   </section>
 
-  <section class="panel result">
-    <h2>4 · 成型路线</h2>
+  <section class="panel result" id="lineupResults">
+    <h2>成型阵容</h2>
     <details id="matchSamples" class="snap-model" hidden>
       <summary>赛前阵容参考 · 导入对局记录</summary>
       <p class="fine">导入云顶 S18 18.7 的 Riot 对局 JSON。终局棋盘统计仅供赛前参考，文件在浏览器内处理。</p>
@@ -282,10 +294,10 @@
     </div>
     <div id="comps" class="comps"></div>
 
-    <h2 class="mt">5 · 羁绊接下来往哪走</h2>
+    <h2 class="mt">羁绊方向</h2>
     <div id="paths" class="paths"></div>
 
-    <h2 class="mt">6 · 海克斯（点一下算已拿，会从推荐里剔除）</h2>
+    <h2 class="mt">海克斯（点击登记）</h2>
     <label class="augment-filter">推荐颜色
       <select id="augmentTierFilter">
         <option value="">全部颜色</option><option value="silver">白银</option>
@@ -294,16 +306,17 @@
     </label>
     <div id="hexes" class="hexes"></div>
 
-    <h2 class="mt">7 · 成装规划</h2>
+    <h2 class="mt">成装规划</h2>
     <div id="gear" class="gear"></div>
   </section>
 </main>
 
 <footer class="bar foot">
   <p id="footNote"></p>
+  <p class="fine">公网测试版</p>
   <p class="fine">阵容榜单使用所选游戏的数据快照。前四率、登顶率和评级只代表来源站的统计口径。装备与强化符文展示可匹配的榜单数据，合成路线和羁绊计算使用本站卡池。</p>
 </footer>
 
-<script type="module" src="./src/main.js?v=dataj-small-krug"></script>
+<script type="module" src="./src/main.js?v=opening-workspace"></script>
 </body>
 </html>

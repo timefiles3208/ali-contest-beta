@@ -727,12 +727,22 @@ function renderSnapshotLineups() {
 }
 function renderSnapshot() {
   const snap = state.snap;
-  const thumb = el('snapThumb');
-  el('snapPreview').hidden = !snap.thumb;
-  if (snap.thumb) thumb.src = snap.thumb;
-  else thumb.removeAttribute('src');
-  thumb.style.transform = `rotate(${snap.rotation}deg)`;
-  thumb.classList.toggle('sideways', snap.rotation % 180 !== 0);
+  const preview = el('snapPreview');
+  preview.hidden = !snap.thumb;
+  if (snap.thumb) {
+    const thumb = el('snapThumb') || document.createElement('img');
+    if (!thumb.isConnected) {
+      thumb.id = 'snapThumb';
+      thumb.alt = '待识别截图';
+      thumb.className = 'thumb';
+      preview.append(thumb);
+    }
+    if (thumb.getAttribute('src') !== snap.thumb) thumb.src = snap.thumb;
+    thumb.style.transform = `rotate(${snap.rotation}deg)`;
+    thumb.classList.toggle('sideways', snap.rotation % 180 !== 0);
+  } else {
+    preview.replaceChildren();
+  }
   const locked = snap.busy || snap.importing;
   el('snapRun').disabled = !snap.file || !state.setData?.units.length || locked;
   el('snapAi').disabled = el('snapRun').disabled;
